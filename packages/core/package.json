@@ -1,0 +1,45 @@
+{
+  "name": "gpu-lexer",
+  "version": "0.0.2",
+  "description": "Tiny language-agnostic WebGPU syntax lexer",
+  "author": "Shu Ding (https://x.com/shuding)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuding/gpu-lexer.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/shuding/gpu-lexer#readme",
+  "bugs": {
+    "url": "https://github.com/shuding/gpu-lexer/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "prepack": "pnpm build",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10",
+    "wgslender": "1.4.1"
+  },
+  "keywords": [
+    "syntax-highlighting",
+    "webgpu",
+    "wgsl"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "sealed": true,
+  "createdAt": "2026-09-05",
+  "targetTokens": 120000,
+  "maxTokensPerRepository": 16000,
+  "maxFilesPerRepository": 24,
+  "maxFileBytes": 65536,
+  "repositories": [
+    { "repo": "jquery/jquery", "commit": "5ed303d01568dfad361c4de086d28e04ba0147f5", "license": "MIT" },
+    { "repo": "Textualize/rich", "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f", "license": "MIT" },
+    { "repo": "microsoft/vscode", "commit": "99fbee351cb651f25cea4afdf27ae7b3322aefcd", "license": "MIT" },
+    { "repo": "BurntSushi/ripgrep", "commit": "3fce3b5bb0236da2df6d99672afb8a719642eca7", "license": "MIT" },
+    { "repo": "gin-gonic/gin", "commit": "dcaa4296d111981ffb31ac3eba90bb63e1eb5ab9", "license": "MIT" },
+    { "repo": "vueuse/vueuse", "commit": "97fd09c3f03a9b26e9b523d51ee3d888f98b3baf", "license": "MIT" },
+    { "repo": "argyleink/open-props", "commit": "530682d04327f842f56bb1ec33cf84a3cadb3876", "license": "MIT" },
+    { "repo": "gabime/spdlog", "commit": "b7ae19f59f5dcdec2ddd693ae06a2aaebbb1ccbd", "license": "MIT" },
+    { "repo": "libexpat/libexpat", "commit": "d3949eb95d2ce12a9145174b0d2999f6e282d042", "license": "MIT" },
+    { "repo": "commonmark/commonmark-spec", "commit": "3da939428d80f146f270cd1765e4ba462e96bb1b", "license": "BSD-2-Clause" },
+    { "repo": "sql-formatter-org/sql-formatter", "commit": "f6de1cd2959aafce48730172e8c6a0232b4ea5f2", "license": "MIT" }
+  ]
+}

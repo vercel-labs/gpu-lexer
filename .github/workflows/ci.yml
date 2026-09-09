@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Core tests
+        run: pnpm test:core
+      - name: Focused training tests
+        run: >-
+          node --test
+          packages/training/test/classes.test.js
+          packages/training/test/tree-label-alignment.test.js
+          packages/training/test/tree-model.test.js
+          packages/training/test/tree-training-config.test.js
+          packages/training/test/evaluate-tree.test.js
+          packages/training/test/promote-hybrid.test.js
+          packages/training/test/checkpoint.test.js
+      - name: Benchmark utility tests
+        run: pnpm test:benchmark
+      - name: Website type check
+        run: pnpm test:website
+      - name: Build publishable core
+        run: pnpm build:core
+      - name: Inspect npm package contents
+        run: pnpm check:package

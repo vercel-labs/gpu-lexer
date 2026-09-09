@@ -1,0 +1,27 @@
+{
+  "name": "@gpu-lexer/training",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "corpus:fetch": "node src/fetch-corpus.js",
+    "corpus:build": "node src/build-corpus.js",
+    "corpus:prepare": "pnpm corpus:fetch && pnpm corpus:build",
+    "mining:prepare": "pnpm corpus:fetch -- --split mining && pnpm corpus:build -- --split mining",
+    "label": "node src/cli.js",
+    "train:gpu:setup": "node src/setup-torch.js",
+    "train": "node src/train-tree.js",
+    "train:tree": "node src/train-tree.js",
+    "fine-tune": "node src/fine-tune.js",
+    "evaluate:tree": "node src/evaluate-tree.js",
+    "model:promote": "node src/promote.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "gpu-lexer": "workspace:*",
+    "esbuild": "0.25.10",
+    "html-minifier-terser": "7.2.0",
+    "lightningcss": "1.30.1",
+    "shiki": "4.4.3"
+  }
+}

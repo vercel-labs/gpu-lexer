@@ -1,0 +1,25 @@
+{
+  "name": "gpu-lexer-monorepo",
+  "private": true,
+  "packageManager": "pnpm@11.13.0",
+  "scripts": {
+    "test": "node --test packages/core/test/*.test.js packages/training/test/*.test.js packages/benchmark/test/*.test.js && pnpm test:website",
+    "test:core": "node --test packages/core/test/*.test.js",
+    "test:training": "node --test packages/training/test/*.test.js",
+    "test:benchmark": "node --test packages/benchmark/test/*.test.js",
+    "test:website": "apps/website/node_modules/.bin/tsc -p apps/website/tsconfig.json --noEmit",
+    "build:core": "pnpm --filter gpu-lexer build",
+    "check:package": "node packages/core/scripts/check-package.js",
+    "train:gpu:setup": "node packages/training/src/setup-torch.js",
+    "train": "node packages/training/src/train-tree.js",
+    "train:tree": "node packages/training/src/train-tree.js",
+    "fine-tune": "node packages/training/src/fine-tune.js",
+    "evaluate:tree": "node packages/training/src/evaluate-tree.js",
+    "probes:evaluate": "node packages/training/src/evaluate-language-probes.js",
+    "model:promote": "node packages/training/src/promote.js",
+    "benchmark": "pnpm --filter @gpu-lexer/benchmark benchmark",
+    "benchmark:correctness": "pnpm --filter @gpu-lexer/benchmark correctness",
+    "benchmark:browser": "pnpm --filter @gpu-lexer/benchmark browser",
+    "website:dev": "pnpm --filter @gpu-lexer/website dev"
+  }
+}

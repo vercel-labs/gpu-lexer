@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 2,
+  "policy": {
+    "allowedLicenses": ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "CC0-1.0"],
+    "targetTokens": { "train": 3000000, "verification": 240000, "mining": 300000 },
+    "strata": { "author": 0.70, "tests": 0.15, "documentation": 0.10, "compiled": 0.05 },
+    "popularityWeightedStrata": ["author", "tests", "documentation", "compiled"],
+    "minimumPopularityTokens": 10000,
+    "minimumCoverageTokens": 64,
+    "minimumTrainingFamilyTokens": 10000,
+    "minimumLanguageTokens": {
+      "verification": {
+        "tsx": 2000
+      }
+    },
+    "constructCoverage": {
+      "required": ["multiline-comment", "multiline-string", "preprocessor-directive", "embedded-language", "markup-comment", "interpolation", "escape-sequence", "heredoc", "css-selector", "css-declaration", "diff-hunk", "line-continuation"],
+      "minimumTokens": { "train": 5000, "verification": 500 }
+    },
+    "constructSamplingWeights": {
+      "multiline-comment": 4,
+      "multiline-string": 4,
+      "preprocessor-directive": 4,
+      "embedded-language": 5,
+      "markup-comment": 5,
+      "interpolation": 4,
+      "escape-sequence": 2,
+      "heredoc": 4,
+      "css-selector": 3,
+      "css-declaration": 3,
+      "diff-hunk": 5,
+      "line-continuation": 3
+    },
+    "miningAugmentationVersion": 1,
+    "miningMinifiedFraction": 0.5,
+    "supplementalSamplingWeights": { "python": 24, "plpgsql": 10, "html": 10, "css": 4, "markdown": 8, "vue": 2, "svelte": 2, "astro": 2, "diff": 2 },
+    "trainingSamplingWeights": {
+      "python": 24,
+      "typescript": 12,
+      "shell": 10,
+      "c": 6,
+      "makefile": 4,
+      "cmake": 6,
+      "plpgsql": 10,
+      "html": 12,
+      "css": 8,
+      "markdown": 12,
+      "vue": 6,
+      "svelte": 4,
+      "astro": 4,
+      "diff": 4
+    },
+    "maxFileBytes": 65536,
+    "maxFilesPerRepository": 192,
+    "maxFilesPerMiningRepository": 512,
+    "maxFilesPerNpmPackage": 48,
+    "maxFilesPerTrainingNpmPackage": 64,
+    "requiredLanguagesPerSplit": [
+      "javascript", "python", "typescript", "shell", "dockerfile", "java", "cpp", "c", "makefile",
+      "batchfile", "php", "csharp", "powershell", "cmake", "kotlin", "ruby", "swift", "go",
+      "plpgsql", "rust", "objective-c", "lua", "dart", "procfile", "assembly", "hcl", "nix", "perl",
+      "r", "hack", "mako", "hlsl", "glsl", "shaderlab", "smarty", "xslt", "vim-script", "matlab",
+      "cython", "cuda", "objective-cpp", "fortran", "solidity", "meson", "m4", "tsql", "emacs-lisp",
+      "gherkin", "starlark", "awk", "html", "css", "markdown", "vue", "svelte", "astro", "diff"
+    ]
+  },
+  "train": {
+    "minifiedCompiledFraction": 0.5,
+    "git": [
+      { "repo": "vitejs/vite", "commit": "f40efefbb3630cdb7235286bc2b51673d9fbfc27", "license": "MIT" },
+      { "repo": "psf/requests", "commit": "5460f467b02e49471c0fd6cfc9ca0adab6351f98", "license": "Apache-2.0" },
+      { "repo": "google/gson", "commit": "b3f4ca20087f9066de4c340522ff84e0558e1ad1", "license": "Apache-2.0" },
+      { "repo": "fmtlib/fmt", "commit": "b039e624c02ae473280156235217f9e02792b055", "license": "MIT" },
+      { "repo": "libuv/libuv", "commit": "e46c497d718029287f00954efc4540250a42a560", "license": "MIT" },
+      { "repo": "dotnet/command-line-api", "commit": "1f13873cf84d5547d1b8d4f9d68dcb06b3ea0a69", "license": "MIT" },
+      { "repo": "slimphp/Slim", "commit": "73274eb88e5c62b8f299fc46a7ba89ceb104d1be", "license": "MIT" },
+      { "repo": "ohmyzsh/ohmyzsh", "commit": "9112b53fa8b5ab556c7c893aa8be8a247ac512a0", "license": "MIT" },
+      { "repo": "square/okhttp", "commit": "c467a32e881fe24f620ace35f0da307c426f47ff", "license": "Apache-2.0" },
+      { "repo": "sinatra/sinatra", "commit": "cb22afd7902b566b6eaba6c4ea89739494a65d12", "license": "MIT" },
+      { "repo": "go-chi/chi", "commit": "ae6be7469132cf471ca099d8c7bda4010c4ff7b2", "license": "MIT" },
+      { "repo": "apple/swift-argument-parser", "commit": "5ffc8f9b6d0fc94530a7c3de99346e541e05c810", "license": "Apache-2.0" },
+      { "repo": "serde-rs/serde", "commit": "a874a1b1bb1cc16cf5ee3b1b7b527af5705742bb", "license": "Apache-2.0" },
+      { "repo": "h5bp/html5-boilerplate", "commit": "b8071d80d0e90f187adeeccfbda67852097c6c30", "license": "MIT" },
+      { "repo": "necolas/normalize.css", "commit": "fc091cce1534909334c1911709a39c22d406977b", "license": "MIT" },
+      { "repo": "mdn/learning-area", "commit": "6720217b3ddd9ca37c4ad1496e6967da9e98d5ab", "license": "CC0-1.0" },
+      { "repo": "mdn/dom-examples", "commit": "72c9e5c6fc6141fadccfc2b3eacc4b7e3aa92407", "license": "CC0-1.0" }
+      ,{ "repo": "github-linguist/linguist", "commit": "d5214e1612c858ba14bf98edeca57e1683276f1d", "license": "MIT" }
+      ,{ "repo": "sqlalchemy/mako", "commit": "411b4ac6cf054e61a8fb44c236990fda1e41ade4", "license": "MIT" }
+      ,{ "repo": "cython/cython", "commit": "0e66fb28b1cbcb8f508053d56bbbbbcf6ece6c1c", "license": "Apache-2.0" }
+      ,{ "repo": "OpenZeppelin/openzeppelin-contracts", "commit": "6c703c9acaed58cba829039414e7d0f3d36ccace", "license": "MIT" }
+      ,{ "repo": "twbs/bootstrap", "commit": "12cb8b902d175a0d612f1280f58b386a09921a16", "license": "MIT" }
+      ,{ "repo": "vuejs/vitepress", "commit": "09f9672ee108578808f793bb57e306bc92dff7bc", "license": "MIT" }
+      ,{ "repo": "postcss/postcss", "commit": "6d23bc362203118478bc8051b81f2910907ebe6e", "license": "MIT" }
+      ,{ "repo": "vuejs/core", "commit": "d63616ca17de965ed32dcb449a4c5cd9982f15d2", "license": "MIT" }
+      ,{ "repo": "sveltejs/svelte", "commit": "4bf15ae6f304b9aa49a4396c3f51dc423d0722dc", "license": "MIT" }
+      ,{ "repo": "sveltejs/realworld", "commit": "df796708040f5200ec572b28ab7f88ecee5794dd", "license": "MIT" }
+      ,{ "repo": "google/googletest", "commit": "5f31f20edabd148cc90c3e271f5ae38523cd9676", "license": "BSD-3-Clause" }
+      ,{ "repo": "encode/httpx", "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254", "license": "BSD-3-Clause" }
+      ,{ "repo": "withastro/astro", "commit": "92f23cc121d3a1a03c6fb901a519309662b333de", "license": "MIT" }
+      ,{ "repo": "facebook/react", "commit": "d9f4e76bd6582ef86048fefcedda9d5b041ae62f", "license": "MIT" }
+      ,{ "repo": "vercel/next.js", "commit": "65c832c8b87963c3d6cc371b8909b9281868d473", "license": "MIT" }
+      ,{ "repo": "tailwindlabs/tailwindcss", "commit": "f723e834ad032aa0f42405f95f684be3cfcac8ef", "license": "MIT" }
+      ,{ "repo": "solidjs/solid", "commit": "f47845f9cc16ecbb316aa6560c7161f45af9a3d8", "license": "MIT" }
+      ,{ "repo": "pallets/flask", "commit": "d318b683471101618febed18996405ad26462110", "license": "BSD-3-Clause" }
+      ,{ "repo": "tokio-rs/tokio", "commit": "231a8faf20d2c24d01d36bd15ed7c3aed24b06a9", "license": "MIT" }
+      ,{ "repo": "spf13/cobra", "commit": "adbc8813901bba65827259daa8e22ff94ec1f30e", "license": "Apache-2.0" }
+      ,{ "repo": "LuaLS/lua-language-server", "commit": "7a73c7889c1ec981dfd76fba38f5096379f62f99", "license": "MIT" }
+      ,{ "repo": "dart-lang/samples", "commit": "eeb85290e96486c1ccd30390adb7c4078b874b02", "license": "BSD-3-Clause" }
+      ,{ "repo": "docker/awesome-compose", "commit": "30f4b7f6a6c3b0c0ecf4d4efb0de203c48d11562", "license": "CC0-1.0" }
+      ,{ "repo": "duckdb/duckdb", "commit": "6790309fde14c0d9875aff05266ddabae870793d", "license": "MIT" }
+      ,{ "repo": "PowerShell/PowerShell", "commit": "6ca24ccf024140ca061580c43751db27605c4815", "license": "MIT" }
+      ,{ "repo": "sqlfluff/sqlfluff", "commit": "63df28344f8bdfb934723aeaf740678aedf2d35b", "license": "MIT" }
+    ],
+    "npm": [
+      { "name": "react", "version": "19.2.8", "license": "MIT" },
+      { "name": "typescript", "version": "7.0.2", "license": "Apache-2.0" },
+      { "name": "bootstrap", "version": "5.3.8", "license": "MIT" }
+    ]
+  },
+  "verification": {
+    "git": [
+      { "repo": "preactjs/preact", "commit": "921df340a25afd1c3090fcc7b5073ab093309a75", "license": "MIT" },
+      { "repo": "pallets/click", "commit": "36baa15ff831b939a22bc527cd76ce653ef6f66d", "license": "BSD-3-Clause" },
+      { "repo": "apache/commons-lang", "commit": "efc78779c293f5fb516fec4650a8203ceba1bd85", "license": "Apache-2.0" },
+      { "repo": "nlohmann/json", "commit": "c864bb36da3d35e406ea7cf98fae0f8a13a27383", "license": "MIT" },
+      { "repo": "benhoyt/inih", "commit": "577ae2dee1f0d9c2d11c7f10375c1715f3d6940c", "license": "BSD-3-Clause" },
+      { "repo": "spectreconsole/spectre.console", "commit": "a3065cf81cd9351a08690434a7f4631a1699b13d", "license": "MIT" },
+      { "repo": "nikic/FastRoute", "commit": "1c961398bef1ff6ecd8b273bef651d7afe90312b", "license": "BSD-3-Clause" },
+      { "repo": "bash-it/bash-it", "commit": "2a613f270c6daad0a3062eb52fd3d3a98a21b19b", "license": "MIT" },
+      { "repo": "Kotlin/kotlinx.coroutines", "commit": "f63a04bacb8beeafcc9d49199b1e4bb08931b7eb", "license": "Apache-2.0" },
+      { "repo": "ruby/rake", "commit": "3834925b2d5e1cd889904eb92def1f9d4b81a66e", "license": "MIT" },
+      { "repo": "stretchr/testify", "commit": "9f9d4f4cd868b1667991148401d30a012470b9c9", "license": "MIT" },
+      { "repo": "Alamofire/Alamofire", "commit": "0455bfb650893e86ad07ace16e5f2d36dadf46f4", "license": "MIT" },
+      { "repo": "tokio-rs/bytes", "commit": "d5c8ad3227afe459c09f1d0d85455abf00f0381a", "license": "MIT" },
+      { "repo": "cbracco/html5-test-page", "commit": "48722b5939b0bc1f601d449c82fb0b5021838a10", "license": "MIT" },
+      { "repo": "sindresorhus/modern-normalize", "commit": "27c3f5fe3109b4041a835a0fa569e09c77022bf8", "license": "MIT" }
+      ,{ "repo": "rouge-ruby/rouge", "commit": "16e6ecdb3bc4248cead78375e1b24580ee2352a1", "license": "MIT" }
+      ,{ "repo": "pygments/pygments", "commit": "38f426a6b1cd4ffc6429f5808031b7c62ea57b1f", "license": "BSD-2-Clause" }
+      ,{ "repo": "ColinLeung-NiloCat/UnityURPToonLitShaderExample", "commit": "fbe276e0df1d1f9379e13581c20b6a080a1a6977", "license": "MIT" }
+      ,{ "repo": "microsoft/php-sdk-binary-tools", "commit": "1bb6a4adb5633760d241140ada4dfac3b8d8d2f3", "license": "BSD-2-Clause" }
+      ,{ "repo": "purcell/emacs.d", "commit": "80e1470deb1aa180898c887962e969253d78212d", "license": "BSD-2-Clause" }
+      ,{ "repo": "cel-expr/cel-spec", "commit": "ba58ae5007845f3a1279b488cdeb79645ce958bb", "license": "Apache-2.0" }
+      ,{ "repo": "vuejs/docs", "commit": "b75d188ab16bf83bd1f364a77dfd2315be8f3fa4", "license": "MIT" }
+      ,{ "repo": "vuejs/router", "commit": "0e91ac8f37351f41453fa50ac20b790620bd3a38", "license": "MIT" }
+      ,{ "repo": "sveltejs/kit", "commit": "39e8e1fbd4feba7f22dd46bfdf7335362c38de16", "license": "MIT" }
+      ,{ "repo": "huntabyte/shadcn-svelte", "commit": "c02857f8176ba3202d535ece5289ef03e1ce0019", "license": "MIT" }
+      ,{ "repo": "jgthms/bulma", "commit": "16f1b768818af9cfc217e8112ad38b14afc46a44", "license": "MIT" }
+      ,{ "repo": "facebook/docusaurus", "commit": "ff702daa52c21da62a7fc0b5983546c1552cdd0e", "license": "MIT" }
+      ,{ "repo": "microsoft/GSL", "commit": "417ef685eafd626db765f0027b7fc5a0057e0770", "license": "MIT" }
+      ,{ "repo": "pydantic/pydantic", "commit": "1932c9b40d4d6c59bb5e462a666c9566f15c9bab", "license": "MIT" }
+      ,{ "repo": "withastro/docs", "commit": "fc25123ddf26abd3115b8bd26c3b7800e5b53a2f", "license": "MIT" }
+      ,{ "repo": "remix-run/react-router", "commit": "7aea711dd1ae2bc5a076d13ff17291829690fa74", "license": "MIT" }
+      ,{ "repo": "nuxt/nuxt", "commit": "d070492f6d917a77227dca0ad2983d5166528c89", "license": "MIT" }
+      ,{ "repo": "django/django", "commit": "026b005f3dc43a98557ce5a546b5e4938d06fed1", "license": "BSD-3-Clause" }
+      ,{ "repo": "alpinejs/alpine", "commit": "b1b4fa902158b1137ee0b462b0d539e022f86b51", "license": "MIT" }
+      ,{ "repo": "rust-lang/rustlings", "commit": "a650509c789da1656f813392b16aa1fa043b7f3e", "license": "MIT" }
+      ,{ "repo": "prometheus/client_golang", "commit": "9775124c9480738d119dcd0997a9c4818501b522", "license": "Apache-2.0" }
+      ,{ "repo": "luarocks/luarocks", "commit": "2d2cc8eff2f03c23d142f8059146fb241dcf56b5", "license": "MIT" }
+      ,{ "repo": "compose-spec/compose-spec", "commit": "fee041b381ffd4aad263410980bdce0cdf4beb7d", "license": "Apache-2.0" }
+      ,{ "repo": "sass/sass", "commit": "d6abf810240b13edbd3832058aa5b0d62cb18e75", "license": "MIT" }
+      ,{ "repo": "denoland/deno", "commit": "a961cdec3b1948844414ebeecc697dcad76df2d1", "license": "MIT" }
+      ,{ "repo": "withastro/starlight", "commit": "785722991137658e9c90d868419a8bb663f44357", "license": "MIT" }
+      ,{ "repo": "Kitware/CMake", "commit": "06675ff22831820a1bd7463643505728cc3d1441", "license": "BSD-3-Clause" }
+      ,{ "repo": "tobymao/sqlglot", "commit": "97941935711779438b34e11edbed6a736d2ad0c6", "license": "MIT" }
+    ],
+    "npm": [
+      { "name": "preact", "version": "10.29.8", "license": "MIT" },
+      { "name": "svelte", "version": "5.57.0", "license": "MIT" },
+      { "name": "modern-normalize", "version": "3.0.1", "license": "MIT" }
+    ]
+  },
+  "mining": {
+    "minimumFamilyTokens": 2000,
+    "git": [
+      { "repo": "PrismJS/prism", "commit": "298b75f1764c4abfe76d997394b7b149845f685a", "license": "MIT" },
+      { "repo": "highlightjs/highlight.js", "commit": "fc3f06392f189354eed922973635ab9e9268b983", "license": "BSD-3-Clause" },
+      { "repo": "alecthomas/chroma", "commit": "b6c612d476239d0dc187050d4d8bfeaac3e782e0", "license": "MIT" }
+    ],
+    "npm": []
+  }
+}

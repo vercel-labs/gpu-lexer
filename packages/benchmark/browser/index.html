@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>gpu-lexer phase profiler</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 24px; color: #111; background: #fff; font: 13px/1.5 ui-monospace, monospace; }
+    button, textarea { color: inherit; background: inherit; border: 1px solid #bbb; font: inherit; }
+    button { padding: 6px 10px; cursor: pointer; }
+    textarea { display: block; width: 100%; height: 240px; margin: 12px 0; padding: 10px; }
+    pre { overflow: auto; padding: 12px; border: 1px solid #ddd; white-space: pre-wrap; }
+    #render { max-height: 240px; }
+    .syntax-comment { color: #6a737d; } .syntax-string { color: #067d17; }
+    .syntax-number, .syntax-constant { color: #1750eb; } .syntax-keyword { color: #9c1717; }
+    .syntax-type, .syntax-function { color: #7c3aed; } .syntax-operator { color: #955f00; }
+  </style>
+  <body>
+    <p>benchmark-only WebGPU profiler — phase timings, raw-input parity, and direct-vs-RLE readback</p>
+    <textarea id="source">const message = `hello ${name}`;
+// Paste a large source file here.
+console.log(message);</textarea>
+    <button id="run">run profile</button>
+    <pre id="results">idle</pre>
+    <pre id="render"></pre>
+    <script type="module">
+      import { profileHighlight } from "../src/browser-profile.js";
+      const source = document.querySelector("#source");
+      const results = document.querySelector("#results");
+      const render = document.querySelector("#render");
+      document.querySelector("#run").onclick = async () => {
+        results.textContent = "running…";
+        try {
+          const profile = await profileHighlight(source.value, { target: render });
+          results.textContent = JSON.stringify(profile, null, 2);
+        } catch (error) {
+          results.textContent = error.stack ?? error.message;
+        }
+      };
+    </script>
+  </body>
+</html>

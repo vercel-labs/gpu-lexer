@@ -1,0 +1,7 @@
+[
+  { "path": "representative.bat", "language": "bat", "family": "batchfile" },
+  { "path": "representative.shader", "language": "shaderlab" },
+  { "path": "Makefile", "language": "make", "family": "makefile" },
+  { "path": "representative.md", "language": "markdown" },
+  { "path": "representative.html", "language": "html" }
+]
