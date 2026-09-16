@@ -1,9 +1,7 @@
-import { createReadStream } from "node:fs";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { createGunzip } from "node:zlib";
-import { resolve } from "node:path";
-import readline from "node:readline";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import hljs from "highlight.js";
 import Prism from "prismjs";
@@ -19,6 +17,7 @@ import { promotedRunId } from "../../training/src/promoted-run.generated.js";
 import { alignTreeLabels } from "../../training/src/tree-label-alignment.js";
 import { createTreeRecord, treeProbabilities } from "../../training/src/tree-model.js";
 import { labelsFromHighlightedHtml } from "./html-labels.js";
+import { relabelVerification } from "./verification-labels.js";
 
 const root = new URL("../../../", import.meta.url);
 const popularityPath = new URL("packages/training/data/language-popularity.json", root);
@@ -77,9 +76,15 @@ loadPrismLanguages([...new Set(Object.values(languages).flatMap(({ prism }) => p
 const runArgument = argument("--run") ?? promotedRunId;
 const outputPath = argument("--output") ?? defaultOutputPath;
 const checkpoint = await loadFloatCheckpoint(runArgument);
-const verificationPath = argument("--verification") ?? checkpoint.metadata.config?.verificationShard ??
+let verificationPath = argument("--verification") ?? checkpoint.metadata.config?.verificationShard ??
   defaultVerificationPath;
-const verificationSha256 = createHash("sha256").update(await readFile(verificationPath)).digest("hex");
+let verificationSha256 = createHash("sha256").update(await readFile(verificationPath)).digest("hex");
+if (!argument("--verification") && verificationSha256 !== checkpoint.metadata.corpus.verification.sha256) {
+  // Relabeling the training corpus retains this exact source snapshot for old checkpoints.
+  const directory = dirname(verificationPath instanceof URL ? fileURLToPath(verificationPath) : verificationPath);
+  verificationPath = resolve(directory, "snapshots", `${checkpoint.metadata.corpus.verification.sha256}.jsonl.gz`);
+  verificationSha256 = createHash("sha256").update(await readFile(verificationPath)).digest("hex");
+}
 if (verificationSha256 !== checkpoint.metadata.corpus.verification.sha256) {
   throw new Error("correctness benchmark verification corpus does not match the checkpoint");
 }
@@ -96,14 +101,12 @@ const shape = {
 };
 const scores = Object.fromEntries(["gpu-lexer", "highlight.js", "prism.js", "sugar-high", "starry-night"]
   .map((engine) => [engine, Object.fromEntries(topLanguages.map(({ family }) => [family, { correct: 0, total: 0 }]))]));
-const input = createReadStream(verificationPath).pipe(createGunzip());
-const lines = readline.createInterface({ input, crlfDelay: Infinity });
+const labelsDigest = createHash("sha256");
 let files = 0;
 
-for await (const line of lines) {
-  if (!line) continue;
-  const item = JSON.parse(line);
-  if (!topFamilies.has(item.family)) continue;
+console.log("regenerate Shiki labels for the pinned verification sources before scoring each file");
+for await (const item of relabelVerification(verificationPath, topFamilies)) {
+  labelsDigest.update(JSON.stringify([item.sourceName, item.path, item.language, item.sourceLabels]) + "\n");
   files++;
   const { record } = createTreeRecord(item, shape.hashBuckets, {
     featureVersion: checkpoint.metadata.featureVersion,
@@ -124,6 +127,7 @@ for await (const line of lines) {
     const aligned = alignTreeLabels(labels, record.ranges, { sourceLength: item.source.length });
     scorePredictions(score, record, aligned.map(({ class: name }) => name));
   }
+  if (files % 200 === 0) console.log(`relabeled and evaluated ${files} held-out files`);
 }
 
 const totalPushers = topLanguages.reduce((sum, { pushers }) => sum + pushers, 0);
@@ -150,11 +154,13 @@ const rows = [
 
 const generated = {
   runId: checkpoint.metadata.runId,
-  normalizationVersion: 3,
+  normalizationVersion: 4,
   generatedAt: new Date().toISOString(),
   period: popularity.source.period,
   source: popularity.source.page,
   verificationSha256,
+  labelSource: "regenerated-shiki-source",
+  labelsSha256: labelsDigest.digest("hex"),
   languages: topLanguages.map(({ github }) => github),
   files,
   rows,

@@ -1096,6 +1096,13 @@ def checkpoint_score(metrics: dict, selection_metric: str = "weightedError") -> 
     return metrics["accuracy"] + metrics["macroF1"] * 0.25 + metrics["mixedLanguage"]["macroF1"] * 0.05
 
 
+def highest_scoring_checkpoint(previous: dict | None, candidates: list[dict], selection_metric: str) -> dict:
+    # Include epoch zero and retain the earlier checkpoint on ties. Promotion
+    # eligibility is evaluated separately and never filters training progress.
+    return max(([previous] if previous is not None else []) + candidates,
+               key=lambda value: checkpoint_score(value["metrics"], selection_metric))
+
+
 def candidate(epoch: int, model: QuantizedModel, metrics: dict, source: str = "raw", required: dict | None = None) -> dict:
     return {"epoch": epoch, "source": source, "state": model.state(), "metrics": metrics, "required": required}
 
@@ -1120,10 +1127,6 @@ def selection_issues(metrics: dict, baseline: dict | None, config: dict, objecti
     return failures, warnings
 
 
-def selection_eligible(metrics: dict, baseline: dict | None, config: dict, objective: dict) -> bool:
-    return not selection_issues(metrics, baseline, config, objective)[0]
-
-
 def device_state(model: QuantizedModel) -> dict[str, Tensor]:
     return {name: parameter.detach().clone() for name, parameter in model.weights.items()}
 
@@ -1145,12 +1148,12 @@ def export_state(path: Path, state: dict[str, Tensor], layout: list[dict]) -> No
     temporary.replace(path)
 
 
-def save_training_result(directory, config, best, best_overall, best_mixed, history, initial_metrics):
-    """Export diagnostics even when no candidate qualifies for promotion."""
-    selected = best if best is not None else best_overall
+def save_training_result(directory, config, best_overall, best_mixed, history, initial_metrics):
+    """Save the highest-scoring checkpoint, with independent promotion eligibility."""
+    selected = best_overall
     if selected is None or best_mixed is None:
         raise ValueError("no evaluated checkpoint is available to save")
-    selection = {"status": "eligible" if best is not None else "diagnostic-only", "failures": []}
+    selection = {"status": "eligible", "failures": []}
     selection["failures"], selection["warnings"] = selection_issues(
         selected["metrics"], config.get("fixedBaselineMetrics") or initial_metrics,
         config, config["languageObjective"],
@@ -1159,8 +1162,6 @@ def save_training_result(directory, config, best, best_overall, best_mixed, hist
         selection["status"] = "diagnostic-only"
     required = selected.get("required")
     selection["required"] = required
-    if best is None and not selection["failures"]:
-        selection["failures"] = ["no candidate passed checkpoint selection guards"]
     for name, value in (("selected", selected), ("best-overall", best_overall), ("best-mixed", best_mixed)):
         export_state(directory / f"{name}.f32", value["state"], config["tensorLayout"])
     result = {
@@ -1324,13 +1325,8 @@ def main() -> None:
         log(f"epoch 0 anchored to exact deployed baseline at {format_percent(initial_metrics['accuracy'])} accuracy")
     initial_required = evaluate_required(model, required, config, device) if initial_metrics else None
     initial_candidate = candidate(0, model, initial_metrics, "initial", initial_required) if initial_metrics else None
-    best = None if config.get("initialIsBaseline", False) else initial_candidate
-    if initial_candidate and config.get("fixedBaselineMetrics") is not None and not selection_eligible(
-        initial_metrics, config["fixedBaselineMetrics"], config, objective
-    ):
-        best = None
     best_overall = initial_candidate
-    best_mixed = best
+    best_mixed = initial_candidate
     if initial_metrics:
         log(
             f"initial {evaluation_mode} checkpoint verified "
@@ -1521,48 +1517,25 @@ def main() -> None:
             epoch_result["emaVerificationMixedMacroF1"] = ema_metrics["mixedLanguage"]["macroF1"]
         history.append(epoch_result)
         previous_stage = stage
+        selection_metric = config.get("selectionMetric", "weightedError")
+        previous_score = checkpoint_score(best_overall["metrics"], selection_metric) if best_overall else -math.inf
+        best_overall = highest_scoring_checkpoint(best_overall, epoch_candidates, selection_metric)
         for value in epoch_candidates:
-            if best_overall is None or checkpoint_score(
-                value["metrics"], config.get("selectionMetric", "weightedError")
-            ) > checkpoint_score(best_overall["metrics"], config.get("selectionMetric", "weightedError")):
-                best_overall = value
             if best_mixed is None or value["metrics"]["mixedLanguage"]["macroF1"] > best_mixed["metrics"]["mixedLanguage"]["macroF1"]:
                 best_mixed = value
-        mixed_floor = (
-            initial_metrics["mixedLanguage"]["macroF1"] - config["mixedF1Tolerance"]
-            if initial_metrics else -math.inf
-        )
-        def eligible_candidate(value):
-            if tree_objective:
-                return selection_eligible(
-                    value["metrics"], config.get("fixedBaselineMetrics") or initial_metrics, config, objective
-                )
-            return value["metrics"]["mixedLanguage"]["macroF1"] >= mixed_floor
-
-        eligible = max(
-            (value for value in epoch_candidates if eligible_candidate(value)),
-            key=lambda value: checkpoint_score(value["metrics"], config.get("selectionMetric", "weightedError")),
-            default=None,
-        )
         current_failures = selection_issues(
             metrics, config.get("fixedBaselineMetrics") or initial_metrics, config, objective
         )[0] if tree_objective else []
         epoch_result["selectionFailures"] = current_failures
-        improved = (
-            eligible is not None and
-            (best is None or checkpoint_score(
-                eligible["metrics"], config.get("selectionMetric", "weightedError")
-            ) > checkpoint_score(best["metrics"], config.get("selectionMetric", "weightedError")) + config["minDelta"])
-        )
+        improved = checkpoint_score(best_overall["metrics"], selection_metric) > previous_score + config["minDelta"]
         if improved:
-            best = eligible
             stale_epochs = 0
-            suffix = f"best checkpoint: {best['source']}"
+            suffix = f"best checkpoint: {best_overall['source']}"
         else:
             stale_epochs += 1
-            suffix = (f"guarded: {'; '.join(current_failures)}"
-                      if eligible is None and current_failures
-                      else f"no improvement {stale_epochs}/{config['patience']}")
+            suffix = f"no improvement {stale_epochs}/{config['patience']}"
+        if current_failures:
+            suffix += f"; promotion guarded: {'; '.join(current_failures)}"
         log(
             f"epoch {epoch}/{config['epochs']} {evaluation_mode} loss={metrics['loss']:.4f} "
             f"accuracy={format_percent(metrics['accuracy'])} "
@@ -1574,20 +1547,20 @@ def main() -> None:
             f"[{suffix}]"
         )
         saved_selection = save_training_result(
-            directory, config, best, best_overall, best_mixed, history, initial_metrics,
+            directory, config, best_overall, best_mixed, history, initial_metrics,
         )
         if saved_selection["status"] == "diagnostic-only":
-            log("saved diagnostic checkpoint; selection guards: " + "; ".join(saved_selection["failures"]))
+            log("saved best checkpoint for diagnostics; promotion guards: " + "; ".join(saved_selection["failures"]))
         calibration_pending = tree_objective and config.get("calibrationEpochs", 0) > 0 and stage != "calibration"
-        if best is not None and stale_epochs >= config["patience"] and not calibration_pending and (
+        if stale_epochs >= config["patience"] and not calibration_pending and (
             tree_objective or config.get("teacherMode", False) or qat
         ):
-            log(f"early stopping at epoch {epoch}; restoring best checkpoint from epoch {best['epoch']}")
+            log(f"early stopping at epoch {epoch}; restoring best checkpoint from epoch {best_overall['epoch']}")
             break
 
-    save_training_result(directory, config, best, best_overall, best_mixed, history, initial_metrics)
-    if best is None:
-        log("no checkpoint passed selection guards; exported best weighted-error candidate for diagnostics only")
+    selection = save_training_result(directory, config, best_overall, best_mixed, history, initial_metrics)
+    if selection["status"] == "diagnostic-only":
+        log("best checkpoint saved for diagnostics; promotion guards did not pass")
 
 
 if __name__ == "__main__":

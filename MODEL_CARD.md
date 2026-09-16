@@ -30,6 +30,8 @@ The promoted deployed-int6 checkpoint scores:
 
 These figures come from the held-out verification corpus recorded in the checkpoint. Accuracy is dominated by the natural part distribution and is not equal across languages or classes. The website's Top-25 weighted agreement is a separate GitHub-popularity-weighted comparison and must not be substituted for the checkpoint score.
 
+The website comparison regenerates Shiki labels with the current taxonomy for every benchmark run, scoring all engines, including the deployed model, against those fresh targets. The checkpoint's verification digest pins the original source selection; the generated comparison also records a separate digest of the regenerated labels. The checkpoint scores above describe the taxonomy used at promotion.
+
 ## Limitations
 
 - Accuracy varies substantially by language, source style, and class.

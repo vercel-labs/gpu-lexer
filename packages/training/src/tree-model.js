@@ -1,6 +1,4 @@
-import { createReadStream } from "node:fs";
-import readline from "node:readline";
-import { createGunzip } from "node:zlib";
+import { readShard } from "./read-shard.js";
 
 import { prepareTreeSource, releaseTreePrepared } from "../../core/src/prepare-tree.js";
 import { TREE_TOKENIZER_VERSION } from "../../core/src/constants.js";
@@ -227,14 +225,9 @@ export async function loadTreeShard(path, maxTokens = Infinity, hashBuckets = TR
   let tokenCount = 0;
   let fileCount = 0;
   const sourceNames = new Set();
-  const lines = readline.createInterface({
-    input: createReadStream(path).pipe(createGunzip()), crlfDelay: Infinity,
-  });
   try {
-    for await (const line of lines) {
-      if (!line) continue;
+    for await (const item of readShard(path)) {
       if (tokenCount >= maxTokens || fileCount >= maxFiles) break;
-      const item = JSON.parse(line);
       if (excludeSources?.has(`${item.origin}\0${item.sourceName}\0${item.path}`)) continue;
       const family = item.family ?? languageFamily(item.language ?? "unknown");
       if (excludedFamilies.has(family) || includedFamilies && !includedFamilies.has(family)) continue;
@@ -246,6 +239,7 @@ export async function loadTreeShard(path, maxTokens = Infinity, hashBuckets = TR
       tokenCount += record.targets.length;
       fileCount += 1;
       sourceNames.add(item.sourceName);
+      if (tokenCount >= maxTokens || fileCount >= maxFiles) break;
     }
   } catch (error) {
     if (error?.code === "ENOENT") throw new Error(`missing corpus shard ${path}; run corpus:prepare first`, { cause: error });

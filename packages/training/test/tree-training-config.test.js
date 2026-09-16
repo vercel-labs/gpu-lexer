@@ -3,11 +3,11 @@ import test from "node:test";
 import {
   agreementLanguageMultipliers, countClasses, enrollMatureLanguageGuards, focusedReplayConfig,
   majorLanguageErrorRows,
-  shouldAutoPromoteTreeRun, treeTrainingSchedule,
+  shouldAutoPromoteTreeRun, shouldPolishTreeCheckpoint, treeTrainingSchedule,
   treeWarmStartMismatch, validateTreeTeacher,
 } from "../src/train-tree.js";
 import { createTreeModel, treeAuxiliaryNames, treeTensorNamesFor } from "../src/tree-model.js";
-import { classNames } from "../src/classes.js";
+import { classNames, taxonomyVersion } from "../src/classes.js";
 import { treeTrainingPolicy, assertObjectiveCoverage } from "../src/tree-training-policy.js";
 import { experimentPlan } from "../src/tree-experiments.js";
 
@@ -91,10 +91,31 @@ test("major languages below ten percent error become persistent one-point guards
     scss: { support: 1000, errors: 100, plainSupport: 500 },
     svelte: { support: 1000, errors: 20, plainSupport: 50 },
   } };
-  const updated = enrollMatureLanguageGuards(objective, verification, ["java"]);
+  const updated = enrollMatureLanguageGuards(objective, verification, {
+    taxonomyVersion, config: { languageObjective: { matureLanguages: ["java"] } },
+  });
   assert.deepEqual(updated.matureLanguages, ["java", "jsx"]);
   assert.equal(updated.maxMatureErrorIncrease, 0.01);
   assert.equal(updated.maxMatureFalseColorIncrease, 0.01);
+});
+
+test("mature guards are rebuilt from current labels when checkpoint taxonomy changes or is unknown", async () => {
+  const objective = (await treeTrainingPolicy()).languageObjective;
+  const verification = { perLanguage: {
+    java: { support: 1000, errors: 200, plainSupport: 500 },
+    jsx: { support: 1000, errors: 50, plainSupport: 500 },
+    javascript: { support: 1000, errors: 10, plainSupport: 500 },
+  } };
+  for (const version of [taxonomyVersion - 1, null, undefined]) {
+    const previous = { taxonomyVersion: version,
+      config: { taxonomyVersion, languageObjective: { matureLanguages: ["java"] } } };
+    const updated = enrollMatureLanguageGuards(objective, verification, previous);
+    assert.deepEqual(updated.matureLanguages, ["jsx"]);
+    assert.deepEqual(updated.strictLanguages, objective.strictLanguages);
+    assert.deepEqual(previous.config.languageObjective.matureLanguages, ["java"]);
+  }
+  const explicit = enrollMatureLanguageGuards({ ...objective, matureLanguages: ["java"] }, verification);
+  assert.deepEqual(explicit.matureLanguages, ["java", "jsx"]);
 });
 
 test("major-language summary reports exact-language hard guards in objective order", () => {
@@ -138,7 +159,7 @@ test("tree warm start accepts the promoted shape and explains architecture chang
     /context hybrid -> tree, hash 256 -> 128/);
 });
 
-test("compatible warm starts use a short polish schedule while fresh runs retain full training", () => {
+test("polish uses a short schedule while full training and targeted runs retain their schedules", () => {
   assert.deepEqual(treeTrainingSchedule({}, true),
     { epochs: 10, fineTuneEpochs: 2, agreementEpochs: 6, calibrationEpochs: 2 });
   assert.deepEqual(treeTrainingSchedule({}, false),
@@ -147,6 +168,19 @@ test("compatible warm starts use a short polish schedule while fresh runs retain
     { epochs: 32, fineTuneEpochs: 4, agreementEpochs: 0, calibrationEpochs: 2 });
   assert.deepEqual(treeTrainingSchedule({ epochs: 10, calibrationEpochs: 3 }, true),
     { epochs: 10, fineTuneEpochs: 3, agreementEpochs: 6, calibrationEpochs: 3 });
+});
+
+test("changed or unrecorded taxonomies use full training instead of polish", () => {
+  for (const metadata of [undefined, {}, { taxonomyVersion: taxonomyVersion - 1 },
+    { taxonomyVersion: null, config: { taxonomyVersion } }]) {
+    const polish = shouldPolishTreeCheckpoint(metadata);
+    assert.equal(polish, false);
+    assert.equal(treeTrainingSchedule({}, polish).epochs, 32);
+  }
+  const current = { taxonomyVersion };
+  assert.equal(shouldPolishTreeCheckpoint(current), true);
+  assert.equal(shouldPolishTreeCheckpoint(current, { teacherMode: true }), false);
+  assert.equal(shouldPolishTreeCheckpoint(current, { targetedFineTune: true }), false);
 });
 
 test("a compatible consistency teacher remains valid when verification data changes", () => {

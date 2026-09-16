@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 
 import { readWebsiteExamples } from "./website-examples.js";
 import { TREE_TOKENIZER_VERSION } from "../../core/src/constants.js";
+import { taxonomyVersion } from "./classes.js";
 
 export const corpusRoot = new URL("../data/generated/", import.meta.url);
 export const manifestUrl = new URL("../data/corpus.json", import.meta.url);
@@ -199,6 +200,7 @@ export function baseCorpusConfigurationDigest(manifest, popularity, split) {
   else delete policy.minimumLanguageTokens;
   return createHash("sha256").update(JSON.stringify({
     labelSchemaVersion: 7,
+    taxonomyVersion,
     tokenizerVersion: TREE_TOKENIZER_VERSION,
     selectionSchemaVersion: 2,
     policy,

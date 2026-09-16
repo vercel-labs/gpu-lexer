@@ -6,10 +6,11 @@ import { relative, sep } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
-import { createGunzip, createGzip } from "node:zlib";
-import readline from "node:readline";
+import { createGzip } from "node:zlib";
 
 import { createLabeler, sourceParts } from "./label.js";
+import { readShard } from "./read-shard.js";
+import { taxonomyVersion } from "./classes.js";
 import { auditRepresentativeFiles } from "./source-label-baseline.js";
 import { clipSourceLabels } from "./tree-label-alignment.js";
 import { minifySource } from "./minify-source.js";
@@ -45,7 +46,7 @@ const summary = {
   ...previousSummary,
   schemaVersion: 6,
   generatedAt: new Date().toISOString(),
-  labeler: { name: "shiki", version: "4.4.3", taxonomyVersion: 4 },
+  labeler: { name: "shiki", version: "4.4.3", taxonomyVersion },
   labelAudit: { teacher: labelAudit.teacher, files: labelAudit.groups.direct.map(({ path, sha256 }) => ({ path, sha256 })) },
   popularity: popularity.source,
   policy: manifest.policy,
@@ -146,12 +147,7 @@ async function reusableVerificationBase(summary) {
   if (actual !== expected) return null;
   const path = new URL("verification.jsonl.gz", output);
   const records = [];
-  const lines = readline.createInterface({
-    input: createReadStream(path).pipe(createGunzip()), crlfDelay: Infinity,
-  });
-  for await (const line of lines) {
-    if (!line) continue;
-    const record = JSON.parse(line);
+  for await (const record of readShard(path)) {
     if (record.origin !== "website") records.push(record);
   }
   const summaryFromShard = summarize(records);
@@ -378,6 +374,7 @@ async function writeShard(split, records) {
       source: record.source,
       // Additive per-item version: partial builds may coexist with older shards.
       sourceLabelsVersion: 1,
+      taxonomyVersion,
       sourceLabels: clipSourceLabels(record.sourceLabels, record.source.length),
     };
     if (!writer.write(`${JSON.stringify(item)}\n`)) await new Promise((resolve) => writer.once("drain", resolve));

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "generatedAt": "2026-09-09T04:48:41.441Z",
+  "generatedAt": "2026-09-16T03:18:44.880Z",
   "labeler": {
     "name": "shiki",
     "version": "4.4.3",
-    "taxonomyVersion": 4
+    "taxonomyVersion": 5
   },
   "popularity": {
     "page": "https://innovationgraph.github.com/global-metrics/programming-languages",
@@ -328,15 +328,15 @@
         "diff-hunk": 27676
       },
       "classes": {
-        "keyword": 146115,
-        "plain": 1282427,
-        "string": 758669,
+        "keyword": 172154,
+        "plain": 727272,
+        "string": 758355,
+        "operator": 679448,
         "comment": 454621,
-        "function": 83087,
-        "operator": 123940,
+        "function": 83057,
         "number": 42024,
         "constant": 29239,
-        "type": 79878
+        "type": 53830
       },
       "sources": {
         "sveltejs/svelte": 76792,
@@ -387,8 +387,8 @@
         "bootstrap": 64576
       },
       "supervision": {
-        "downweightedTokens": 43830,
-        "meanConfidence": 0.992818155555684
+        "meanConfidence": 0.9546537450990906,
+        "downweightedTokens": 274276
       },
       "rejected": [
         {
@@ -409,7 +409,15 @@
           "language": "javascript",
           "error": "Cannot read properties of undefined (reading 'startIndex')"
         }
-      ]
+      ],
+      "relabeling": {
+        "files": 4344,
+        "changed": 4078,
+        "taxonomyVersion": 5,
+        "previousSha256": "7e3ef894002e35dc3fa0d7e1a2d270f2b6831e0a1ebce8139b6c825bb5efd637",
+        "sha256": "7e6e5131287c51c544d65661f2384b47a08dd061e036449f4c11b14e4d8d6268",
+        "sourceSha256": "9830419495e4034dbea4de5f12b98fc2f8373275430f1e03fd0d9371202a2ec3"
+      }
     },
     "verification": {
       "configurationSha256": "cc66abed47fb5f5845e1aa4d6683282e4d95ff7b534ac837bee6c8bfcd9e13de",
@@ -634,15 +642,15 @@
         "diff-hunk": 2444
       },
       "classes": {
-        "keyword": 27509,
-        "plain": 171224,
-        "string": 93769,
-        "function": 12500,
-        "operator": 20687,
-        "type": 12407,
-        "constant": 4582,
+        "keyword": 31266,
+        "operator": 93379,
+        "plain": 98780,
+        "string": 93564,
+        "function": 12487,
+        "type": 8621,
+        "constant": 4584,
         "comment": 104250,
-        "number": 7516
+        "number": 7513
       },
       "sources": {
         "remix-run/react-router": 3558,
@@ -785,8 +793,8 @@
         "website:api-example": 73
       },
       "supervision": {
-        "downweightedTokens": 8908,
-        "meanConfidence": 0.9902617997670335
+        "meanConfidence": 0.9531036676405452,
+        "downweightedTokens": 43084
       },
       "rejected": [],
       "base": {
@@ -938,15 +946,15 @@
           "diff-hunk": 2444
         },
         "classes": {
-          "keyword": 16130,
-          "plain": 88158,
-          "string": 59623,
-          "function": 6323,
-          "operator": 8416,
-          "type": 5578,
-          "constant": 2386,
+          "keyword": 18342,
+          "operator": 44610,
+          "plain": 52212,
+          "string": 59418,
+          "function": 6310,
+          "type": 3337,
+          "constant": 2388,
           "comment": 50989,
-          "number": 2397
+          "number": 2394
         },
         "sources": {
           "remix-run/react-router": 3558,
@@ -997,8 +1005,8 @@
           "modern-normalize": 546
         },
         "supervision": {
-          "downweightedTokens": 5011,
-          "meanConfidence": 0.9895933333333247
+          "meanConfidence": 0.9464626797385162,
+          "downweightedTokens": 25970
         }
       },
       "websiteExamples": {
@@ -1098,6 +1106,14 @@
           "probe-julia",
           "api-example"
         ]
+      },
+      "relabeling": {
+        "files": 1929,
+        "changed": 1677,
+        "taxonomyVersion": 5,
+        "previousSha256": "3aa93cafea841d0a0aa127b280ff660d1ec8b8d3b032ab000b5f66524e9129e8",
+        "sha256": "6757c82f635faef58fa7b9526ed1a0d7531755079004c0d46d5fa193cc36e0d2",
+        "sourceSha256": "84fe5418b21eac5cbd22088771f9fe2a93563882a4f1c3dd6160006506568c0e"
       }
     },
     "mining": {
@@ -1218,12 +1234,12 @@
         "diff-hunk": 2093
       },
       "classes": {
-        "plain": 156415,
-        "type": 9060,
-        "keyword": 7306,
-        "string": 93086,
+        "operator": 60075,
+        "keyword": 11482,
+        "plain": 108888,
+        "type": 4880,
+        "string": 93087,
         "comment": 9594,
-        "operator": 12545,
         "function": 3564,
         "constant": 3892,
         "number": 4538
@@ -1234,8 +1250,8 @@
         "highlightjs/highlight.js": 98831
       },
       "supervision": {
-        "downweightedTokens": 33100,
-        "meanConfidence": 0.9284607712417946
+        "meanConfidence": 0.8807825751633251,
+        "downweightedTokens": 61726
       },
       "rejected": [
         {
@@ -1244,7 +1260,15 @@
           "language": "javascript",
           "error": "Cannot read properties of undefined (reading 'startIndex')"
         }
-      ]
+      ],
+      "relabeling": {
+        "files": 448,
+        "changed": 393,
+        "taxonomyVersion": 5,
+        "previousSha256": "c9fff8a4a79f07a9e6f4e7bb8aba7d1ef6b5fd02bca9171eb02be6a52940e489",
+        "sha256": "699271e6b31dbeacf727c38d99906bb20021e4482628f05689356cc52ce8429d",
+        "sourceSha256": "50b053c548111088d2ae84dd0f1eda94f41aa36f286f6cdaca5aea33bab1cfec"
+      }
     }
   },
   "labelAudit": {

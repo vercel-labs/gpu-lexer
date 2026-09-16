@@ -3,7 +3,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { classNames } from "./classes.js";
+import { classNames, taxonomyVersion } from "./classes.js";
 import { loadDeployedCheckpoint, loadFloatCheckpoint } from "./checkpoint.js";
 import { dequantizeTensors, quantizeTensors } from "./quantization.js";
 import { resolveTorchRuntime, runTorchTraining } from "./torch-runner.js";
@@ -52,10 +52,10 @@ export async function trainTree(options = {}) {
   }
   if (initial && !teacherMode) initial = await loadDeployedCheckpoint(initial.path);
   if (initial && teacherMode) throw new Error("tree teacher training cannot continue a runtime checkpoint");
-  // Ordinary compatible continuations polish the deployed checkpoint. Targeted
-  // failure fine-tuning supplies fineTuneMetadata and retains its own schedule.
+  // Polish only checkpoints trained on this taxonomy. Changed labels need
+  // the full learning schedule while retaining compatible starting weights.
   const targetedFineTune = Boolean(options.fineTuneMetadata);
-  const polishMode = Boolean(initial && !teacherMode && !targetedFineTune);
+  const polishMode = shouldPolishTreeCheckpoint(initial?.metadata, { teacherMode, targetedFineTune });
   const schedule = treeTrainingSchedule(options, polishMode, targetedFineTune);
   let baselineRun = options.baselineRun;
   if (!teacherMode && baselineRun === undefined && active?.metadata.model === TREE_MODEL) baselineRun = active.path;
@@ -78,7 +78,7 @@ export async function trainTree(options = {}) {
   const hashBuckets = options.hashBuckets ?? shapeSource?.metadata.architecture?.lexemeHashBuckets ?? defaultHashBuckets;
   const config = {
     ...policy,
-    model: TREE_MODEL, polishMode, epochs: schedule.epochs, fineTuneEpochs: schedule.fineTuneEpochs,
+    model: TREE_MODEL, polishMode, taxonomyVersion, epochs: schedule.epochs, fineTuneEpochs: schedule.fineTuneEpochs,
     agreementEpochs: schedule.agreementEpochs,
     headTuneEpochs: options.headTuneEpochs ?? 0, stagedFineTune: options.stagedFineTune ?? false,
     treeContext, localRadius: treeContext === "hybrid" ? 2 : 1,
@@ -149,6 +149,10 @@ export async function trainTree(options = {}) {
     ? `warm-starting from promoted tree checkpoint ${initial.metadata.runId}`
     : migrated ? `migrating promoted feature-v2 checkpoint ${migrationSource.metadata.runId} to feature v3`
       : "starting from random tree weights");
+  if (initial && !polishMode && !targetedFineTune) {
+    log(`taxonomy ${initial.metadata.taxonomyVersion ?? "unrecorded"} -> ${taxonomyVersion}; ` +
+      "using the full training schedule with warm-started weights");
+  }
   log("loading simple-part tree corpus");
   const excludedWebsiteSources = websiteExampleSourceKeys();
   const [training, verification, trainDigest, verificationDigest] = await Promise.all([
@@ -176,7 +180,7 @@ export async function trainTree(options = {}) {
   config.languageObjective = enrollMatureLanguageGuards(
     config.languageObjective,
     config.fixedBaselineMetrics,
-    active?.metadata.config?.languageObjective?.matureLanguages,
+    active?.metadata,
   );
   if (config.fixedBaselineMetrics) {
     config.fixedBaselineMetrics.languageObjective = config.languageObjective;
@@ -284,6 +288,8 @@ export async function trainTree(options = {}) {
     model: TREE_MODEL, featureVersion: TREE_FEATURE_VERSION,
     tokenizerVersion: TREE_TOKENIZER_VERSION, createdAt: run.createdAt, runId: run.id,
     selectedEpoch: result.best.epoch, selectedSource: result.best.source ?? "raw",
+    taxonomyVersion: result.best.epoch === 0
+      ? (initial ?? migrationSource)?.metadata.taxonomyVersion ?? null : taxonomyVersion,
     config, inputSize: config.inputSize, hiddenSize: config.hiddenSize,
     architecture: {
       direction: "bidirectional", tree: "scale-aware-butterfly-binary", blockParts: 32,
@@ -324,7 +330,7 @@ export async function trainTree(options = {}) {
   if (result.recoveryDirectory) await rm(result.recoveryDirectory, { recursive: true, force: true });
   log(`saved ${teacherMode ? "offline tree teacher" : "tree experiment"} ${run.id} to ${run.path}`);
   if (result.selection?.status === "diagnostic-only") {
-    log(`diagnostic only; checkpoint selection guards failed: ${result.selection.failures.join("; ")}`);
+    log(`best checkpoint saved for diagnostics; promotion guards failed: ${result.selection.failures.join("; ")}`);
   }
   log(`${teacherMode ? `float32=${floatWeights.byteLength}` : `int${weightBits}=${quantized.data.byteLength}`} bytes / ` +
     `weighted error=${percent(metadata.verification.weightedError)} / accuracy=${percent(metadata.verification.accuracy)} / ` +
@@ -336,6 +342,10 @@ export async function trainTree(options = {}) {
       `error=${percent(row.errorRate)} hard-guard=${row.hardGuard ? "yes" : "no"}`);
   }
   return { path: run.path, metadata, selection: result.selection, model: selected };
+}
+
+export function shouldPolishTreeCheckpoint(metadata, { teacherMode = false, targetedFineTune = false } = {}) {
+  return Boolean(metadata && !teacherMode && !targetedFineTune && metadata.taxonomyVersion === taxonomyVersion);
 }
 
 export function treeTrainingSchedule(options = {}, polishMode = false, targetedFineTune = false) {
@@ -399,9 +409,11 @@ export function focusedReplayConfig(options = {}) {
   return { focusedReplay, focusedReplaySteps, focusedReplayLearningRate, focusedReplayFinalLearningRate };
 }
 
-export function enrollMatureLanguageGuards(objective, verification, previous = []) {
+export function enrollMatureLanguageGuards(objective, verification, previousCheckpoint = null) {
   const strict = new Set(objective.strictLanguages);
-  const mature = new Set(previous ?? objective.matureLanguages ?? []);
+  const previous = previousCheckpoint?.taxonomyVersion === taxonomyVersion
+    ? previousCheckpoint.config?.languageObjective?.matureLanguages ?? [] : [];
+  const mature = new Set([...(objective.matureLanguages ?? []), ...previous]);
   for (const row of majorLanguageErrorRows(verification, objective)) {
     const metrics = verification.perLanguage[row.language];
     if (!strict.has(row.language) && row.errorRate < 0.1 &&

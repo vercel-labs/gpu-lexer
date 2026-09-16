@@ -1,3 +1,5 @@
+export const taxonomyVersion = 5;
+
 export const classNames = Object.freeze([
   "plain",
   "comment",
