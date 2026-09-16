@@ -1,6 +1,6 @@
 {
   "name": "gpu-lexer",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Tiny language-agnostic WebGPU syntax lexer",
   "author": "Shu Ding (https://x.com/shuding)",
   "repository": {
