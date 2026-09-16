@@ -653,6 +653,15 @@ export function Demo() {
     }
   }, [activeFile])
 
+  useEffect(() => {
+    const editor = editorRef.current
+    if (!editor) return
+    // React's synthetic onBeforeInput does not expose the native inputType.
+    // Keep Enter as a text newline so textContent and highlight offsets agree.
+    editor.addEventListener('beforeinput', insertLineBreak)
+    return () => editor.removeEventListener('beforeinput', insertLineBreak)
+  }, [])
+
   async function openFile(file: DemoFile, signal: AbortSignal) {
     const currentRequest = ++requestId.current
     clearTimeout(editHighlightTimer.current)
@@ -756,12 +765,13 @@ export function Demo() {
     scheduleEditorHighlight()
   }
 
-  function insertLineBreak(event: React.FormEvent<HTMLPreElement>) {
-    const inputType = (event.nativeEvent as InputEvent).inputType
+  function insertLineBreak(event: InputEvent) {
+    const inputType = event.inputType
     if (inputType !== 'insertParagraph' && inputType !== 'insertLineBreak')
       return
     event.preventDefault()
-    const editor = event.currentTarget
+    const editor = editorRef.current
+    if (!editor) return
     insertTextAtSelection(editor, '\n')
     scheduleEditorHighlight()
   }
@@ -858,7 +868,6 @@ export function Demo() {
                 contentEditable='plaintext-only'
                 data-error={state.kind === 'error' ? '' : undefined}
                 data-placeholder={placeholder}
-                onBeforeInput={insertLineBreak}
                 onInput={(event) => {
                   const inputType = (event.nativeEvent as InputEvent).inputType
                   scheduleEditorHighlight(inputType === 'insertFromPaste')
@@ -986,6 +995,10 @@ function insertTextAtSelection(root: HTMLElement, text: string) {
   range.deleteContents()
   const node = document.createTextNode(text)
   range.insertNode(node)
+  // A trailing newline needs a final line box so the caret stays after it.
+  if (root.textContent?.endsWith('\n') && root.lastChild?.nodeName !== 'BR') {
+    root.append(document.createElement('br'))
+  }
   range.setStart(node, node.data.length)
   range.collapse(true)
   selection.removeAllRanges()
