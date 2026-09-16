@@ -185,7 +185,7 @@ export async function trainTree(options = {}) {
   if (config.fixedBaselineMetrics) {
     config.fixedBaselineMetrics.languageObjective = config.languageObjective;
   }
-  config.trainingLanguageMultipliers = agreementLanguageMultipliers(
+  config.trainingLanguageMultipliers = config.languageGuards === "advisory" ? {} : agreementLanguageMultipliers(
     config.fixedBaselineMetrics,
     [...config.languageObjective.strictLanguages, ...config.languageObjective.matureLanguages],
     0.9,
@@ -204,7 +204,7 @@ export async function trainTree(options = {}) {
     }
     config.migrationExpectedAccuracy = config.fixedBaselineMetrics.accuracy;
   }
-  const fine = options.naturalReplay || polishMode ? training.records : upsampleMixedRecords(
+  const fine = options.naturalReplay || polishMode || config.selectionMetric === "accuracy" ? training.records : upsampleMixedRecords(
     balanceLanguageRecords(training.records, options.minimumFamilyTokens ?? 10_000), 2,
   );
   const pretrainWeights = classWeights(training.classCounts);
@@ -249,6 +249,7 @@ export async function trainTree(options = {}) {
     `classifier=${config.classifierSize}; word-hash=${config.hashBuckets}; ${config.precision}; ` +
     `${parameterCount.toLocaleString("en-US")} parameters / ` +
     `${teacherMode ? parameterCount * 4 : packedBytes} ${teacherMode ? "float" : "packed"} bytes)`);
+  log(`checkpoint selection=${config.selectionMetric}; language guards=${config.languageGuards}`);
   const supervisedTrain = countSupervised(training.records);
   const supervisedVerification = countSupervised(verification.records);
   log(`loaded train=${training.tokenCount.toLocaleString("en-US")} parts ` +
@@ -339,7 +340,7 @@ export async function trainTree(options = {}) {
   log(`major-language held-out error (${majorLanguages.length} language variants):`);
   for (const row of majorLanguages) {
     log(`  ${row.language}${row.family === row.language ? "" : ` (${row.family})`}: ` +
-      `error=${percent(row.errorRate)} hard-guard=${row.hardGuard ? "yes" : "no"}`);
+      `error=${percent(row.errorRate)} hard-guard=${config.languageGuards === "strict" && row.hardGuard ? "yes" : "no"}`);
   }
   return { path: run.path, metadata, selection: result.selection, model: selected };
 }
@@ -568,7 +569,7 @@ function createRandom(seed) {
 function parse(arguments_) {
   const result = {};
   const integer = new Set(["agreementEpochs", "calibrationEpochs", "epochs", "fineTuneEpochs", "hiddenSize", "classifierSize", "hashBuckets", "batchTokens", "patience", "seed", "progressEvery", "qatEpochs", "emaStartEpoch", "maxTrainTokens", "maxVerificationTokens", "minimumFamilyTokens", "weightBits", "distillationWarmupEpochs", "distillationRampEpochs", "maxHardReplayRepeats"]);
-  const aliases = { "language-objective": "languageObjectivePath", "baseline-run": "baselineRun", "initial-run": "initialRun", "class-weight-power": "classWeightPower", "agreement-epochs": "agreementEpochs", "calibration-epochs": "calibrationEpochs", context: "treeContext", "train-shard": "trainShard", "verification-shard": "verificationShard", "mining-shard": "miningShard", epochs: "epochs", "fine-tune-epochs": "fineTuneEpochs", hidden: "hiddenSize", classifier: "classifierSize", hash: "hashBuckets", bits: "weightBits", batch: "batchTokens", patience: "patience", seed: "seed", "progress-every": "progressEvery", "qat-epochs": "qatEpochs", "ema-start-epoch": "emaStartEpoch", "max-train-tokens": "maxTrainTokens", "max-verification-tokens": "maxVerificationTokens", "min-family-tokens": "minimumFamilyTokens", "boundary-loss": "boundaryLossMultiplier", "replay-fraction": "replayFraction", "max-replay-repeats": "maxHardReplayRepeats", teacher: "teacherMode", fresh: "fresh", "teacher-run": "teacherRun", "distillation-weight": "distillationWeight", "distillation-temperature": "distillationTemperature", "distillation-warmup": "distillationWarmupEpochs", "distillation-ramp": "distillationRampEpochs", device: "device", python: "python", output: "output", lr: "learningRate", "final-lr": "finalLearningRate", "agreement-lr": "agreementLearningRate", "agreement-final-lr": "agreementFinalLearningRate", "calibration-lr": "calibrationLearningRate", "calibration-final-lr": "calibrationFinalLearningRate", "failure-lr": "focusedReplayLearningRate", "failure-final-lr": "focusedReplayFinalLearningRate" };
+  const aliases = { "language-guards": "languageGuards", "selection-metric": "selectionMetric", "language-objective": "languageObjectivePath", "baseline-run": "baselineRun", "initial-run": "initialRun", "class-weight-power": "classWeightPower", "agreement-epochs": "agreementEpochs", "calibration-epochs": "calibrationEpochs", context: "treeContext", "train-shard": "trainShard", "verification-shard": "verificationShard", "mining-shard": "miningShard", epochs: "epochs", "fine-tune-epochs": "fineTuneEpochs", hidden: "hiddenSize", classifier: "classifierSize", hash: "hashBuckets", bits: "weightBits", batch: "batchTokens", patience: "patience", seed: "seed", "progress-every": "progressEvery", "qat-epochs": "qatEpochs", "ema-start-epoch": "emaStartEpoch", "max-train-tokens": "maxTrainTokens", "max-verification-tokens": "maxVerificationTokens", "min-family-tokens": "minimumFamilyTokens", "boundary-loss": "boundaryLossMultiplier", "replay-fraction": "replayFraction", "max-replay-repeats": "maxHardReplayRepeats", teacher: "teacherMode", fresh: "fresh", "teacher-run": "teacherRun", "distillation-weight": "distillationWeight", "distillation-temperature": "distillationTemperature", "distillation-warmup": "distillationWarmupEpochs", "distillation-ramp": "distillationRampEpochs", device: "device", python: "python", output: "output", lr: "learningRate", "final-lr": "finalLearningRate", "agreement-lr": "agreementLearningRate", "agreement-final-lr": "agreementFinalLearningRate", "calibration-lr": "calibrationLearningRate", "calibration-final-lr": "calibrationFinalLearningRate", "failure-lr": "focusedReplayLearningRate", "failure-final-lr": "focusedReplayFinalLearningRate" };
   for (let index = 0; index < arguments_.length; index++) {
     if (arguments_[index] === "--") continue;
     const [raw, inline] = arguments_[index].replace(/^--/, "").split("=", 2);

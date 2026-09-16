@@ -7,6 +7,9 @@ import {
 const BLOCK = 32;
 const HIDDEN = 32;
 const HEAP = BLOCK * 2 - 1;
+// Share the block's workgroup storage across four tokens at a time. Each
+// token keeps its original channel arithmetic and ordered recurrent updates.
+const LOCAL_TOKEN_LANES = 4;
 const CLASSIFIER_TOKENS = 8;
 const CLASSIFIER_LANES = 8;
 
@@ -204,15 +207,16 @@ fn hybrid_neighbor_prefixes(@builtin(global_invocation_id) id: vec3<u32>) {
   }
 }
 
-@compute @workgroup_size(${hidden})
+@compute @workgroup_size(${hidden * LOCAL_TOKEN_LANES})
 fn hybrid_scan_blocks(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_invocation_id) local: vec3<u32>) {
   let index = flat_group(group);
   if (index >= params.block_count) { return; }
   let block = blocks[index];
   let stream = streams[block.stream];
-  let h = local.x;
-  if (h < block.count) {
-    let token = block.start + h;
+  let h = local.x & ${hidden - 1}u;
+  let token_lane = local.x >> 5u;
+  if (local.x < block.count) {
+    let token = block.start + local.x;
     var previous = hybrid_neighbors[index].y;
     var next = hybrid_neighbors[index].x;
     for (var i = token; i > block.start; i--) {
@@ -223,37 +227,40 @@ fn hybrid_scan_blocks(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
       let kind = features[i * 2u] & 3u;
       if (kind != 1u && kind != 2u) { next = i; break; }
     }
-    hybrid_work[h * ${hidden}u].y = bitcast<f32>(previous);
-    hybrid_work[h * ${hidden}u].z = bitcast<f32>(next);
+    hybrid_work[local.x * ${hidden}u].y = bitcast<f32>(previous);
+    hybrid_work[local.x * ${hidden}u].z = bitcast<f32>(next);
   }
   workgroupBarrier();
-  for (var i = 0u; i < block.count; i++) {
+  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
     let value = local_state(block.start + i, h, stream.start, stream.start + stream.count,
       hybrid_work[i * ${hidden}u].yz);
     hybrid_local[(block.start + i) * ${hidden}u + h] = value;
     hybrid_work[i * ${hidden}u + h].x = value;
   }
   workgroupBarrier();
-  for (var i = 0u; i < block.count; i++) {
+  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
     let pair = affine_at(i, h);
     hybrid_work[i * ${hidden}u + h].y = pair.x;
     hybrid_work[i * ${hidden}u + h].z = pair.y;
   }
-  var forward = vec2<f32>(1.0, 0.0);
-  for (var i = 0u; i < block.count; i++) {
-    let value = hybrid_work[i * ${hidden}u + h];
-    forward = vec2<f32>(value.y * forward.x, value.y * forward.y + value.z);
+  workgroupBarrier();
+  if (token_lane == 0u) {
+    var forward = vec2<f32>(1.0, 0.0);
+    for (var i = 0u; i < block.count; i++) {
+      let value = hybrid_work[i * ${hidden}u + h];
+      forward = vec2<f32>(value.y * forward.x, value.y * forward.y + value.z);
+    }
+    var reverse = vec2<f32>(1.0, 0.0);
+    for (var i = block.count; i > 0u; i--) {
+      let value = hybrid_work[(i - 1u) * ${hidden}u + h];
+      reverse = vec2<f32>(value.y * reverse.x, value.y * reverse.y + value.z);
+    }
+    let at = (index * ${hidden}u + h) * 4u;
+    scratch[at] = forward.x;
+    scratch[at + 1u] = forward.y;
+    scratch[at + 2u] = reverse.x;
+    scratch[at + 3u] = reverse.y;
   }
-  var reverse = vec2<f32>(1.0, 0.0);
-  for (var i = block.count; i > 0u; i--) {
-    let value = hybrid_work[(i - 1u) * ${hidden}u + h];
-    reverse = vec2<f32>(value.y * reverse.x, value.y * reverse.y + value.z);
-  }
-  let at = (index * ${hidden}u + h) * 4u;
-  scratch[at] = forward.x;
-  scratch[at + 1u] = forward.y;
-  scratch[at + 2u] = reverse.x;
-  scratch[at + 3u] = reverse.y;
 }
 
 @compute @workgroup_size(${hidden * 8})
@@ -301,39 +308,43 @@ fn hybrid_scan_prefixes(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_
   }
 }
 
-@compute @workgroup_size(${hidden})
+@compute @workgroup_size(${hidden * LOCAL_TOKEN_LANES})
 fn hybrid_mix_tree_up(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_invocation_id) local: vec3<u32>) {
   let index = flat_group(group);
   if (index >= params.block_count) { return; }
   let block = blocks[index];
   let stream = streams[block.stream];
-  let h = local.x;
-  for (var i = 0u; i < block.count; i++) {
+  let h = local.x & ${hidden - 1}u;
+  let token_lane = local.x >> 5u;
+  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
     hybrid_work[i * ${hidden}u + h].x = hybrid_local[(block.start + i) * ${hidden}u + h];
   }
   workgroupBarrier();
-  for (var i = 0u; i < block.count; i++) {
+  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
     let pair = affine_at(i, h);
     hybrid_work[i * ${hidden}u + h].y = pair.x;
     hybrid_work[i * ${hidden}u + h].z = pair.y;
   }
-  let summary = (index * ${hidden}u + h) * 4u;
-  var state = scratch[summary + 1u];
-  for (var i = 0u; i < block.count; i++) {
-    let at = i * ${hidden}u + h;
-    let value = hybrid_work[at];
-    state = value.y * state + value.z;
-    hybrid_work[at].w = state;
-  }
-  state = scratch[summary + 3u];
-  for (var i = block.count; i > 0u; i--) {
-    let at = (i - 1u) * ${hidden}u + h;
-    let value = hybrid_work[at];
-    state = value.y * state + value.z;
-    hybrid_work[at].z = state;
+  workgroupBarrier();
+  if (token_lane == 0u) {
+    let summary = (index * ${hidden}u + h) * 4u;
+    var state = scratch[summary + 1u];
+    for (var i = 0u; i < block.count; i++) {
+      let at = i * ${hidden}u + h;
+      let value = hybrid_work[at];
+      state = value.y * state + value.z;
+      hybrid_work[at].w = state;
+    }
+    state = scratch[summary + 3u];
+    for (var i = block.count; i > 0u; i--) {
+      let at = (i - 1u) * ${hidden}u + h;
+      let value = hybrid_work[at];
+      state = value.y * state + value.z;
+      hybrid_work[at].z = state;
+    }
   }
   workgroupBarrier();
-  for (var i = 0u; i < block.count; i++) {
+  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
     let token = block.start + i;
     var sum = hybrid_local[token * ${hidden}u + h] + weights[${offset("stateMixBias")}u + h];
     let row = ${offset("stateMix")}u + h * ${hidden * 2}u;
@@ -352,7 +363,7 @@ fn hybrid_mix_tree_up(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
   loop {
     if (width <= 1u) { break; }
     let parent_width = width / 2u;
-    for (var parent = 0u; parent < parent_width; parent++) {
+    for (var parent = token_lane; parent < parent_width; parent += ${LOCAL_TOKEN_LANES}u) {
       let child = parent * 2u;
       var merged = 0.0;
       if (child < valid) {
@@ -378,7 +389,9 @@ fn hybrid_mix_tree_up(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
     depth += 1u;
   }
   let node = stream.tree_offset + stream.tree_power - 1u + block.local_index;
-  tree_up[node * ${hidden}u + h] = ${cast("hybrid_work[h].x")};
+  if (token_lane == 0u) {
+    tree_up[node * ${hidden}u + h] = ${cast("hybrid_work[h].x")};
+  }
 }
 
 @compute @workgroup_size(${hidden * 8})

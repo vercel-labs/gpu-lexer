@@ -88,6 +88,23 @@ const demoFolders: readonly DemoFolder[] = [
     ],
   },
   {
+    name: 'python',
+    files: [
+      {
+        id: 'requests-sessions',
+        name: 'sessions.py',
+        language: 'python',
+        url: 'https://raw.githubusercontent.com/psf/requests/main/src/requests/sessions.py',
+      },
+      {
+        id: 'pydantic-main',
+        name: 'pydantic.main.py',
+        language: 'python',
+        url: 'https://raw.githubusercontent.com/pydantic/pydantic/v2.11.7/pydantic/main.py',
+      },
+    ],
+  },
+  {
     name: 'vue',
     files: [
       {
@@ -203,23 +220,6 @@ const demoFolders: readonly DemoFolder[] = [
         name: 'test.xslt',
         language: 'xsl',
         url: 'https://raw.githubusercontent.com/github-linguist/linguist/d5214e1612c858ba14bf98edeca57e1683276f1d/samples/XSLT/test.xslt',
-      },
-    ],
-  },
-  {
-    name: 'python',
-    files: [
-      {
-        id: 'requests-sessions',
-        name: 'sessions.py',
-        language: 'python',
-        url: 'https://raw.githubusercontent.com/psf/requests/main/src/requests/sessions.py',
-      },
-      {
-        id: 'pydantic-main',
-        name: 'pydantic.main.py',
-        language: 'python',
-        url: 'https://raw.githubusercontent.com/pydantic/pydantic/v2.11.7/pydantic/main.py',
       },
     ],
   },

@@ -17,11 +17,11 @@ The CPU makes one mechanical pass over the source, splitting it into word runs, 
 
 The GPU embeds those sparse features into 32 learned channels. A five-part neighborhood and exact bidirectional affine scans add ordered local context. A shared-weight binary tree then combines 32-part blocks bottom-up, merges block roots across the whole source, and propagates context back down. A small classifier assigns one of nine visual classes to every original part in parallel; adjacent equal classes become the returned spans.
 
-The promoted runtime is format 9 (`local-affine-tree`), with 41,321 reachable browser weights encoded at six bits each. The current minified package is 27.46 KiB (28,115 bytes) with Brotli compression.
+The promoted runtime is format 9 (`local-affine-tree`), with 41,321 reachable browser weights encoded at six bits each. The current minified package is 27.64 KiB (28,305 bytes) with Brotli compression.
 
 ## Accuracy
 
-The model is trained against Shiki labels, so reported quality is agreement with Shiki rather than objective semantic correctness. The promoted checkpoint `20260909T074331.018Z` reaches 88.02% agreement and 79.09% styled macro F1 on the held-out verification corpus. The verification split is repository/package-disjoint from training and also includes the website examples. See [MODEL_CARD.md](MODEL_CARD.md) for the evaluation contract and limitations.
+The model is trained against Shiki labels, so reported quality is agreement with Shiki rather than objective semantic correctness. The promoted checkpoint `20260916T055435.785Z` reaches 83.02% agreement and 77.73% styled macro F1 on the held-out verification corpus. The verification split is repository/package-disjoint from training and also includes the website examples. See [MODEL_CARD.md](MODEL_CARD.md) for the evaluation contract and limitations.
 
 `gpu-lexer` can label unfamiliar languages because no language ID is supplied, but it may confidently misclassify ambiguous syntax. It is not a parser, compiler, linter, or security tool.
 
@@ -42,7 +42,7 @@ pnpm --filter @gpu-lexer/training corpus:prepare
 pnpm train
 ```
 
-`pnpm train` warm-starts the tracked promoted checkpoint by default. `pnpm fine-tune -- --file ./failure.tsx --lang tsx` adds a local failure example and performs guarded fine-tuning. Runs are written under `packages/training/runs/`. An eligible run that strictly improves untouched verification accuracy and passes language guards is promoted automatically; manual promotion is available through `pnpm model:promote <run-id-or-path>`.
+`pnpm train` warm-starts the tracked promoted checkpoint and optimizes overall token accuracy with natural class and language weights. Language regressions are reported as advisory diagnostics; use `--language-guards strict` to enforce the per-language limits. `pnpm fine-tune -- --file ./failure.tsx --lang tsx` adds a local failure example and retains strict language guards. Runs are written under `packages/training/runs/`. An eligible run that strictly improves deployed-int6 accuracy on the fixed verification corpus is promoted automatically; manual promotion is available through `pnpm model:promote <run-id-or-path>`.
 
 The tracked `packages/training/active/` directory contains the compact float and deployed checkpoint needed to reproduce continuation training from a clean clone. Promotion refreshes it atomically after verification.
 

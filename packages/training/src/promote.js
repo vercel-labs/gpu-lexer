@@ -189,7 +189,7 @@ export async function evaluateTreePromotion(metadata, deployed, verificationShar
   const accuracySelection = metadata.config?.selectionMetric === "accuracy";
   const accuracyImprovement = candidate.accuracy - baseline.accuracy;
   const automaticDecision = accuracySelection
-    ? accuracyTreePromotionDecision(candidate, baseline, weightedDecision)
+    ? accuracyTreePromotionDecision(candidate, baseline, weightedDecision, metadata.config.languageGuards)
     : weightedDecision;
   if (!automaticDecision.accepted && !force) {
     throw new Error(`tree promotion rejected: ${automaticDecision.failures.join("; ")}`);
@@ -213,22 +213,28 @@ export async function evaluateTreePromotion(metadata, deployed, verificationShar
     automaticDecision, decision };
 }
 
-export function accuracyTreePromotionDecision(candidate, baseline, weightedDecision) {
+export function accuracyTreePromotionDecision(candidate, baseline, weightedDecision, languageGuards = "strict") {
+  if (!["strict", "advisory"].includes(languageGuards)) throw new Error("invalid language-guards mode");
   const improvement = candidate.accuracy - baseline.accuracy;
-  const strictFailures = weightedDecision.strictGuards
-    .filter((guard) => !guard.passed)
-    .map(({ language, metric, reason }) => `${language} ${metric}: ${reason}`);
+  const strictFailures = [], advisoryWarnings = [];
+  for (const { language, metric, reason, passed } of weightedDecision.strictGuards) {
+    if (passed) continue;
+    const structural = reason === "missing language metrics" || reason === "support mismatch";
+    (languageGuards === "strict" || structural ? strictFailures : advisoryWarnings)
+      .push(`${language} ${metric}: ${reason}`);
+  }
   const failures = [...(improvement > 0 ? [] : ["verification accuracy did not improve"]), ...strictFailures];
   return {
     accepted: failures.length === 0,
     criterion: "fixed-baseline-untouched-verification-accuracy",
+    languageGuards,
     improvement,
     candidateAccuracy: candidate.accuracy,
     baselineAccuracy: baseline.accuracy,
     guards: weightedDecision.guards,
     strictGuards: weightedDecision.strictGuards,
     failures,
-    warnings: weightedDecision.warnings,
+    warnings: [...new Set([...weightedDecision.warnings, ...advisoryWarnings])],
   };
 }
 

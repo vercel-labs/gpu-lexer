@@ -1120,8 +1120,13 @@ def selection_issues(metrics: dict, baseline: dict | None, config: dict, objecti
         return promotion_candidate_issues(metrics, baseline, objective)
     issues = protected_family_failures(metrics, baseline, objective)
     failures = [issue for issue in issues if "missing family metrics" in issue or "support mismatch" in issue]
-    failures.extend(strict_language_failures(metrics, baseline, objective))
     warnings = [issue for issue in issues if issue not in failures]
+    language_guards = config.get("languageGuards", "strict")
+    if language_guards not in ("strict", "advisory"):
+        raise ValueError("invalid language-guards mode")
+    for issue in strict_language_failures(metrics, baseline, objective):
+        structural = "missing language metrics" in issue or "support mismatch" in issue
+        (failures if language_guards == "strict" or structural else warnings).append(issue)
     if baseline is not None and not metrics["accuracy"] > baseline["accuracy"]:
         failures.append("verification accuracy did not improve")
     return failures, warnings

@@ -318,6 +318,19 @@ class ObjectiveTests(unittest.TestCase):
         failures = strict_language_failures(candidate, baseline, objective)
         self.assertTrue(any(value.startswith("tsx error: regression") for value in failures))
         self.assertTrue(any(value.startswith("html falseColorRate: regression") for value in failures))
+        advisory = {"selectionMetric": "accuracy", "languageGuards": "advisory"}
+        failures, warnings = selection_issues({**candidate, "accuracy": .9}, {**baseline, "accuracy": .8},
+                                             advisory, objective)
+        self.assertEqual(failures, [])
+        self.assertTrue(any(value.startswith("tsx error: regression") for value in warnings))
+        failures, _ = selection_issues({**candidate, "accuracy": .8}, {**baseline, "accuracy": .8},
+                                      advisory, objective)
+        self.assertIn("verification accuracy did not improve", failures)
+        candidate["perLanguage"]["tsx"]["support"] += 1
+        failures, _ = selection_issues({**candidate, "accuracy": .9}, {**baseline, "accuracy": .8},
+                                      advisory, objective)
+        self.assertTrue(any("support mismatch" in value for value in failures))
+        candidate["perLanguage"]["tsx"]["support"] -= 1
         failures, _ = selection_issues({**candidate, "accuracy": .9}, {**baseline, "accuracy": .8},
                                       {"selectionMetric": "accuracy"}, objective)
         self.assertTrue(any(value.startswith("tsx error: regression") for value in failures))

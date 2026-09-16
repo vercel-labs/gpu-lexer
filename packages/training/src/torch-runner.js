@@ -88,7 +88,7 @@ export async function runTorchTraining({
         "emaDecay", "emaStartEpoch",
         "inputSize", "hiddenSize", "classifierSize",
         "weightBits", "treeContext", "localRadius", "teacherMode", "polishMode",
-        "languageObjective", "classWeightPower", "calibrationEpochs", "selectionMetric", "fixedBaselineMetrics",
+        "languageObjective", "languageGuards", "classWeightPower", "calibrationEpochs", "selectionMetric", "fixedBaselineMetrics",
         "agreementEpochs", "agreementLearningRate", "agreementFinalLearningRate",
         "calibrationLearningRate", "calibrationFinalLearningRate",
         "trainingLanguageMultipliers",

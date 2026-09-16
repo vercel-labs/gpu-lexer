@@ -8,12 +8,12 @@ type BarDatum = {
 }
 
 const performance: readonly BarDatum[] = [
-  { label: 'gpu-lexer', value: 402, featured: true },
-  { label: 'Sugar High', value: 836.2 },
-  { label: 'Prism.js', value: 1_155.3 },
-  { label: 'Highlight.js', value: 1_291.4 },
-  { label: 'Starry Night', value: 10_999.3 },
-  { label: 'Shiki', value: 29_553.8 },
+  { label: 'gpu-lexer', value: 850, featured: true },
+  { label: 'Sugar High', value: 4829.6 },
+  { label: 'Prism.js', value: 8391.9 },
+  { label: 'Highlight.js', value: 15906.7 },
+  { label: 'Shiki', value: 33096.7 },
+  { label: 'Starry Night', value: 72312.8 },
 ]
 
 const bundleSizes: readonly BarDatum[] = [
@@ -21,7 +21,7 @@ const bundleSizes: readonly BarDatum[] = [
   { label: 'Prism.js (major 6 web languages)', value: 8_848 },
   { label: 'Sugar High (all 29 languages)', value: 9_032 },
   { label: 'Highlight.js (major 6 web languages)', value: 15_261 },
-  { label: 'gpu-lexer (one model)', value: 28_115, featured: true },
+  { label: 'gpu-lexer (one model)', value: 28_305, featured: true },
   { label: 'Prism.js (all 297 languages)', value: 165_992 },
   { label: 'Starry Night (major 6 web languages)', value: 189_775 },
   { label: 'Shiki (major 6 web languages)', value: 219_067 },
@@ -42,10 +42,10 @@ export function ComparisonCharts() {
     >
       <BarChart
         format={formatTime}
-        max={32_000}
+        max={80_000}
         note={
           <>
-            One browser run after one warm-up on September 9, 2026. The input
+            One browser run after one warm-up on September 16, 2026. The input
             was 10 concatenated copies of{' '}
             <a
               href='https://unpkg.com/three@0.97.0/build/three.min.js'
@@ -64,7 +64,7 @@ export function ComparisonCharts() {
         }
         rows={performance}
         subtitle='warmed browser time · lower is better'
-        ticks={[0, 8_000, 16_000, 24_000, 32_000]}
+        ticks={[0, 20_000, 40_000, 60_000, 80_000]}
         title='Highlight 10× three.min.js'
       />
       <BarChart
@@ -72,8 +72,9 @@ export function ComparisonCharts() {
         max={1_600_000}
         note={
           <>
-            Minified and Brotli-compressed browser bundles measured on September
-            9, 2026. Major web includes javascript, typescript, css, html, json,
+            Minified and Brotli-compressed browser bundles. gpu-lexer was measured
+            on September 16, 2026; comparison libraries on September 9, 2026.
+            Major web includes javascript, typescript, css, html, json,
             and markdown. gpu-lexer uses the same bundle for every language.
             Starry Night totals include its Oniguruma WASM payload.
           </>

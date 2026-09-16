@@ -127,6 +127,24 @@ test("accuracy promotion remains blocked by a strict language regression", () =>
   assert.deepEqual(decision.failures, ["typescript error: regression"]);
 });
 
+test("advisory language guards allow overall gains while retaining comparison integrity", () => {
+  const weighted = { guards: [], warnings: [], strictGuards: [
+    { language: "typescript", metric: "error", passed: false, reason: "regression" },
+  ] };
+  const decide = (accuracy, reason = "regression") => accuracyTreePromotionDecision(
+    { accuracy }, { accuracy: 0.87 },
+    { ...weighted, strictGuards: [{ ...weighted.strictGuards[0], reason }] }, "advisory",
+  );
+  assert.equal(decide(0.88).accepted, true);
+  assert.deepEqual(decide(0.88).warnings, ["typescript error: regression"]);
+  assert.equal(decide(0.87).accepted, false);
+  assert.equal(decide(0.86).accepted, false);
+  assert.equal(decide(0.88, "insufficient support").accepted, true);
+  assert.equal(decide(0.88, "missing language metrics").accepted, false);
+  assert.equal(decide(0.88, "support mismatch").accepted, false);
+  assert.throws(() => accuracyTreePromotionDecision({ accuracy: 0.88 }, { accuracy: 0.87 }, weighted, "off"), /language-guards/);
+});
+
 test("mature language guards allow one point while strict guards stay tighter", () => {
   const config = objective({ matureLanguages: ["jsx"], maxMatureErrorIncrease: 0.01,
     maxMatureFalseColorIncrease: 0.01 });
@@ -228,6 +246,14 @@ test("any accuracy-selected tree run promotes on untouched verification accuracy
   assert.equal(comparison.decision.accepted, true);
   assert.equal(comparison.decision.criterion, "fixed-baseline-untouched-verification-accuracy");
   assert.ok(comparison.decision.candidateAccuracy > comparison.decision.baselineAccuracy);
+
+  candidate.config.languageObjective.minSupport = 100;
+  await assert.rejects(evaluateTreePromotion(candidate, model, shard), /insufficient support/);
+  candidate.config.languageGuards = "advisory";
+  const advisory = await evaluateTreePromotion(candidate, model, shard);
+  assert.equal(advisory.decision.accepted, true);
+  assert.equal(advisory.decision.languageGuards, "advisory");
+  assert.ok(advisory.decision.warnings.some((warning) => warning.includes("insufficient support")));
 
   model.outputBias[0] = 0;
   model.outputBias[4] = 2;

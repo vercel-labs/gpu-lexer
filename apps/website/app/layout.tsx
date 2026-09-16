@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import './styles.css'
 
 export const metadata: Metadata = {
-  title: '27.5KB language-agnostic WebGPU syntax highlighter',
+  title: '27.6KB language-agnostic WebGPU syntax highlighter',
   description:
     'An experimental, language-agnostic syntax highlighter powered by WebGPU.',
 }

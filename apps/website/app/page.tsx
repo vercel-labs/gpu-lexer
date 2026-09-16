@@ -5,7 +5,6 @@ import { languageProbes } from './language-probes.generated'
 import { modelStats } from './model-stats.generated'
 
 const matchingPercent = percent(modelStats.accuracy)
-const disagreementPercent = percent(modelStats.shikiDisagreementRate)
 const activeLanguageProbes =
   String(languageProbes.runId) === modelStats.runId
     ? languageProbes.results
@@ -28,7 +27,7 @@ export default function Home() {
     <main>
       <section className='intro' id='top' aria-labelledby='title'>
         <h1 id='title'>
-          27.5KB language-agnostic
+          27.6KB language-agnostic
           <sup className='footnote-ref'>
             <a
               href='#language-accuracy-note'
@@ -61,13 +60,9 @@ export default function Home() {
         </p>
         <p className='lede'>
           This is an <span className='accent-word'>experiment</span>, not a
-          grammar-equivalent highlighter. On files kept out of training,{' '}
-          <strong>
-            {disagreementPercent} of the current model&apos;s token labels
-            differ from Shiki
-          </strong>
-          . This measures agreement with Shiki—not objective correctness—and
-          unseen languages or real-world code may differ more often.
+          grammar-equivalent highlighter (see the agreement chart below). The
+          chart measures agreement with Shiki—not objective correctness—and
+          results may vary on unseen languages or real-world code.
         </p>
         <aside className='qualification' id='language-accuracy-note'>
           <p>

@@ -73,7 +73,7 @@ ${fail ? 'process.exit(7);' : ''}
   for (const key of ["languageObjective", "classWeightPower", "agreementEpochs", "agreementLearningRate",
     "agreementFinalLearningRate", "calibrationEpochs", "calibrationLearningRate",
     "calibrationFinalLearningRate", "fixedBaselineMetrics",
-    "migrationExpectedAccuracy", "selectionMetric"]) {
+    "migrationExpectedAccuracy", "selectionMetric", "languageGuards"]) {
     assert.deepEqual(actual[key], config[key], key);
   }
   assert.equal(actual.repeatHardReplay, true);

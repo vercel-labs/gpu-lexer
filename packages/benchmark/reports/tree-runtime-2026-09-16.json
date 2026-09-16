@@ -1,0 +1,948 @@
+{
+  "date": "2026-09-16",
+  "modelRun": "20260916T055435.785Z",
+  "changes": [
+    "Process four tokens concurrently in local scan and tree-up kernels using 128-thread workgroups; preserve per-token arithmetic order.",
+    "Reuse the last span directly during reconstruction."
+  ],
+  "source": {
+    "url": "https://unpkg.com/three@0.97.0/build/three.min.js",
+    "sha256": "3ed7c9316c0724813330f2720111f295827ac22a04da471f167c0fa06b9f28e5"
+  },
+  "hashes": {
+    "baseline-dist.js": "3e30228279dcf43fe2c583f0321d87aef88b77cf05426e22b261d16690cd4a7d",
+    "optimized-dist.js": "94db7edb1c925211343f323e23cd06507163272d474d06d1ea8404654b6780b1",
+    "baseline-shader.js": "6673e79fde7f0ff0c28037ef4343bbcd74f12f2b8b1f1ab91f78a6d3f587cc7c",
+    "candidate-4-shader.js": "0efbe499ff4b847cc17c2ffe5d205ed2288225ffb92f63df4b6ac6a5663486c2"
+  },
+  "releaseComparison": {
+    "status": "done",
+    "kind": "release-bundle-comparison",
+    "date": "2026-09-16T07:20:14.447Z",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "modelRun": "20260916T055435.785Z",
+    "method": "Separate dedicated worker per series; ABBA order; 3 warmups and 9 timed calls per series; no DOM rendering",
+    "cases": [
+      {
+        "name": "10 KB",
+        "series": [
+          {
+            "engine": "baseline",
+            "characters": 10000,
+            "spans": 3790,
+            "samplesMs": [
+              5.5,
+              6.299999952316284,
+              6.200000047683716,
+              5.799999952316284,
+              4.599999904632568,
+              5.400000095367432,
+              4.400000095367432,
+              6.5,
+              5.599999904632568
+            ]
+          },
+          {
+            "engine": "candidate",
+            "characters": 10000,
+            "spans": 3790,
+            "samplesMs": [
+              4.800000190734863,
+              7.799999952316284,
+              4.8999998569488525,
+              5.900000095367432,
+              5.400000095367432,
+              8.5,
+              4.099999904632568,
+              4.799999952316284,
+              4
+            ]
+          },
+          {
+            "engine": "candidate",
+            "characters": 10000,
+            "spans": 3790,
+            "samplesMs": [
+              4.400000095367432,
+              4,
+              4.299999952316284,
+              6.200000047683716,
+              4.099999904632568,
+              3.700000047683716,
+              4.3999998569488525,
+              3,
+              2.9000000953674316
+            ]
+          },
+          {
+            "engine": "baseline",
+            "characters": 10000,
+            "spans": 3790,
+            "samplesMs": [
+              3.9000000953674316,
+              4.199999809265137,
+              4.6000001430511475,
+              3.299999952316284,
+              3.5,
+              3.200000047683716,
+              3,
+              3.700000047683716,
+              4.3999998569488525
+            ]
+          }
+        ],
+        "medians": {
+          "baseline": 4.5,
+          "candidate": 4.399999976158142
+        },
+        "reduction": 0.02222222752041292
+      },
+      {
+        "name": "1x three.min.js",
+        "series": [
+          {
+            "engine": "baseline",
+            "characters": 555650,
+            "spans": 179410,
+            "samplesMs": [
+              123.5,
+              115.69999980926514,
+              60.30000019073486,
+              52.89999985694885,
+              61.700000047683716,
+              68.5,
+              53.5,
+              58.59999990463257,
+              53.5
+            ]
+          },
+          {
+            "engine": "candidate",
+            "characters": 555650,
+            "spans": 179410,
+            "samplesMs": [
+              111.29999995231628,
+              93.70000004768372,
+              46.299999952316284,
+              50,
+              48.09999990463257,
+              47.200000047683716,
+              55,
+              48.90000009536743,
+              45.89999985694885
+            ]
+          },
+          {
+            "engine": "candidate",
+            "characters": 555650,
+            "spans": 179410,
+            "samplesMs": [
+              112.20000004768372,
+              96.69999980926514,
+              57.30000019073486,
+              55.200000047683716,
+              60.89999985694885,
+              54.40000009536743,
+              60.799999952316284,
+              53.299999952316284,
+              47.80000019073486
+            ]
+          },
+          {
+            "engine": "baseline",
+            "characters": 555650,
+            "spans": 179410,
+            "samplesMs": [
+              107.09999990463257,
+              108.70000004768372,
+              57.40000009536743,
+              77.79999995231628,
+              80,
+              70.29999995231628,
+              56.299999952316284,
+              63.10000014305115,
+              62.700000047683716
+            ]
+          }
+        ],
+        "medians": {
+          "baseline": 62.90000009536743,
+          "candidate": 54.700000047683716
+        },
+        "reduction": 0.13036566033785502
+      },
+      {
+        "name": "10x three.min.js",
+        "series": [
+          {
+            "engine": "baseline",
+            "characters": 5556500,
+            "spans": 1786363,
+            "samplesMs": [
+              860.5999999046326,
+              599.1000001430511,
+              699.2000000476837,
+              607.2999999523163,
+              664.5,
+              647,
+              672,
+              602.0999999046326,
+              677.6000001430511
+            ]
+          },
+          {
+            "engine": "candidate",
+            "characters": 5556500,
+            "spans": 1786363,
+            "samplesMs": [
+              715.7000000476837,
+              540.5999999046326,
+              522.7999999523163,
+              477.10000014305115,
+              448.89999985694885,
+              465.60000014305115,
+              1929.8999998569489,
+              657.7000000476837,
+              575.1000001430511
+            ]
+          },
+          {
+            "engine": "candidate",
+            "characters": 5556500,
+            "spans": 1786363,
+            "samplesMs": [
+              706.2000000476837,
+              1695.6000001430511,
+              1153.7999999523163,
+              504.7999999523163,
+              525.2999999523163,
+              500.60000014305115,
+              1054.6999998092651,
+              447.40000009536743,
+              653.5
+            ]
+          },
+          {
+            "engine": "baseline",
+            "characters": 5556500,
+            "spans": 1786363,
+            "samplesMs": [
+              882.8000001907349,
+              719.7999999523163,
+              661.8999998569489,
+              601.1000001430511,
+              605,
+              611.3999998569489,
+              710.1000001430511,
+              675.7000000476837,
+              673.1999998092651
+            ]
+          }
+        ],
+        "medians": {
+          "baseline": 668.25,
+          "candidate": 557.8500000238419
+        },
+        "reduction": 0.16520763183862053
+      }
+    ]
+  },
+  "parity": {
+    "status": "done",
+    "kind": "full-parity",
+    "date": "2026-09-16T07:19:48.352Z",
+    "modelRun": "20260916T055435.785Z",
+    "precisions": [
+      {
+        "f16": true,
+        "files": 117,
+        "tokens": 3317022,
+        "differingTokens": 0,
+        "differingSpans": 0,
+        "failures": [],
+        "batchedSpansIdentical": true
+      },
+      {
+        "f16": false,
+        "files": 117,
+        "tokens": 3317022,
+        "differingTokens": 0,
+        "differingSpans": 0,
+        "failures": [],
+        "batchedSpansIdentical": true
+      }
+    ],
+    "errors": [],
+    "fixtureNames": [
+      {
+        "name": "api-example",
+        "language": "typescript"
+      },
+      {
+        "name": "demo-afnetworking-session-manager",
+        "language": "objective-c"
+      },
+      {
+        "name": "demo-alamofire-session",
+        "language": "swift"
+      },
+      {
+        "name": "demo-astro-blog-index",
+        "language": "astro"
+      },
+      {
+        "name": "demo-axum-hello-world",
+        "language": "rust"
+      },
+      {
+        "name": "demo-bootstrap",
+        "language": "css"
+      },
+      {
+        "name": "demo-bootstrap-variables",
+        "language": "scss"
+      },
+      {
+        "name": "demo-checkout-action",
+        "language": "yaml"
+      },
+      {
+        "name": "demo-cmake-root",
+        "language": "cmake"
+      },
+      {
+        "name": "demo-directx-hello-triangle-shaders",
+        "language": "hlsl"
+      },
+      {
+        "name": "demo-dotnet-string",
+        "language": "csharp"
+      },
+      {
+        "name": "demo-flutter-framework",
+        "language": "dart"
+      },
+      {
+        "name": "demo-fx-worker-runtime",
+        "language": "zig"
+      },
+      {
+        "name": "demo-gin",
+        "language": "go"
+      },
+      {
+        "name": "demo-github-icon",
+        "language": "xml"
+      },
+      {
+        "name": "demo-godot-canvas-shader",
+        "language": "glsl"
+      },
+      {
+        "name": "demo-haskell-sudoku",
+        "language": "haskell"
+      },
+      {
+        "name": "demo-html5",
+        "language": "html"
+      },
+      {
+        "name": "demo-junit-assertions",
+        "language": "java"
+      },
+      {
+        "name": "demo-ktor-application",
+        "language": "kotlin"
+      },
+      {
+        "name": "demo-laravel-model",
+        "language": "php"
+      },
+      {
+        "name": "demo-linguist-xslt",
+        "language": "xsl"
+      },
+      {
+        "name": "demo-lodash",
+        "language": "javascript"
+      },
+      {
+        "name": "demo-node-dockerfile",
+        "language": "docker"
+      },
+      {
+        "name": "demo-normalize",
+        "language": "css"
+      },
+      {
+        "name": "demo-nvm-install",
+        "language": "shellscript"
+      },
+      {
+        "name": "demo-openzeppelin-erc20",
+        "language": "solidity"
+      },
+      {
+        "name": "demo-portless-certs",
+        "language": "typescript"
+      },
+      {
+        "name": "demo-powershell-installer",
+        "language": "powershell"
+      },
+      {
+        "name": "demo-prometheus-counter",
+        "language": "go"
+      },
+      {
+        "name": "demo-protobuf-ascii",
+        "language": "cpp"
+      },
+      {
+        "name": "demo-pydantic-main",
+        "language": "python"
+      },
+      {
+        "name": "demo-pytorch-cuda-sort",
+        "language": "cpp"
+      },
+      {
+        "name": "demo-rails",
+        "language": "ruby"
+      },
+      {
+        "name": "demo-react",
+        "language": "javascript"
+      },
+      {
+        "name": "demo-react-app",
+        "language": "jsx"
+      },
+      {
+        "name": "demo-react-fixture",
+        "language": "html"
+      },
+      {
+        "name": "demo-react-main",
+        "language": "jsx"
+      },
+      {
+        "name": "demo-react-readme",
+        "language": "markdown"
+      },
+      {
+        "name": "demo-react-root",
+        "language": "tsx"
+      },
+      {
+        "name": "demo-redis",
+        "language": "c"
+      },
+      {
+        "name": "demo-redis-makefile",
+        "language": "make"
+      },
+      {
+        "name": "demo-requests-sessions",
+        "language": "python"
+      },
+      {
+        "name": "demo-ripgrep-core",
+        "language": "rust"
+      },
+      {
+        "name": "demo-solid-app",
+        "language": "tsx"
+      },
+      {
+        "name": "demo-solid-index",
+        "language": "tsx"
+      },
+      {
+        "name": "demo-svelte-app",
+        "language": "svelte"
+      },
+      {
+        "name": "demo-svelte-counter",
+        "language": "svelte"
+      },
+      {
+        "name": "demo-tailwind-experimental",
+        "language": "css"
+      },
+      {
+        "name": "demo-terraform-aws-vpc",
+        "language": "hcl"
+      },
+      {
+        "name": "demo-three",
+        "language": "javascript"
+      },
+      {
+        "name": "demo-tokio-worker",
+        "language": "rust"
+      },
+      {
+        "name": "demo-typescript-package",
+        "language": "json"
+      },
+      {
+        "name": "demo-vue-hero",
+        "language": "vue"
+      },
+      {
+        "name": "demo-vue-layout",
+        "language": "vue"
+      },
+      {
+        "name": "demo-vue-modal",
+        "language": "vue"
+      },
+      {
+        "name": "demo-zod-v3-types",
+        "language": "typescript"
+      },
+      {
+        "name": "probe-actionscript",
+        "language": "actionscript-3"
+      },
+      {
+        "name": "probe-ada",
+        "language": "ada"
+      },
+      {
+        "name": "probe-angular-html",
+        "language": "angular-html"
+      },
+      {
+        "name": "probe-angular-ts",
+        "language": "angular-ts"
+      },
+      {
+        "name": "probe-apex",
+        "language": "apex"
+      },
+      {
+        "name": "probe-bicep",
+        "language": "bicep"
+      },
+      {
+        "name": "probe-c3",
+        "language": "c3"
+      },
+      {
+        "name": "probe-coffeescript",
+        "language": "coffeescript"
+      },
+      {
+        "name": "probe-cython",
+        "language": "python"
+      },
+      {
+        "name": "probe-d",
+        "language": "d"
+      },
+      {
+        "name": "probe-gdscript",
+        "language": "gdscript"
+      },
+      {
+        "name": "probe-graphql",
+        "language": "graphql"
+      },
+      {
+        "name": "probe-groovy",
+        "language": "groovy"
+      },
+      {
+        "name": "probe-haxe",
+        "language": "haxe"
+      },
+      {
+        "name": "probe-julia",
+        "language": "julia"
+      },
+      {
+        "name": "probe-less",
+        "language": "less"
+      },
+      {
+        "name": "probe-nginx",
+        "language": "nginx"
+      },
+      {
+        "name": "probe-nim",
+        "language": "nim"
+      },
+      {
+        "name": "probe-odin",
+        "language": "odin"
+      },
+      {
+        "name": "probe-plist",
+        "language": "xml"
+      },
+      {
+        "name": "probe-prisma",
+        "language": "prisma"
+      },
+      {
+        "name": "probe-protobuf",
+        "language": "proto"
+      },
+      {
+        "name": "probe-puppet",
+        "language": "puppet"
+      },
+      {
+        "name": "probe-qml",
+        "language": "qml"
+      },
+      {
+        "name": "probe-r",
+        "language": "r"
+      },
+      {
+        "name": "probe-razor",
+        "language": "razor"
+      },
+      {
+        "name": "probe-rss",
+        "language": "xml"
+      },
+      {
+        "name": "probe-scala",
+        "language": "scala"
+      },
+      {
+        "name": "probe-systemverilog",
+        "language": "system-verilog"
+      },
+      {
+        "name": "probe-toml",
+        "language": "toml"
+      },
+      {
+        "name": "probe-vala",
+        "language": "vala"
+      },
+      {
+        "name": "probe-vb",
+        "language": "vb"
+      },
+      {
+        "name": "probe-webassembly",
+        "language": "wasm"
+      },
+      {
+        "name": "probe-wgsl",
+        "language": "wgsl"
+      },
+      {
+        "name": "probe-xml",
+        "language": "xml"
+      }
+    ],
+    "edgeTokenCounts": [
+      1,
+      2,
+      3,
+      7,
+      8,
+      15,
+      16,
+      17,
+      31,
+      32,
+      33,
+      63,
+      64,
+      65,
+      127,
+      128,
+      129,
+      255,
+      256,
+      257,
+      1023,
+      1024,
+      1025
+    ],
+    "edgeSourcePattern": "One + symbol per token",
+    "additionalEdgeCases": [
+      "hello\\n followed by 5000 newlines and 世界 = 42\\r\\n",
+      "64 copies of space, tab, const héllo = 7;\\r\\n\\r\\n"
+    ],
+    "batchInputs": [
+      "const answer = 42;",
+      "def f(x):\n    return x + 1\n",
+      "<script>const a=1</script>",
+      "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    ]
+  },
+  "gpuProfiles": [
+    {
+      "name": "10 KB",
+      "tokens": 4888,
+      "differingTokens": 0,
+      "gpuPassMedians": {
+        "baseline": {
+          "hybrid_neighbor_blocks": 0,
+          "hybrid_neighbor_prefixes": 0.131072,
+          "hybrid_scan_blocks": 1.769472,
+          "hybrid_scan_prefixes": 0,
+          "hybrid_mix_tree_up": 0.98304,
+          "tree_global": 0.131072,
+          "tree_down_classify": 0.851968
+        },
+        "candidate": {
+          "hybrid_neighbor_blocks": 0,
+          "hybrid_neighbor_prefixes": 0.131072,
+          "hybrid_scan_blocks": 0.65536,
+          "hybrid_scan_prefixes": 0.065536,
+          "hybrid_mix_tree_up": 0.65536,
+          "tree_global": 0.065536,
+          "tree_down_classify": 0.851968
+        }
+      },
+      "gpuPassSamples": {
+        "baseline": [
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.065536,
+            "hybrid_scan_blocks": 0.917504,
+            "hybrid_scan_prefixes": 0,
+            "hybrid_mix_tree_up": 0.65536,
+            "tree_global": 0.131072,
+            "tree_down_classify": 0.589824
+          },
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.131072,
+            "hybrid_scan_blocks": 1.769472,
+            "hybrid_scan_prefixes": 0,
+            "hybrid_mix_tree_up": 0.98304,
+            "tree_global": 0.131072,
+            "tree_down_classify": 0.851968
+          },
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.131072,
+            "hybrid_scan_blocks": 2.031616,
+            "hybrid_scan_prefixes": 0.065536,
+            "hybrid_mix_tree_up": 1.114112,
+            "tree_global": 0.131072,
+            "tree_down_classify": 0.917504
+          }
+        ],
+        "candidate": [
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.065536,
+            "hybrid_scan_blocks": 0.393216,
+            "hybrid_scan_prefixes": 0,
+            "hybrid_mix_tree_up": 0.32768,
+            "tree_global": 0.065536,
+            "tree_down_classify": 0.32768
+          },
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.131072,
+            "hybrid_scan_blocks": 0.65536,
+            "hybrid_scan_prefixes": 0.065536,
+            "hybrid_mix_tree_up": 0.720896,
+            "tree_global": 0.065536,
+            "tree_down_classify": 0.851968
+          },
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.131072,
+            "hybrid_scan_blocks": 0.65536,
+            "hybrid_scan_prefixes": 0.065536,
+            "hybrid_mix_tree_up": 0.65536,
+            "tree_global": 0.131072,
+            "tree_down_classify": 0.851968
+          }
+        ]
+      }
+    },
+    {
+      "name": "1x three.min.js",
+      "tokens": 248387,
+      "differingTokens": 0,
+      "gpuPassMedians": {
+        "baseline": {
+          "hybrid_neighbor_blocks": 0,
+          "hybrid_neighbor_prefixes": 0.98304,
+          "hybrid_scan_blocks": 14.942208,
+          "hybrid_scan_prefixes": 0.458752,
+          "hybrid_mix_tree_up": 9.17504,
+          "tree_global": 0.720896,
+          "tree_down_classify": 6.094848
+        },
+        "candidate": {
+          "hybrid_neighbor_blocks": 0,
+          "hybrid_neighbor_prefixes": 0.98304,
+          "hybrid_scan_blocks": 5.89824,
+          "hybrid_scan_prefixes": 0.393216,
+          "hybrid_mix_tree_up": 6.750208,
+          "tree_global": 1.31072,
+          "tree_down_classify": 6.422528
+        }
+      },
+      "gpuPassSamples": {
+        "baseline": [
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.917504,
+            "hybrid_scan_blocks": 14.942208,
+            "hybrid_scan_prefixes": 0.458752,
+            "hybrid_mix_tree_up": 9.109504,
+            "tree_global": 0.65536,
+            "tree_down_classify": 6.5536
+          },
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.98304,
+            "hybrid_scan_blocks": 14.876672,
+            "hybrid_scan_prefixes": 0.393216,
+            "hybrid_mix_tree_up": 9.437184,
+            "tree_global": 1.245184,
+            "tree_down_classify": 6.094848
+          },
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 1.048576,
+            "hybrid_scan_blocks": 15.138816,
+            "hybrid_scan_prefixes": 0.458752,
+            "hybrid_mix_tree_up": 9.17504,
+            "tree_global": 0.720896,
+            "tree_down_classify": 6.094848
+          }
+        ],
+        "candidate": [
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.98304,
+            "hybrid_scan_blocks": 5.89824,
+            "hybrid_scan_prefixes": 0.458752,
+            "hybrid_mix_tree_up": 6.5536,
+            "tree_global": 0.720896,
+            "tree_down_classify": 6.684672
+          },
+          {
+            "hybrid_neighbor_blocks": 0,
+            "hybrid_neighbor_prefixes": 0.98304,
+            "hybrid_scan_blocks": 5.832704,
+            "hybrid_scan_prefixes": 0.393216,
+            "hybrid_mix_tree_up": 6.88128,
+            "tree_global": 1.31072,
+            "tree_down_classify": 6.22592
+          },
+          {
+            "hybrid_neighbor_blocks": 0.065536,
+            "hybrid_neighbor_prefixes": 0.917504,
+            "hybrid_scan_blocks": 6.291456,
+            "hybrid_scan_prefixes": 0.393216,
+            "hybrid_mix_tree_up": 6.750208,
+            "tree_global": 1.376256,
+            "tree_down_classify": 6.422528
+          }
+        ]
+      }
+    },
+    {
+      "name": "10x three.min.js",
+      "tokens": 2483870,
+      "differingTokens": 0,
+      "gpuPassMedians": {
+        "baseline": {
+          "hybrid_neighbor_blocks": 0.131072,
+          "hybrid_neighbor_prefixes": 10.420224,
+          "hybrid_scan_blocks": 155.713536,
+          "hybrid_scan_prefixes": 4.718592,
+          "hybrid_mix_tree_up": 96.075776,
+          "tree_global": 11.14112,
+          "tree_down_classify": 67.567616
+        },
+        "candidate": {
+          "hybrid_neighbor_blocks": 0.131072,
+          "hybrid_neighbor_prefixes": 12.582912,
+          "hybrid_scan_blocks": 61.079552,
+          "hybrid_scan_prefixes": 4.653056,
+          "hybrid_mix_tree_up": 69.271552,
+          "tree_global": 10.092544,
+          "tree_down_classify": 64.487424
+        }
+      },
+      "gpuPassSamples": {
+        "baseline": [
+          {
+            "hybrid_neighbor_blocks": 0.131072,
+            "hybrid_neighbor_prefixes": 12.976128,
+            "hybrid_scan_blocks": 155.713536,
+            "hybrid_scan_prefixes": 5.373952,
+            "hybrid_mix_tree_up": 96.272384,
+            "tree_global": 11.14112,
+            "tree_down_classify": 68.878336
+          },
+          {
+            "hybrid_neighbor_blocks": 0.131072,
+            "hybrid_neighbor_prefixes": 10.420224,
+            "hybrid_scan_blocks": 156.237824,
+            "hybrid_scan_prefixes": 4.718592,
+            "hybrid_mix_tree_up": 96.075776,
+            "tree_global": 11.14112,
+            "tree_down_classify": 67.567616
+          },
+          {
+            "hybrid_neighbor_blocks": 0.131072,
+            "hybrid_neighbor_prefixes": 10.289152,
+            "hybrid_scan_blocks": 150.994944,
+            "hybrid_scan_prefixes": 4.58752,
+            "hybrid_mix_tree_up": 93.192192,
+            "tree_global": 10.354688,
+            "tree_down_classify": 65.011712
+          }
+        ],
+        "candidate": [
+          {
+            "hybrid_neighbor_blocks": 0.131072,
+            "hybrid_neighbor_prefixes": 12.45184,
+            "hybrid_scan_blocks": 64.55296,
+            "hybrid_scan_prefixes": 4.653056,
+            "hybrid_mix_tree_up": 73.007104,
+            "tree_global": 10.354688,
+            "tree_down_classify": 67.895296
+          },
+          {
+            "hybrid_neighbor_blocks": 0.196608,
+            "hybrid_neighbor_prefixes": 26.279936,
+            "hybrid_scan_blocks": 61.014016,
+            "hybrid_scan_prefixes": 4.25984,
+            "hybrid_mix_tree_up": 69.074944,
+            "tree_global": 10.092544,
+            "tree_down_classify": 64.094208
+          },
+          {
+            "hybrid_neighbor_blocks": 0.131072,
+            "hybrid_neighbor_prefixes": 12.582912,
+            "hybrid_scan_blocks": 61.079552,
+            "hybrid_scan_prefixes": 5.111808,
+            "hybrid_mix_tree_up": 69.271552,
+            "tree_global": 10.027008,
+            "tree_down_classify": 64.487424
+          }
+        ]
+      }
+    }
+  ],
+  "notes": [
+    "Per-pass GPU timestamps use separate compute passes; production uses one compute pass.",
+    "Release comparison uses production minified bundles in separate dedicated workers, ABBA order, three warmups and nine timed calls per series (18 samples per variant and input).",
+    "The eight-token variant was not selected because end-to-end timings showed no consistent additional benefit.",
+    "Parity compares 92 cached website examples plus 25 edge cases (117 cases per precision), and separately tests batched requests.",
+    "GPU and JavaScript timings vary with system load and garbage collection. These measurements are from one Apple/Chrome environment."
+  ]
+}

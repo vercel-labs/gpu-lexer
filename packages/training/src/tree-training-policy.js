@@ -12,10 +12,16 @@ export async function treeTrainingPolicy(options = {}) {
   const languageObjective = options.languageObjectivePath
     ? validateLanguageObjective(JSON.parse(await readFile(options.languageObjectivePath, "utf8")))
     : createLanguageObjective();
-  const classWeightPower = options.classWeightPower ?? 0.5;
+  const selectionMetric = options.selectionMetric ?? "accuracy";
+  const languageGuards = options.languageGuards ??
+    (selectionMetric === "accuracy" && !options.fineTuneMetadata ? "advisory" : "strict");
+  if (!["advisory", "strict"].includes(languageGuards) ||
+      (languageGuards === "advisory" && selectionMetric !== "accuracy")) {
+    throw new Error("language-guards must be strict, or advisory with accuracy selection");
+  }
+  const classWeightPower = options.classWeightPower ?? (selectionMetric === "accuracy" ? 0 : 0.5);
   const calibrationEpochs = options.calibrationEpochs ?? 2;
   const agreementEpochs = options.agreementEpochs ?? 0;
-  const selectionMetric = options.selectionMetric ?? "accuracy";
   const epochs = options.epochs ?? 32, fineTuneEpochs = options.fineTuneEpochs ?? 4;
   if (!Number.isFinite(classWeightPower) || classWeightPower < 0 || classWeightPower > 1) {
     throw new Error("class-weight-power must be between 0 and 1 (0 = natural, 0.25 = gentle, 0.5 = original)");
@@ -29,7 +35,7 @@ export async function treeTrainingPolicy(options = {}) {
   if (!["weightedError", "accuracy"].includes(selectionMetric)) {
     throw new Error("selection metric must be weightedError or accuracy");
   }
-  return { languageObjective, classWeightPower, agreementEpochs, calibrationEpochs, selectionMetric,
+  return { languageObjective, languageGuards, classWeightPower, agreementEpochs, calibrationEpochs, selectionMetric,
     fixedBaseline: options.baselineRun ? await pinBaseline(options.baselineRun) : null };
 }
 

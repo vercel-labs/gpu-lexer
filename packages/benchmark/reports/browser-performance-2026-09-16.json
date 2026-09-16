@@ -1,0 +1,32 @@
+{
+  "status": "done",
+  "copies": 10,
+  "characters": 5556500,
+  "source": "https://unpkg.com/three@0.97.0/build/three.min.js",
+  "warmups": 1,
+  "measuredRuns": 1,
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+  "times": {
+    "gpu-lexer": 850,
+    "Prism.js": 8391.900000095367,
+    "Highlight.js": 15906.699999809265,
+    "Sugar High": 4829.599999904633,
+    "Starry Night": 72312.79999995232,
+    "Shiki": 33096.700000047684
+  },
+  "date": "2026-09-16",
+  "modelRun": "20260916T055435.785Z",
+  "sourceSha256": "3ed7c9316c0724813330f2720111f295827ac22a04da471f167c0fa06b9f28e5",
+  "hardware": {
+    "model": "MacBook Pro",
+    "chip": "Apple M4 Pro",
+    "gpuCores": 20,
+    "memoryGB": 24,
+    "macOS": "26.6.2"
+  },
+  "notes": [
+    "One warm-up and one measured call per engine in a dedicated worker; DOM rendering excluded.",
+    "This is the website comparison, separate from the repeated before/after optimization benchmark.",
+    "Five engine results were retained from the first page; Shiki completed on a continuation page."
+  ]
+}

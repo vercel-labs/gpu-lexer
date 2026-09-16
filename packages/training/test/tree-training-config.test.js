@@ -17,6 +17,15 @@ test("policy uses explicit population weights, validates calibration, and refuse
   assert.equal(policy.fixedBaseline, null);
   assert.equal(policy.classWeightPower, 0.25);
   assert.equal((await treeTrainingPolicy()).calibrationEpochs, 2);
+  assert.equal((await treeTrainingPolicy()).languageGuards, "advisory");
+  assert.equal((await treeTrainingPolicy()).classWeightPower, 0);
+  assert.equal((await treeTrainingPolicy({ languageGuards: "strict" })).languageGuards, "strict");
+  assert.equal((await treeTrainingPolicy({ fineTuneMetadata: {} })).languageGuards, "strict");
+  const weighted = await treeTrainingPolicy({ selectionMetric: "weightedError" });
+  assert.equal(weighted.languageGuards, "strict");
+  assert.equal(weighted.classWeightPower, 0.5);
+  await assert.rejects(treeTrainingPolicy({ languageGuards: "off" }), /language-guards/);
+  await assert.rejects(treeTrainingPolicy({ selectionMetric: "weightedError", languageGuards: "advisory" }), /language-guards/);
   assert.ok(policy.languageObjective.familyWeights.javascript > policy.languageObjective.familyWeights.diff);
   assert.equal((await treeTrainingPolicy({ selectionMetric: "accuracy" })).selectionMetric, "accuracy");
   assert.throws(() => assertObjectiveCoverage([], policy.languageObjective, "test"), /coverage incomplete/);
