@@ -1,12 +1,24 @@
-import { copyFile, mkdir, readFile, rm } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { brotliCompressSync, constants } from "node:zlib";
 
 import { build } from "esbuild";
 import { initialize, minify, validate } from "wgslender";
+import { promotedModel } from "../src/model.generated.js";
+import { generatedShaderContents } from "./generate-shader.js";
+import { promotedModelContents, runtimeModelContents } from "./generate-runtime-model.js";
 
-// Each model is its own entry; `gpu-lexer` re-exports the default model.
-// Code splitting puts the shared runtime in a chunk, so importing one model
-// never bundles another.
+const generatedShader = await generatedShaderContents(promotedModel);
+const generatedRuntimeModel = runtimeModelContents(promotedModel);
+const generatedPromotedModel = promotedModelContents(promotedModel);
+
+await Promise.all([
+  writeFile(new URL("../src/shader.min.generated.js", import.meta.url), generatedShader),
+  writeFile(new URL("../src/model.runtime.generated.js", import.meta.url), generatedRuntimeModel),
+  writeFile(new URL("../src/model.generated.js", import.meta.url), generatedPromotedModel),
+]);
+
+// The default tree model and opt-in lite model have separate entries, so
+// importing one model never bundles another.
 const ENTRIES = ["index", "lite"];
 
 const wgsl = {
