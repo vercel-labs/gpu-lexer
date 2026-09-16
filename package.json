@@ -1,7 +1,7 @@
 {
   "name": "gpu-lexer-monorepo",
   "private": true,
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.13.1",
   "scripts": {
     "test": "node --test packages/core/test/*.test.js packages/training/test/*.test.js packages/benchmark/test/*.test.js && pnpm test:website",
     "test:core": "node --test packages/core/test/*.test.js",
