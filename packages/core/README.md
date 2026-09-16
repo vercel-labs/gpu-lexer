@@ -17,7 +17,7 @@ for (const span of spans) {
 }
 ```
 
-`parse(code: string): Promise<SyntaxSpan[]>` is the package's only export. `start` and `end` are half-open UTF-16 code-unit offsets, and the spans cover the source in order.
+`parse(code: string): Promise<SyntaxSpan[]>` is the package's only export. `gpu-lexer` uses the default model; import from a model subpath such as `gpu-lexer/lite` to pin one. Each model subpath bundles only its own weights and shader. `start` and `end` are half-open UTF-16 code-unit offsets, and the spans cover the source in order.
 
 WebGPU and a secure browser context are required. The first call acquires a device, compiles pipelines, uploads the model, and runs inference; later calls reuse those resources.
 
