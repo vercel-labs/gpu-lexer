@@ -254,6 +254,19 @@ class ObjectiveTests(unittest.TestCase):
         self.assertEqual(stages[2][3], 5e-5)
         self.assertEqual(stages[7][3], 1e-5)
 
+    def test_all_agreement_continuation_is_one_cosine(self):
+        config = {"model": "hierarchical-tree", "polishMode": True, "epochs": 24,
+                  "fineTuneEpochs": 0, "agreementEpochs": 24, "calibrationEpochs": 0,
+                  "learningRate": 1e-6, "finalLearningRate": 2e-7,
+                  "agreementLearningRate": 6.4e-3, "agreementFinalLearningRate": 1e-5,
+                  "fineTuneLearningRate": 5e-5, "fineTuneFinalLearningRate": 1e-5}
+        stages = [training_stage(config, epoch) for epoch in range(1, 25)]
+        self.assertEqual({stage[0] for stage in stages}, {"agreement"})
+        rates = [stage[3] for stage in stages]
+        self.assertEqual(rates[0], 6.4e-3)
+        self.assertAlmostEqual(rates[-1], 1e-5)
+        self.assertEqual(rates, sorted(rates, reverse=True))
+
     def test_calibration_updates_only_classification_heads(self):
         self.assertEqual(
             trainable_tensors_for_stage("calibration"),

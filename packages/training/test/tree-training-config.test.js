@@ -4,7 +4,7 @@ import {
   agreementLanguageMultipliers, countClasses, enrollMatureLanguageGuards, focusedReplayConfig,
   majorLanguageErrorRows,
   shouldAutoPromoteTreeRun, shouldPolishTreeCheckpoint, treeTrainingSchedule,
-  treeWarmStartMismatch, validateTreeTeacher,
+  treeWarmStartMismatch, validateTreeTeacher, TREE_CONTINUATION,
 } from "../src/train-tree.js";
 import { createTreeModel, treeAuxiliaryNames, treeTensorNamesFor } from "../src/tree-model.js";
 import { classNames, taxonomyVersion } from "../src/classes.js";
@@ -168,15 +168,19 @@ test("tree warm start accepts the promoted shape and explains architecture chang
     /context hybrid -> tree, hash 256 -> 128/);
 });
 
-test("polish uses a short schedule while full training and targeted runs retain their schedules", () => {
+test("continuations are all agreement epochs while full training and targeted runs retain their schedules", () => {
   assert.deepEqual(treeTrainingSchedule({}, true),
-    { epochs: 10, fineTuneEpochs: 2, agreementEpochs: 6, calibrationEpochs: 2 });
+    { epochs: TREE_CONTINUATION.epochs, fineTuneEpochs: 0, agreementEpochs: TREE_CONTINUATION.epochs,
+      calibrationEpochs: 0 });
   assert.deepEqual(treeTrainingSchedule({}, false),
     { epochs: 32, fineTuneEpochs: 4, agreementEpochs: 6, calibrationEpochs: 2 });
   assert.deepEqual(treeTrainingSchedule({}, false, true),
     { epochs: 32, fineTuneEpochs: 4, agreementEpochs: 0, calibrationEpochs: 2 });
   assert.deepEqual(treeTrainingSchedule({ epochs: 10, calibrationEpochs: 3 }, true),
-    { epochs: 10, fineTuneEpochs: 3, agreementEpochs: 6, calibrationEpochs: 3 });
+    { epochs: 10, fineTuneEpochs: 3, agreementEpochs: 7, calibrationEpochs: 3 });
+  // Replay-polish epochs remain available by leaving room before agreement.
+  assert.deepEqual(treeTrainingSchedule({ epochs: 10, agreementEpochs: 6, calibrationEpochs: 2 }, true),
+    { epochs: 10, fineTuneEpochs: 2, agreementEpochs: 6, calibrationEpochs: 2 });
 });
 
 test("changed or unrecorded taxonomies use full training instead of polish", () => {

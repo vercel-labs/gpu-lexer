@@ -28,6 +28,21 @@ const runsRoot = fileURLToPath(new URL("../runs/", import.meta.url));
 const TREE_PARAMETER_CEILING = 75_000;
 const TREE_PACKED_BYTE_BUDGET = 37_500;
 
+/** Defaults for continuing a checkpoint on its own taxonomy.
+ *
+ * A deployed int6 code changes only when its latent weight crosses a rounding
+ * threshold, so the rate and the number of optimizer steps decide whether a
+ * continuation can move the model at all. Epochs at this rate differ by
+ * several tenths of a point, so each one also evaluates an exponential
+ * average of the latent weights. WEIGHTED-TRAINING.md records the comparison
+ * behind these values.
+ */
+export const TREE_CONTINUATION = Object.freeze({
+  epochs: 48, batchTokens: 65_536,
+  learningRate: 0.0064, finalLearningRate: 0.00001,
+  emaDecay: 0.99, emaStartEpoch: 1,
+});
+
 export async function trainTree(options = {}) {
   const teacherMode = options.teacherMode === true;
   if (options.fresh && options.initialRun) throw new Error("--fresh cannot be combined with --initial-run");
@@ -68,8 +83,12 @@ export async function trainTree(options = {}) {
   const weightBits = options.weightBits ?? shapeSource?.metadata.quantization?.bits ?? shapeSource?.metadata.config?.weightBits ?? 6;
   if (![4, 5, 6].includes(weightBits)) throw new RangeError("tree weights must use 4, 5, or 6 bits");
   if (teacherMode && options.teacherRun) throw new Error("--teacher and --teacher-run cannot be combined");
-  const teacher = options.teacherRun ? await loadDeployedCheckpoint(options.teacherRun) : polishMode ? initial : null;
-  const autoMining = polishMode && !options.hardRecords && !options.fineTuneMetadata;
+  // Replay and consistency distillation only act in polish epochs; agreement
+  // and calibration epochs train on the natural corpus alone.
+  const polishEpochs = polishMode ? schedule.epochs - schedule.agreementEpochs - schedule.calibrationEpochs : 0;
+  const teacher = options.teacherRun ? await loadDeployedCheckpoint(options.teacherRun)
+    : polishEpochs > 0 ? initial : null;
+  const autoMining = polishEpochs > 0 && !options.hardRecords && !options.fineTuneMetadata;
   const treeContext = options.treeContext ?? shapeSource?.metadata.config?.treeContext ??
     (shapeSource ? shapeSource.metadata.formatVersion === TREE_HYBRID_FORMAT_VERSION ? "hybrid" : "tree" : "hybrid");
   if (!["tree", "hybrid"].includes(treeContext)) throw new RangeError("--context must be tree or hybrid");
@@ -88,13 +107,14 @@ export async function trainTree(options = {}) {
       (teacherMode ? 256 : defaultClassifierSize),
     weightBits,
     hashBuckets,
-    batchTokens: options.batchTokens ?? 0,
+    batchTokens: options.batchTokens ?? (polishMode ? TREE_CONTINUATION.batchTokens : 0),
     learningRate: options.learningRate ?? (polishMode ? 0.000001 : 0.002),
     finalLearningRate: options.finalLearningRate ?? (polishMode ? 0.0000002 : 0.00005),
     fineTuneLearningRate: options.fineTuneLearningRate ?? 0.00005,
     fineTuneFinalLearningRate: options.fineTuneFinalLearningRate ?? 0.00001,
-    agreementLearningRate: options.agreementLearningRate ?? (polishMode ? 0.000001 : 0.00005),
-    agreementFinalLearningRate: options.agreementFinalLearningRate ?? (polishMode ? 0.0000002 : 0.00001),
+    agreementLearningRate: options.agreementLearningRate ?? (polishMode ? TREE_CONTINUATION.learningRate : 0.00005),
+    agreementFinalLearningRate: options.agreementFinalLearningRate ??
+      (polishMode ? TREE_CONTINUATION.finalLearningRate : 0.00001),
     calibrationLearningRate: options.calibrationLearningRate ??
       (polishMode || targetedFineTune ? 0.000001 : 0.00005),
     calibrationFinalLearningRate: options.calibrationFinalLearningRate ??
@@ -109,7 +129,8 @@ export async function trainTree(options = {}) {
     ...focusedReplayConfig(options),
     boundaryLossMultiplier: options.boundaryLossMultiplier ?? 1.25,
     mixedF1Tolerance: 0.005, qatEpochs: teacherMode ? 0 : options.qatEpochs ?? (polishMode ? schedule.epochs : 6),
-    emaDecay: 0.999, emaStartEpoch: options.emaStartEpoch ?? (polishMode ? schedule.epochs + 1 : 20),
+    emaDecay: options.emaDecay ?? (polishMode ? TREE_CONTINUATION.emaDecay : 0.999),
+    emaStartEpoch: options.emaStartEpoch ?? (polishMode ? TREE_CONTINUATION.emaStartEpoch : 20),
     distillationWeight: teacher ? options.distillationWeight ?? (polishMode ? 0.2 : 0.25) : 0,
     distillationTemperature: teacher ? options.distillationTemperature ?? 2 : 1,
     distillationWarmupEpochs: teacher ? options.distillationWarmupEpochs ?? (polishMode ? 0 : 2) : 0,
@@ -129,6 +150,9 @@ export async function trainTree(options = {}) {
   config.initialIsBaseline = Boolean(initial && config.fixedBaseline?.runId === initial.metadata.runId);
   if (!Number.isFinite(config.boundaryLossMultiplier) || config.boundaryLossMultiplier < 1) {
     throw new RangeError("boundary loss multiplier must be at least 1");
+  }
+  if (!Number.isFinite(config.emaDecay) || config.emaDecay <= 0 || config.emaDecay >= 1) {
+    throw new RangeError("EMA decay must be between 0 and 1");
   }
   if (config.maxHardReplayRepeats !== null &&
       (!Number.isSafeInteger(config.maxHardReplayRepeats) || config.maxHardReplayRepeats < 1)) {
@@ -350,9 +374,18 @@ export function shouldPolishTreeCheckpoint(metadata, { teacherMode = false, targ
 }
 
 export function treeTrainingSchedule(options = {}, polishMode = false, targetedFineTune = false) {
-  const epochs = options.epochs ?? (polishMode ? 10 : 32);
+  if (polishMode) {
+    // Every continuation epoch is a full-model agreement epoch unless the
+    // caller asks for calibration or leaves room for replay-polish epochs.
+    const epochs = options.epochs ?? TREE_CONTINUATION.epochs;
+    const calibrationEpochs = options.calibrationEpochs ?? 0;
+    const fineTuneEpochs = options.fineTuneEpochs ?? calibrationEpochs;
+    const agreementEpochs = options.agreementEpochs ?? Math.max(0, epochs - calibrationEpochs);
+    return { epochs, fineTuneEpochs, agreementEpochs, calibrationEpochs };
+  }
+  const epochs = options.epochs ?? 32;
   const calibrationEpochs = options.calibrationEpochs ?? 2;
-  const fineTuneEpochs = options.fineTuneEpochs ?? (polishMode ? calibrationEpochs : 4);
+  const fineTuneEpochs = options.fineTuneEpochs ?? 4;
   const agreementEpochs = options.agreementEpochs ?? (targetedFineTune ? 0 : 6);
   return { epochs, fineTuneEpochs, agreementEpochs, calibrationEpochs };
 }
@@ -569,7 +602,7 @@ function createRandom(seed) {
 function parse(arguments_) {
   const result = {};
   const integer = new Set(["agreementEpochs", "calibrationEpochs", "epochs", "fineTuneEpochs", "hiddenSize", "classifierSize", "hashBuckets", "batchTokens", "patience", "seed", "progressEvery", "qatEpochs", "emaStartEpoch", "maxTrainTokens", "maxVerificationTokens", "minimumFamilyTokens", "weightBits", "distillationWarmupEpochs", "distillationRampEpochs", "maxHardReplayRepeats"]);
-  const aliases = { "language-guards": "languageGuards", "selection-metric": "selectionMetric", "language-objective": "languageObjectivePath", "baseline-run": "baselineRun", "initial-run": "initialRun", "class-weight-power": "classWeightPower", "agreement-epochs": "agreementEpochs", "calibration-epochs": "calibrationEpochs", context: "treeContext", "train-shard": "trainShard", "verification-shard": "verificationShard", "mining-shard": "miningShard", epochs: "epochs", "fine-tune-epochs": "fineTuneEpochs", hidden: "hiddenSize", classifier: "classifierSize", hash: "hashBuckets", bits: "weightBits", batch: "batchTokens", patience: "patience", seed: "seed", "progress-every": "progressEvery", "qat-epochs": "qatEpochs", "ema-start-epoch": "emaStartEpoch", "max-train-tokens": "maxTrainTokens", "max-verification-tokens": "maxVerificationTokens", "min-family-tokens": "minimumFamilyTokens", "boundary-loss": "boundaryLossMultiplier", "replay-fraction": "replayFraction", "max-replay-repeats": "maxHardReplayRepeats", teacher: "teacherMode", fresh: "fresh", "teacher-run": "teacherRun", "distillation-weight": "distillationWeight", "distillation-temperature": "distillationTemperature", "distillation-warmup": "distillationWarmupEpochs", "distillation-ramp": "distillationRampEpochs", device: "device", python: "python", output: "output", lr: "learningRate", "final-lr": "finalLearningRate", "agreement-lr": "agreementLearningRate", "agreement-final-lr": "agreementFinalLearningRate", "calibration-lr": "calibrationLearningRate", "calibration-final-lr": "calibrationFinalLearningRate", "failure-lr": "focusedReplayLearningRate", "failure-final-lr": "focusedReplayFinalLearningRate" };
+  const aliases = { "language-guards": "languageGuards", "selection-metric": "selectionMetric", "language-objective": "languageObjectivePath", "baseline-run": "baselineRun", "initial-run": "initialRun", "class-weight-power": "classWeightPower", "agreement-epochs": "agreementEpochs", "calibration-epochs": "calibrationEpochs", context: "treeContext", "train-shard": "trainShard", "verification-shard": "verificationShard", "mining-shard": "miningShard", epochs: "epochs", "fine-tune-epochs": "fineTuneEpochs", hidden: "hiddenSize", classifier: "classifierSize", hash: "hashBuckets", bits: "weightBits", batch: "batchTokens", patience: "patience", seed: "seed", "progress-every": "progressEvery", "qat-epochs": "qatEpochs", "ema-start-epoch": "emaStartEpoch", "max-train-tokens": "maxTrainTokens", "max-verification-tokens": "maxVerificationTokens", "min-family-tokens": "minimumFamilyTokens", "boundary-loss": "boundaryLossMultiplier", "replay-fraction": "replayFraction", "max-replay-repeats": "maxHardReplayRepeats", teacher: "teacherMode", fresh: "fresh", "teacher-run": "teacherRun", "distillation-weight": "distillationWeight", "distillation-temperature": "distillationTemperature", "distillation-warmup": "distillationWarmupEpochs", "distillation-ramp": "distillationRampEpochs", device: "device", python: "python", output: "output", lr: "learningRate", "final-lr": "finalLearningRate", "agreement-lr": "agreementLearningRate", "agreement-final-lr": "agreementFinalLearningRate", "calibration-lr": "calibrationLearningRate", "calibration-final-lr": "calibrationFinalLearningRate", "failure-lr": "focusedReplayLearningRate", "failure-final-lr": "focusedReplayFinalLearningRate", "ema-decay": "emaDecay" };
   for (let index = 0; index < arguments_.length; index++) {
     if (arguments_[index] === "--") continue;
     const [raw, inline] = arguments_[index].replace(/^--/, "").split("=", 2);
@@ -578,7 +611,7 @@ function parse(arguments_) {
     if (name === "teacherMode" || name === "fresh") { result[name] = true; continue; }
     const value = inline ?? arguments_[++index];
     result[name] = integer.has(name) ? Number.parseInt(value, 10)
-      : ["classWeightPower", "learningRate", "finalLearningRate", "agreementLearningRate", "agreementFinalLearningRate", "calibrationLearningRate", "calibrationFinalLearningRate", "focusedReplayLearningRate", "focusedReplayFinalLearningRate", "replayFraction", "boundaryLossMultiplier", "distillationWeight", "distillationTemperature"].includes(name) ? Number(value) : value;
+      : ["classWeightPower", "learningRate", "finalLearningRate", "agreementLearningRate", "agreementFinalLearningRate", "calibrationLearningRate", "calibrationFinalLearningRate", "focusedReplayLearningRate", "focusedReplayFinalLearningRate", "replayFraction", "boundaryLossMultiplier", "distillationWeight", "distillationTemperature", "emaDecay"].includes(name) ? Number(value) : value;
   }
   return result;
 }
