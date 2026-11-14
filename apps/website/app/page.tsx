@@ -27,7 +27,7 @@ export default function Home() {
     <main>
       <section className='intro' id='top' aria-labelledby='title'>
         <h1 id='title'>
-          27.9KB language-agnostic
+          28.5KB language-agnostic
           <sup className='footnote-ref'>
             <a
               href='#language-accuracy-note'

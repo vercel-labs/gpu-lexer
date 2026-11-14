@@ -22,7 +22,7 @@ const bundleSizes: readonly BarDatum[] = [
   { label: 'Prism.js (major 6 web languages)', value: 8_848 },
   { label: 'Sugar High (all 29 languages)', value: 9_032 },
   { label: 'Highlight.js (major 6 web languages)', value: 15_261 },
-  { label: 'gpu-lexer (one model)', value: 28_599, featured: true },
+  { label: 'gpu-lexer (one model)', value: 29_165, featured: true },
   { label: 'Highlights (all 80 languages)', value: 98_187 },
   { label: 'Prism.js (all 297 languages)', value: 165_992 },
   { label: 'Starry Night (major 6 web languages)', value: 189_775 },
