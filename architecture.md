@@ -2,7 +2,7 @@
 
 ## Contract
 
-`parse(source)` accepts one complete JavaScript string and returns non-overlapping `{ type, start, end }` spans. The runtime receives no language ID. Positions are UTF-16 code units. The only public output classes are `plain`, `comment`, `string`, `number`, `keyword`, `type`, `function`, `constant`, and `operator`.
+`parse(source)` accepts one complete JavaScript string and returns non-overlapping `{ type, start, end, confidence }` spans. The runtime receives no language ID. Positions are UTF-16 code units. The only public output classes are `plain`, `comment`, `string`, `number`, `keyword`, `type`, `function`, `constant`, and `operator`.
 
 The package keeps its WebGPU device, pipelines, weights, and grow-only buffers resident between calls. Calls are scheduled through one internal runtime so the one-function API does not imply stateless initialization.
 
@@ -19,7 +19,7 @@ For each part, the scan packs its kind, logarithmic length bucket, normalized fi
 
 ## Learned context
 
-The promoted format-9 model has 32 hidden channels and a 72-unit classifier.
+The promoted format-9 model has 32 hidden channels and a 176-unit classifier.
 
 1. Sparse part features are summed into one learned vector per part.
 2. A shared five-part local window and nearest non-whitespace neighbors mix immediate evidence.
@@ -27,13 +27,15 @@ The promoted format-9 model has 32 hidden channels and a 72-unit classifier.
 4. Enhanced leaves merge bottom-up through a scale-aware butterfly binary tree. Boundary-preserving residual channels retain information from both ends of a region.
 5. Whole-source context propagates top-down through parent, self, sibling, cross-channel, and skip terms.
 6. The classifier combines each enhanced leaf, returned tree context, and predicted auxiliary lexical states to produce nine logits.
-7. Four byte-sized labels share each readback word. The CPU maps labels back to the prepared ranges and merges adjacent equal styled labels.
+7. Four byte-sized labels share each readback word. Each byte holds the class in its low four bits and, in its high four, the selected class's softmax probability in sixteenths. The CPU maps labels back to the prepared ranges, merges adjacent equal styled labels, and reports the lowest confidence in each span.
 
 Large inputs are tiled into 32-part subtrees for WebGPU workgroup locality. The local scan and tree-up kernels process four parts concurrently with 128-thread workgroups, while retaining the original arithmetic order within each part and recurrent scan. Block roots continue through the global tree; tiling is an execution detail, not semantic segmentation.
 
 ## Model representation
 
-Training retains 41,609 float parameters. The browser projection removes unreachable feature rows and a training-only neighbor tensor, leaving 41,321 weights. Each tensor uses symmetric per-tensor signed int6 quantization. Six-bit codes are stored as a compression-friendly one-character alphabet and expanded into GPU buffers once during initialization.
+Training retains 50,969 float parameters. The browser projection removes unreachable feature rows and a training-only neighbor tensor, leaving 50,681 weights. Each tensor uses symmetric per-tensor signed int6 quantization. Six-bit codes are stored as a compression-friendly one-character alphabet and expanded into GPU buffers once during initialization.
+
+The runtime weight buffer starts with the classifier heads. Their matrices are stored four output units side by side, so each classifier thread computes four units from one contiguous run of vec4 loads; the matrices of the scan stages and the output layer stay column-major. The package entry imports the weights after the runtime, which places the weight string at the end of the bundle: Brotli then codes the code and the weights as two runs, about 180 bytes smaller than with the weights in the middle. The weights are 76% of the package, and Brotli already codes them within 0.5% of their per-tensor entropy; adaptive models conditioned on neighboring weights, rows, or columns were no smaller, so the weights cannot shrink without changing them.
 
 The shader is generated from the promoted model metadata and minified during the core build. Promotion validates tensor names, shapes, offsets, scales, packed length, model format, feature version, class order, and verification provenance before replacing generated runtime artifacts.
 
@@ -59,5 +61,20 @@ On October 22, 2026, four exact changes reduced the same 10-copy input from abou
 - CPU preparation uses lookup tables and buffer capacity is rounded to a sixteenth of the next power of two.
 
 Labels and spans matched the previous runtime for 5,028 corpus files, one request at a time and batched, plus one and ten copies of three.min.js, in both FP16 and FP32. See [the browser benchmark report](packages/benchmark/reports/browser-performance-2026-10-22.json).
+
+On November 17, 2026, the 176-unit classifier and per-span confidence raised the same 10-copy input from about 228 ms to 270 ms. Both builds ran in headless Chrome with FP16 on an Apple M4 Pro, alternating three times, each run the median of nine fresh-worker samples: the previous package gave 235, 214, and 236 ms, and the new one 270 ms each time. The two changes were not timed separately.
+
+Later that day, four exact changes reduced it from 270 ms to 190 ms (187.0 ms in the seven-library comparison of the report below), and the package from 31,062 to 31,011 bytes:
+
+- Each classifier thread reads a part's leaf and tree context once into private memory and computes four output units per vec4 load. Before, a thread computed one unit at a time and re-read the leaf state from storage for every unit.
+- The classifier heads' weights start the weight buffer. On the Apple GPU the classifier loop runs about 40% slower whenever one of its vec4 indices reaches 4096. Binding the same buffer 64 KiB further into memory changed nothing, so the cause is the code Metal generates for small index ranges, not placement. A core test fails if the classifier matrix would end past that index.
+- Batches over 4,096 blocks classify in up to eight chunks, each with its own label readback, so the CPU rebuilds one chunk's spans while the GPU classifies the next.
+- Span rebuilding compares integer class codes and confidence levels, and creates names and fractions only when a span starts.
+
+In the same profile the classify pass fell from 122 ms to 73 ms; the other passes are unchanged (scan 23 ms, block prefixes 5 ms, mix and tree-up 35 ms, global tree 10 ms), with 28 ms of CPU preparation before them.
+
+On ten copies of three.min.js (1,559,165 spans), a hash over every span's type, range, and confidence matches the previous runtime. Types and ranges are identical to the committed runtime code running the same weights on the 1,929 verification files, one request at a time and batched (434,688 spans), on seven ordinary sources repeated to 2.17 million parts, and, in FP32, on three copies of three.min.js. Against the JS reference, a single copy of three.min.js differs in 4 of 168,813 spans, all near-ties at 0.44 to 0.5 confidence, before and after. See [the browser benchmark report](packages/benchmark/reports/browser-performance-2026-11-17.json).
+
+Measured and not kept: unrolling the classifier loop (3 ms for about 200 bytes), `fma` (slower), sixteen units per thread (slower), more lanes with fewer parts per batch (slower), classifying only styled parts by compaction (slower, because the batch loop bound becomes data-dependent), and a vec4 form of the scan stages (the mix pass would need a ninth storage buffer).
 
 The runtime returns spans to JavaScript, so it necessarily pays one readback synchronization. It does not render text on the GPU. For tiny snippets, a CPU lexer can be faster because dispatch overhead dominates.

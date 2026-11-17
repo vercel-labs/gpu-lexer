@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  BUFFER_FEATURES, createInspectableRuntime as createRuntime, preparePromotedWeights,
-} from "../src/gpu.js";
+import { TREE_HIDDEN_SIZE } from "../src/constants.js";
+import { BUFFER_FEATURES } from "../src/gpu.js";
+import { createInspectableRuntime as createRuntime } from "../src/inspect.js";
+import { preparePromotedWeights } from "../src/weights.js";
 import { runtimeTensorLayout } from "../src/model-layout.js";
 import { promotedModel } from "../src/model.generated.js";
-import { WEIGHT_RANGES, WEIGHTS } from "../src/model.runtime.generated.js";
+import { HIDDEN_SIZE, WEIGHT_RANGES, WEIGHTS } from "../src/model.runtime.generated.js";
 import { runtimeTreeFeatureLayout, treeFeatureLayout } from "../src/tree-features.js";
 
 test("the runtime fails clearly when WebGPU is unavailable", async () => {
@@ -63,7 +64,8 @@ test("mapped readback views are limited without copying capacity", () => {
 test("the promoted positional weights expand to finite runtime values", () => {
   const weights = preparePromotedWeights();
   const tensors = runtimeTensorLayout(promotedModel);
-  assert.equal(weights.length, 41_321);
+  assert.equal(HIDDEN_SIZE, TREE_HIDDEN_SIZE);
+  assert.equal(weights.length, 50_681);
   assert.equal(weights.every(Number.isFinite), true);
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   const expected = new Float32Array(weights.length);
@@ -76,16 +78,28 @@ test("the promoted positional weights expand to finite runtime values", () => {
         values.push(value * tensor.scale);
       }
     }
-    // Matrices read across output units are stored column-major.
-    const [rows, columns] = tensor.transpose ?? [values.length, 1];
+    // Matrices read across output units are stored column-major, and the
+    // classifier heads' matrices as four output units side by side.
+    const [rows, columns] = tensor.quads ?? tensor.transpose ?? [values.length, 1];
     for (let row = 0; row < rows; row++) {
       for (let column = 0; column < columns; column++) {
-        expected[tensor.offset + column * rows + row] = values[row * columns + column];
+        const at = tensor.quads ? ((row >> 2) * columns + column) * 4 + (row & 3) : column * rows + row;
+        expected[tensor.offset + at] = values[row * columns + column];
       }
     }
   }
-  assert.deepEqual(tensors.filter(({ transpose }) => transpose).map(({ name }) => name),
-    ["output", "classifierInput", "auxiliaryOutput", "stateInput", "stateGate", "stateMix"]);
+  // Runtime order is tuned for compression, so only the set of matrices is fixed.
+  assert.deepEqual(tensors.filter(({ transpose }) => transpose).map(({ name }) => name).sort(),
+    ["output", "stateGate", "stateInput", "stateMix"]);
+  assert.deepEqual(tensors.filter(({ quads }) => quads).map(({ name }) => name).sort(),
+    ["auxiliaryOutput", "classifierInput"]);
+  // The classifier matrix must end below vec4 index 4096 (float 16,384) of the
+  // weight buffer: past it, Apple GPUs run the classifier about 40% slower.
+  const classifierInput = tensors.find(({ name }) => name === "classifierInput");
+  assert.ok(classifierInput.offset + classifierInput.length <= 16_384);
+  // Every tensor but the nine output biases starts on a vec4 boundary.
+  assert.deepEqual(tensors.filter(({ offset }) => offset % 4).map(({ name }) => name), []);
+  assert.equal(tensors.at(-1).name, "outputBias");
   assert.deepEqual(weights, expected);
   assert.equal(tensors.some(({ name }) => name === "neighborScale"), false);
   assert.ok(tensors.some((tensor, index) => WEIGHT_RANGES[index * 2 + 1] !== tensor.scale));

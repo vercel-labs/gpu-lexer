@@ -1,9 +1,9 @@
 import {
   BUFFER_BLOCKS, BUFFER_FEATURES, BUFFER_HYBRID_NEIGHBORS, BUFFER_LABELS,
   BUFFER_LEAF_STATES, BUFFER_PARAMS, BUFFER_READBACK, BUFFER_STREAMS,
-  BUFFER_SCRATCH, BUFFER_TREE_UP, PIPELINE_TREE_GLOBAL,
-  createInspectableRuntime as createRuntime, createTreeLayout,
+  BUFFER_SCRATCH, BUFFER_TREE_UP, PIPELINE_TREE_GLOBAL, createTreeLayout,
 } from "../../core/src/gpu.js";
+import { createInspectableRuntime as createRuntime } from "../../core/src/inspect.js";
 import { HIDDEN_SIZE } from "../../core/src/model.runtime.generated.js";
 import { prepareTreeSource, releaseTreePrepared } from "../../core/src/prepare-tree.js";
 import { spansFromRanges } from "../../core/src/spans.js";
@@ -119,7 +119,7 @@ async function runProfiledTree(runner, features, streams, profileGpuPasses) {
   device.queue.writeBuffer(featureBuffer, 0, features);
   device.queue.writeBuffer(streamBuffer, 0, metadata);
   device.queue.writeBuffer(blockBuffer, 0, blocks);
-  runner.scanParams.set([streams.length / 2, tokenCount, blockCount, treeNodes]);
+  runner.scanParams.set([streams.length / 2, 0, blockCount, treeNodes]);
   device.queue.writeBuffer(paramsBuffer, 0, runner.scanParams);
   const uploadMs = performance.now() - started;
 

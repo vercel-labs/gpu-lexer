@@ -2,18 +2,24 @@ import {
   runtimeTreeFeatureLayout, unreachableTreeFeatureRows,
 } from "./tree-features.js";
 
-// Runtime order is independent from the training checkpoint schema. It was
-// selected against the promoted model's Brotli-11 output and keeps subsequent
-// offsets deterministic across shader and weight generation.
+// Runtime order is independent from the training checkpoint schema.
+//
+// The classifier heads come first. The classifier matrix is the hottest loop
+// of the runtime, and on Apple GPUs it runs about 40% slower when any of its
+// vec4 indices reaches 4096 (byte offset 65,536): shifting the buffer in
+// memory changes nothing, so the difference is in the code Metal generates
+// for small index ranges. outputBias, the only tensor whose length is not a
+// multiple of four, comes last so that every other tensor starts on a vec4
+// boundary. The rest of the order has no measured effect on speed and was
+// selected against the promoted model's Brotli-11 size, as built and as
+// re-bundled by the benchmark's size script.
 const RUNTIME_TENSOR_ORDER = [
-  "featureEmbedding", "leafBias", "mergeOwnLeft", "mergeOwnRight",
-  "mergeCrossLeft", "mergeCrossRight", "mergeBias", "output",
-  "downOwnSelf", "downOwnSibling", "downCrossParent", "downCrossSelf",
-  "downCrossSibling", "downSkip", "downLeftBias", "downRightBias",
-  "classifierInput", "classifierBias", "downOwnParent", "outputBias",
-  "auxiliaryOutput", "auxiliaryBias", "localOffsetScale", "localNonspaceScale",
-  "stateInput", "stateInputBias", "stateGate", "stateGateBias", "stateMix",
-  "stateMixBias",
+  "auxiliaryOutput", "auxiliaryBias", "classifierInput", "classifierBias", "stateGate",
+  "output", "downSkip", "localOffsetScale", "downOwnSelf", "mergeOwnLeft",
+  "mergeOwnRight", "downRightBias", "mergeCrossRight", "mergeBias", "downOwnSibling",
+  "downCrossParent", "downCrossSelf", "downOwnParent", "localNonspaceScale", "leafBias",
+  "downLeftBias", "mergeCrossLeft", "stateInputBias", "downCrossSibling", "stateMix",
+  "stateMixBias", "featureEmbedding", "stateInput", "stateGateBias", "outputBias",
 ];
 
 export function isHybridTree(model) {
@@ -69,10 +75,15 @@ export function runtimeTensorLayout(model) {
       ? compactFeatures.inputSize * hidden
       : source.length;
     const transpose = transposedShape(model, name);
-    if (transpose && transpose[0] * transpose[1] !== length) {
+    const quads = quadShape(model, name);
+    const shape = transpose ?? quads;
+    if (shape && shape[0] * shape[1] !== length) {
       throw new Error(`invalid runtime matrix shape for ${name}`);
     }
-    const tensor = { name, offset, length, scale: source.scale, sourceRanges, transpose };
+    if (quads && quads[0] % 4) {
+      throw new Error(`runtime tensor ${name} needs a multiple of four output units`);
+    }
+    const tensor = { name, offset, length, scale: source.scale, sourceRanges, transpose, quads };
     offset += length;
     return tensor;
   });
@@ -84,13 +95,22 @@ export function runtimeTensorLayout(model) {
 // unchanged.
 function transposedShape(model, name) {
   const hidden = model.hiddenSize;
-  const classifier = model.architecture.classifierDimensions;
-  const auxiliary = model.architecture.auxiliaryStates.length;
   if (name === "stateInput" || name === "stateGate") return [hidden, hidden];
   if (name === "stateMix") return [hidden, hidden * 2];
-  if (name === "classifierInput") return [classifier, hidden * 2 + auxiliary];
+  if (name === "output") return [model.outputSize, model.architecture.classifierDimensions];
+  return undefined;
+}
+
+// The classifier and auxiliary heads compute four output units per thread.
+// Their [rows][columns] matrices are stored as [rows / 4][columns][4], so a
+// thread reads its four units' weights for one input in a single vec4 load
+// and walks one contiguous run of the buffer. Values and summation order are
+// unchanged.
+function quadShape(model, name) {
+  const hidden = model.hiddenSize;
+  const auxiliary = model.architecture.auxiliaryStates.length;
+  if (name === "classifierInput") return [model.architecture.classifierDimensions, hidden * 2 + auxiliary];
   if (name === "auxiliaryOutput") return [auxiliary, hidden * 2];
-  if (name === "output") return [model.outputSize, classifier];
   return undefined;
 }
 

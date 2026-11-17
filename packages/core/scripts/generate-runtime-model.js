@@ -40,12 +40,14 @@ export function runtimeModelContents(model) {
       throw new Error(`runtime tensor ${tensor.name} has an invalid compact offset`);
     }
     offset += tensor.length;
-    ranges.push(offset, shortestEquivalentScale(model, tensor));
+    // Lengths repeat across tensors, so they compress better than end offsets.
+    ranges.push(tensor.length, shortestEquivalentScale(model, tensor));
     let values = "";
     for (let range = 0; range < tensor.sourceRanges.length; range += 2) {
       values += model.weights.slice(tensor.sourceRanges[range], tensor.sourceRanges[range + 1]);
     }
-    weights += tensor.transpose ? transposeSymbols(values, ...tensor.transpose) : values;
+    weights += tensor.quads ? quadSymbols(values, ...tensor.quads)
+      : tensor.transpose ? transposeSymbols(values, ...tensor.transpose) : values;
   }
   if (weights.length !== offset) {
     throw new Error("runtime model compact weight count is invalid");
@@ -56,6 +58,17 @@ export function runtimeModelContents(model) {
     `export const WEIGHT_BITS=${model.quantization.bits};\n` +
     `export const WEIGHT_RANGES=${JSON.stringify(ranges)};\n` +
     `export const WEIGHTS=${JSON.stringify(weights)};\n`;
+}
+
+// Row-major [rows][columns] to [rows / 4][columns][4]: four output units side by side.
+export function quadSymbols(values, rows, columns) {
+  let result = "";
+  for (let quad = 0; quad < rows / 4; quad++) {
+    for (let column = 0; column < columns; column++) {
+      for (let unit = 0; unit < 4; unit++) result += values[(quad * 4 + unit) * columns + column];
+    }
+  }
+  return result;
 }
 
 // Row-major [rows][columns] to column-major.

@@ -17,11 +17,11 @@ The CPU makes one mechanical pass over the source, splitting it into word runs, 
 
 The GPU embeds those sparse features into 32 learned channels. A five-part neighborhood and exact bidirectional affine scans add ordered local context. A shared-weight binary tree then combines 32-part blocks bottom-up, merges block roots across the whole source, and propagates context back down. A small classifier assigns one of nine visual classes to every original part in parallel; adjacent equal classes become the returned spans.
 
-The promoted runtime is format 9 (`local-affine-tree`), with 41,321 reachable browser weights encoded at six bits each. The current minified package is 28.52 KiB (29,200 bytes) with Brotli compression.
+The promoted runtime is format 9 (`local-affine-tree`), with 50,681 reachable browser weights encoded at six bits each. The current minified package is 30.28 KiB (31,011 bytes) with Brotli compression.
 
 ## Accuracy
 
-The model is trained against Shiki labels, so reported quality is agreement with Shiki rather than objective semantic correctness. The promoted checkpoint `20261114T092944.130Z` reaches 88.20% agreement and 82.32% styled macro F1 on the held-out verification corpus. The verification split is repository/package-disjoint from training and also includes the website examples. See [MODEL_CARD.md](MODEL_CARD.md) for the evaluation contract and limitations.
+The model is trained against Shiki labels, so reported quality is agreement with Shiki rather than objective semantic correctness. The promoted checkpoint `20261117T071411.182Z` reaches 89.89% agreement and 84.28% styled macro F1 on the held-out verification corpus. The verification split is repository/package-disjoint from training and also includes the website examples. See [MODEL_CARD.md](MODEL_CARD.md) for the evaluation contract and limitations.
 
 `gpu-lexer` can label unfamiliar languages because no language ID is supplied, but it may confidently misclassify ambiguous syntax. It is not a parser, compiler, linter, or security tool.
 

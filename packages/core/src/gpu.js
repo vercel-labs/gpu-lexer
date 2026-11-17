@@ -1,10 +1,7 @@
-import {
-  HIDDEN_SIZE, WEIGHT_RANGES, WEIGHTS,
-} from "./model.runtime.generated.js";
 import { createPromotedShader, TREE_ENTRY_POINTS } from "./shader.min.generated.js";
 import { prepareTreeSource, releaseTreePrepared } from "./prepare-tree.js";
 import { spansFromRanges } from "./spans.js";
-import { TREE_FEATURE_STRIDE } from "./constants.js";
+import { TREE_FEATURE_STRIDE, TREE_HIDDEN_SIZE as HIDDEN_SIZE } from "./constants.js";
 
 const MAP_READ = 1;
 const COPY_SRC = 4;
@@ -25,6 +22,9 @@ export const BUFFER_LEAF_STATES = 6;
 export const BUFFER_TREE_UP = 7;
 export const BUFFER_SCRATCH = 8;
 export const BUFFER_HYBRID_NEIGHBORS = 9;
+// Readback chunks after the first use slots 10, 18, ... 58.
+const BUFFER_READBACK_STRIDE = 8;
+const CHUNK_MIN_BLOCKS = 4096;
 const BUFFER_WEIGHTS = -1;
 const BUFFER_OBJECT = 0;
 const BUFFER_SIZE = 1;
@@ -37,7 +37,12 @@ const LAYOUT_COUNT = 4;
 const LAYOUT_TREE_NODES = 5;
 const LAYOUT_SOURCE = 6;
 
+// This module must not import the weights: the entry point imports them after
+// it, which puts the weight string at the end of the bundle. Brotli then codes
+// the code and the weights as two runs instead of switching models twice,
+// which saves about 180 bytes.
 export function createRuntime(
+  prepareWeights,
   gpu = globalThis.navigator?.gpu,
   device,
   shader,
@@ -87,7 +92,7 @@ export function createRuntime(
       });
       pipelines = await Promise.all(Array.from(TREE_ENTRY_POINTS, create));
 
-      const expanded = preparePromotedWeights();
+      const expanded = prepareWeights();
       weightBuffer = device.createBuffer({
         size: expanded.byteLength,
         usage: STORAGE | COPY_DST,
@@ -113,7 +118,6 @@ export function createRuntime(
     const labelBytes = (tokenCount + 3) & ~3;
     const featureBuffer = ensureBuffer(BUFFER_FEATURES, features.byteLength, STORAGE | COPY_DST);
     const labelBuffer = ensureBuffer(BUFFER_LABELS, labelBytes, STORAGE | COPY_SRC | COPY_DST);
-    const readBuffer = ensureBuffer(BUFFER_READBACK, labelBytes, MAP_READ | COPY_DST);
     const paramsBuffer = ensureBuffer(BUFFER_PARAMS, 16, UNIFORM | COPY_DST);
     const layout = treeLayout = createTreeLayout(streams, treeLayout);
     const metadata = layout[LAYOUT_STREAMS];
@@ -130,34 +134,61 @@ export function createRuntime(
     ensureBuffer(BUFFER_SCRATCH,
       Math.max(blockCount * HIDDEN_SIZE * 16, treeNodes * HIDDEN_SIZE * 4), STORAGE);
     ensureBuffer(BUFFER_HYBRID_NEIGHBORS, blockCount * 8, STORAGE);
+    // A large batch classifies its blocks in up to eight chunks, each with its
+    // own readback, so the spans of one chunk are rebuilt while the GPU
+    // classifies the next.
+    const chunkBlocks = Math.max(CHUNK_MIN_BLOCKS, (blockCount + 7) >> 3);
+    const chunks = [];
     try {
       device.queue.writeBuffer(featureBuffer, 0, features);
       device.queue.writeBuffer(streamBuffer, 0, metadata);
       device.queue.writeBuffer(blockBuffer, 0, blocks);
-      scanParams.set([streams.length / 2, tokenCount, blockCount, treeNodes]);
-      device.queue.writeBuffer(paramsBuffer, 0, scanParams);
-      const encoder = device.createCommandEncoder();
-      encoder.clearBuffer(labelBuffer, 0, labelBytes);
       const groups = treeBindGroups ??= createTreeBindGroups();
-      const pass = encoder.beginComputePass();
-      const encode = (pipeline, bindGroup, workgroups) => {
-        pass.setPipeline(pipeline);
-        pass.setBindGroup(0, bindGroup);
+      let pass;
+      const encode = (index, workgroups) => {
+        pass.setPipeline(pipelines[index]);
+        pass.setBindGroup(0, groups[index]);
         const x = Math.min(65_535, workgroups);
         pass.dispatchWorkgroups(x, Math.ceil(workgroups / x));
       };
-      const counts = [(blockCount + 63) >> 6, streams.length >> 1,
-        blockCount, streams.length * 2, blockCount];
-      counts.forEach((count, index) => encode(pipelines[index], groups[index], count));
-      encode(pipelines[PIPELINE_TREE_GLOBAL], groups[PIPELINE_TREE_GLOBAL], streams.length / 2);
-      encode(pipelines[6], groups[6], blockCount);
-      pass.end();
-      encoder.copyBufferToBuffer(labelBuffer, 0, readBuffer, 0, labelBytes);
-      device.queue.submit([encoder.finish()]);
-      await readBuffer.mapAsync(1);
-      return consume(new Uint32Array(readBuffer.getMappedRange(), 0, labelBytes / 4));
+      for (let first = 0; first < blockCount; first += chunkBlocks) {
+        const end = Math.min(blockCount, first + chunkBlocks);
+        // The chunk covers parts [from, to) and reads back the label words they touch.
+        const from = blocks[first * 4];
+        const to = end < blockCount ? blocks[end * 4] : tokenCount;
+        const word = from & ~3;
+        const bytes = ((to + 3) & ~3) - word;
+        const readBuffer = ensureBuffer(BUFFER_READBACK + chunks.length * BUFFER_READBACK_STRIDE, bytes,
+          MAP_READ | COPY_DST);
+        // The first submission also runs every earlier pass, which needs the
+        // whole block count; later chunks stop at their own end.
+        scanParams.set([streams.length / 2, first, first ? end : blockCount, treeNodes]);
+        device.queue.writeBuffer(paramsBuffer, 0, scanParams);
+        const encoder = device.createCommandEncoder();
+        // The previous chunk has already copied out its share of a boundary word.
+        encoder.clearBuffer(labelBuffer, word, bytes);
+        pass = encoder.beginComputePass();
+        if (!first) {
+          [(blockCount + 63) >> 6, streams.length >> 1, blockCount, streams.length * 2, blockCount,
+            streams.length / 2].forEach((count, index) => encode(index, count));
+        }
+        encode(6, end - first);
+        pass.end();
+        encoder.copyBufferToBuffer(labelBuffer, word, readBuffer, 0, bytes);
+        device.queue.submit([encoder.finish()]);
+        chunks.push([readBuffer, bytes, word, from, to]);
+      }
+      // Readback buffers are never bound, so allocating one did not stale the groups.
+      treeBindGroups = groups;
+      let result;
+      for (const [readBuffer, bytes, word, from, to] of chunks) {
+        await readBuffer.mapAsync(1);
+        result = consume(new Uint32Array(readBuffer.getMappedRange(), 0, bytes / 4), -word, from, to);
+        readBuffer.unmap();
+      }
+      return result;
     } finally {
-      if (readBuffer.mapState === "mapped") readBuffer.unmap();
+      for (const [readBuffer] of chunks) if (readBuffer.mapState === "mapped") readBuffer.unmap();
     }
   }
 
@@ -201,7 +232,7 @@ export function createRuntime(
         [11, BUFFER_SCRATCH], [12, BUFFER_HYBRID_NEIGHBORS]],
       [[2, BUFFER_PARAMS], [3, BUFFER_STREAMS], [4, BUFFER_WEIGHTS],
         [6, BUFFER_TREE_UP], [11, BUFFER_SCRATCH]],
-      [[0, BUFFER_FEATURES], [1, BUFFER_LABELS], [2, BUFFER_PARAMS], [4, BUFFER_WEIGHTS],
+      [[0, BUFFER_FEATURES], [1, BUFFER_LABELS], [2, BUFFER_PARAMS], [4, BUFFER_WEIGHTS], [13, BUFFER_WEIGHTS],
         [3, BUFFER_STREAMS], [5, BUFFER_LEAF_STATES], [9, BUFFER_BLOCKS], [11, BUFFER_SCRATCH]],
     ];
     return entries.map((entry, index) => bind(pipelines[index], entry));
@@ -261,13 +292,19 @@ export function createRuntime(
     }
 
     try {
-      await run(features, streams, (labels) => {
-        let labelOffset = 0;
+      // Labels for parts [from, to) of the batch arrive in one or more calls;
+      // label 0 of each call belongs to part -labelOffset.
+      await run(features, streams, (labels, labelOffset = 0, from = 0, to = tokenCount) => {
+        let start = 0;
         for (const request of requests) {
           const [prepared, resolve] = request;
           const [, ranges, , requestTokens] = prepared;
-          resolve(spansFromRanges(ranges, labels, labelOffset));
-          labelOffset += requestTokens;
+          if (start < to && start + requestTokens > from) {
+            request[3] = spansFromRanges(ranges, labels, labelOffset + start,
+              Math.max(0, from - start), Math.min(requestTokens, to - start), request[3]);
+            if (start + requestTokens <= to) resolve(request[3]);
+          }
+          start += requestTokens;
         }
       });
     } catch (error) {
@@ -289,33 +326,6 @@ export function createRuntime(
     set q(value) { treeBindGroups = value; },
     get l() { return treeLayout; },
     set l(value) { treeLayout = value; },
-  };
-}
-
-// Readable access to runtime internals for tests and the benchmark profiler.
-// The public build never imports this export, so bundlers remove it entirely.
-export function createInspectableRuntime(options = {}) {
-  const runtime = createRuntime(
-    options.gpu === undefined ? globalThis.navigator?.gpu : options.gpu,
-    options.device,
-    options.shader,
-    options.run,
-  );
-  return {
-    parse: runtime.h,
-    initialize: runtime.i,
-    run: runtime.r,
-    ensureBuffer: runtime.e,
-    createTreeBindGroups: runtime.g,
-    buffers: runtime.b,
-    scanParams: runtime.p,
-    get device() { return runtime.d; },
-    get useF16() { return runtime.f; },
-    get pipelines() { return runtime.c; },
-    get treeBindGroups() { return runtime.q; },
-    set treeBindGroups(value) { runtime.q = value; },
-    get treeLayout() { return runtime.l; },
-    set treeLayout(value) { runtime.l = value; },
   };
 }
 
@@ -376,20 +386,4 @@ function growCapacity(minimum, maximum) {
   const step = Math.max(256, 2 ** (32 - Math.clz32(minimum - 1)) / 16);
   const size = Math.max(256, Math.ceil(minimum / step) * step);
   return size <= maximum ? size : Math.ceil(minimum / 4) * 4;
-}
-
-export function preparePromotedWeights() {
-  const result = new Float32Array(WEIGHTS.length);
-  let start = 0;
-  for (let range = 0; range < WEIGHT_RANGES.length; range += 2) {
-    const end = WEIGHT_RANGES[range];
-    const scale = WEIGHT_RANGES[range + 1];
-    for (let index = start; index < end; index++) {
-      const code = WEIGHTS.charCodeAt(index);
-      const value = code >= 97 ? code - 71 : code >= 65 ? code - 65 : code >= 48 ? code + 4 : code === 45 ? 62 : 63;
-      result[index] = (value & 1 ? -(value + 1) / 2 : value / 2) * scale;
-    }
-    start = end;
-  }
-  return result;
 }

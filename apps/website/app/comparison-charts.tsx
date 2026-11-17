@@ -8,13 +8,13 @@ type BarDatum = {
 }
 
 const performance: readonly BarDatum[] = [
-  { label: 'Highlights', value: 75.3 },
-  { label: 'gpu-lexer', value: 220.5, featured: true },
-  { label: 'Sugar High', value: 820 },
-  { label: 'Prism.js', value: 1238.1 },
-  { label: 'Highlight.js', value: 1364 },
-  { label: 'Starry Night', value: 11356.1 },
-  { label: 'Shiki', value: 30438.8 },
+  { label: 'Highlights', value: 81.6 },
+  { label: 'gpu-lexer', value: 187, featured: true },
+  { label: 'Sugar High', value: 813.3 },
+  { label: 'Prism.js', value: 1163.5 },
+  { label: 'Highlight.js', value: 1400.1 },
+  { label: 'Starry Night', value: 11339.4 },
+  { label: 'Shiki', value: 30271.9 },
 ]
 
 const bundleSizes: readonly BarDatum[] = [
@@ -22,7 +22,7 @@ const bundleSizes: readonly BarDatum[] = [
   { label: 'Prism.js (major 6 web languages)', value: 8_848 },
   { label: 'Sugar High (all 29 languages)', value: 9_032 },
   { label: 'Highlight.js (major 6 web languages)', value: 15_261 },
-  { label: 'gpu-lexer (one model)', value: 29_165, featured: true },
+  { label: 'gpu-lexer (one model)', value: 31_005, featured: true },
   { label: 'Highlights (all 80 languages)', value: 98_187 },
   { label: 'Prism.js (all 297 languages)', value: 165_992 },
   { label: 'Starry Night (major 6 web languages)', value: 189_775 },

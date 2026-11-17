@@ -1,3 +1,4 @@
+import { TREE_HIDDEN_SIZE } from "./constants.js";
 import { runtimeTensorLayout, validTreeContext } from "./model-layout.js";
 import {
   TREE_SECONDARY_HASH_BUCKETS, TREE_SYMBOL_PAIR_BUCKETS,
@@ -5,7 +6,7 @@ import {
 } from "./tree-features.js";
 
 const BLOCK = 32;
-const HIDDEN = 32;
+const HIDDEN = TREE_HIDDEN_SIZE;
 const HEAP = BLOCK * 2 - 1;
 // Share the block's workgroup storage across four tokens at a time. Each
 // token keeps its original channel arithmetic and ordered recurrent updates.
@@ -40,6 +41,12 @@ export function createTreeShader(model, { f16 = false } = {}) {
     if (!tensors[name]) throw new Error(`promoted hierarchical-tree model is missing ${name}`);
     return tensors[name].offset;
   };
+  // The classifier and auxiliary heads read four output units per load
+  // through the vec4 view of the weights; see quadShape in model-layout.js.
+  if (["classifierInput", "classifierBias", "auxiliaryOutput", "auxiliaryBias"].some((name) => offset(name) % 4)) {
+    throw new Error("classifier head tensors must start on vec4 boundaries of the weight buffer");
+  }
+  const embedding = offset("featureEmbedding") ? `${offset("featureEmbedding")}u + ` : "";
   const contextType = f16 ? "f16" : "f32";
   const cast = (value) => f16 ? `f16(${value})` : value;
   const read = (value) => f16 ? `f32(${value})` : value;
@@ -48,23 +55,23 @@ export function createTreeShader(model, { f16 = false } = {}) {
   const partnerDepth = Math.log2(hidden) - 1;
   const hashFeature = hashBuckets ? `
   if (kind == 0u) {
-    sum += weights[${offset("featureEmbedding")}u + (${featureLayout.primaryHash}u + (((packed >> 19u) & 255u) & ${hashBuckets - 1}u)) * ${hidden}u + h];${featureVersion >= 3 ? `
-    sum += weights[${offset("featureEmbedding")}u + (${featureLayout.secondaryHash}u + ((context >> 15u) & 127u)) * ${hidden}u + h];` : ""}
+    sum += weights[${embedding}(${featureLayout.primaryHash}u + ((packed >> 19u) & ${Math.min(255, hashBuckets - 1)}u)) * ${hidden}u + h];${featureVersion >= 3 ? `
+    sum += weights[${embedding}(${featureLayout.secondaryHash}u + ((context >> 15u) & 127u)) * ${hidden}u + h];` : ""}
   }` : "";
   const symbolPairFeatures = featureVersion >= 3 ? `
   let previous_symbol_pair = (context >> 22u) & 31u;
   let next_symbol_pair = (context >> 27u) & 31u;
   if (previous_symbol_pair != 0u) {
-    sum += weights[${offset("featureEmbedding")}u + (${featureLayout.previousSymbolPair}u + previous_symbol_pair - 1u) * ${hidden}u + h];
+    sum += weights[${embedding}(${featureLayout.previousSymbolPair}u + previous_symbol_pair - 1u) * ${hidden}u + h];
   }
   if (next_symbol_pair != 0u) {
-    sum += weights[${offset("featureEmbedding")}u + (${featureLayout.nextSymbolPair}u + next_symbol_pair - 1u) * ${hidden}u + h];
+    sum += weights[${embedding}(${featureLayout.nextSymbolPair}u + next_symbol_pair - 1u) * ${hidden}u + h];
   }` : "";
 
   return /* wgsl */ `${enable}
-struct Params { stream_count: u32, token_count: u32, block_count: u32, tree_nodes: u32, }
-struct TreeStream { start: u32, count: u32, block_start: u32, block_count: u32, tree_offset: u32, tree_power: u32, }
-struct TreeBlock { start: u32, count: u32, stream: u32, local_index: u32, }
+struct Params { stream_count: u32, first_block: u32, block_count: u32, tree_nodes: u32, }
+struct TreeStream { part_start: u32, part_count: u32, block_start: u32, block_count: u32, tree_offset: u32, tree_power: u32, }
+struct TreeBlock { part_start: u32, part_count: u32, block_stream: u32, local_index: u32, }
 @group(0) @binding(0) var<storage, read> features: array<u32>;
 @group(0) @binding(1) var<storage, read_write> labels: array<atomic<u32>>;
 @group(0) @binding(2) var<uniform> params: Params;
@@ -77,6 +84,8 @@ struct TreeBlock { start: u32, count: u32, stream: u32, local_index: u32, }
 @group(0) @binding(9) var<storage, read> blocks: array<TreeBlock>;
 @group(0) @binding(11) var<storage, read_write> scratch: array<f32>;
 @group(0) @binding(12) var<storage, read_write> hybrid_neighbors: array<vec2<u32>>;
+// The same buffer as weights, read four at a time by the classifier heads.
+@group(0) @binding(13) var<storage, read> weights4: array<vec4<f32>>;
 var<workgroup> hybrid_work: array<vec4<f32>, ${BLOCK * hidden}>;
 var<workgroup> local_tree: array<f32, ${HEAP * hidden}>;
 var<workgroup> classifier_auxiliary: array<f32, ${CLASSIFIER_TOKENS * auxiliary}>;
@@ -92,24 +101,24 @@ fn raw_state(token: u32, start: u32, end: u32, h: u32) -> f32 {
   let packed = features[token * 2u];
   let context = features[token * 2u + 1u];
   let kind = packed & 3u;
-  var sum = weights[${offset("featureEmbedding")}u + kind * ${hidden}u + h];
-  sum += weights[${offset("featureEmbedding")}u + (4u + ((packed >> 2u) & 7u)) * ${hidden}u + h];
-  sum += weights[${offset("featureEmbedding")}u + (12u + ((packed >> 5u) & 127u)) * ${hidden}u + h];
-  sum += weights[${offset("featureEmbedding")}u + (140u + ((packed >> 12u) & 127u)) * ${hidden}u + h];${hashFeature}
+  var sum = weights[${embedding}kind * ${hidden}u + h];
+  sum += weights[${embedding}(4u + ((packed >> 2u) & 7u)) * ${hidden}u + h];
+  sum += weights[${embedding}(12u + ((packed >> 5u) & 127u)) * ${hidden}u + h];
+  sum += weights[${embedding}(140u + ((packed >> 12u) & 127u)) * ${hidden}u + h];${hashFeature}
   let flag_offset = ${featureLayout.flags}u;
   let flags = context & 127u;
   for (var bit = 0u; bit < 7u; bit++) {
     if ((flags & (1u << bit)) != 0u) {
-      sum += weights[${offset("featureEmbedding")}u + (flag_offset + bit) * ${hidden}u + h];
+      sum += weights[${embedding}(flag_offset + bit) * ${hidden}u + h];
     }
   }
   let previous_pair = (context >> 7u) & 15u;
   let next_pair = (context >> 11u) & 15u;
   if (previous_pair != 0u) {
-    sum += weights[${offset("featureEmbedding")}u + (${featureLayout.previousPair}u + previous_pair - 1u) * ${hidden}u + h];
+    sum += weights[${embedding}(${featureLayout.previousPair}u + previous_pair - 1u) * ${hidden}u + h];
   }
   if (next_pair != 0u) {
-    sum += weights[${offset("featureEmbedding")}u + (${featureLayout.nextPair}u + next_pair - 1u) * ${hidden}u + h];
+    sum += weights[${embedding}(${featureLayout.nextPair}u + next_pair - 1u) * ${hidden}u + h];
   }${symbolPairFeatures}
   return sum;
 }
@@ -117,8 +126,8 @@ fn raw_state(token: u32, start: u32, end: u32, h: u32) -> f32 {
 // Raw embeddings of the current block's parts are cached in hybrid_work[.w];
 // parts outside the block (window edges and distant neighbors) are computed.
 fn block_raw_state(token: u32, block: TreeBlock, start: u32, end: u32, h: u32) -> f32 {
-  if (token >= block.start && token < block.start + block.count) {
-    return hybrid_work[(token - block.start) * ${hidden}u + h].w;
+  if (token >= block.part_start && token < block.part_start + block.part_count) {
+    return hybrid_work[(token - block.part_start) * ${hidden}u + h].w;
   }
   return raw_state(token, start, end, h);
 }
@@ -180,7 +189,8 @@ fn descend_state(
   return parent * skip + mixed * (1.0 - skip);
 }
 
-// Leaves each block part's local state in hybrid_work[part * hidden + h].x.
+// Leaves each block part's local state in hybrid_work[part * hidden + h].x
+// and its affine scan pair in .y and .z.
 // The scan and mix passes both recompute it instead of round-tripping
 // token_count * hidden f32 values through a storage buffer. Each part's raw
 // embedding is computed once into .w and shared by its five-part windows and
@@ -188,15 +198,15 @@ fn descend_state(
 fn load_local_states(index: u32, block: TreeBlock, stream: TreeStream, lane_index: u32) {
   let h = lane_index & ${hidden - 1}u;
   let token_lane = lane_index >> 5u;
-  if (lane_index < block.count) {
-    let token = block.start + lane_index;
+  if (lane_index < block.part_count) {
+    let token = block.part_start + lane_index;
     var previous = hybrid_neighbors[index].y;
     var next = hybrid_neighbors[index].x;
-    for (var i = token; i > block.start; i--) {
+    for (var i = token; i > block.part_start; i--) {
       let kind = features[(i - 1u) * 2u] & 3u;
       if (kind != 1u && kind != 2u) { previous = i - 1u; break; }
     }
-    for (var i = token + 1u; i < block.start + block.count; i++) {
+    for (var i = token + 1u; i < block.part_start + block.part_count; i++) {
       let kind = features[i * 2u] & 3u;
       if (kind != 1u && kind != 2u) { next = i; break; }
     }
@@ -206,14 +216,20 @@ fn load_local_states(index: u32, block: TreeBlock, stream: TreeStream, lane_inde
   // A vector-component store may rewrite the whole vec4, so the .yz neighbor
   // stores and the .w cache stores to the same element need separate phases.
   workgroupBarrier();
-  let end = stream.start + stream.count;
-  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
-    hybrid_work[i * ${hidden}u + h].w = raw_state(block.start + i, stream.start, end, h);
+  let end = stream.part_start + stream.part_count;
+  for (var i = token_lane; i < block.part_count; i += ${LOCAL_TOKEN_LANES}u) {
+    hybrid_work[i * ${hidden}u + h].w = raw_state(block.part_start + i, stream.part_start, end, h);
   }
   workgroupBarrier();
-  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
-    hybrid_work[i * ${hidden}u + h].x = local_state(block.start + i, block, h, stream.start, end,
+  for (var i = token_lane; i < block.part_count; i += ${LOCAL_TOKEN_LANES}u) {
+    hybrid_work[i * ${hidden}u + h].x = local_state(block.part_start + i, block, h, stream.part_start, end,
       hybrid_work[i * ${hidden}u].yz);
+  }
+  workgroupBarrier();
+  for (var i = token_lane; i < block.part_count; i += ${LOCAL_TOKEN_LANES}u) {
+    let pair = affine_at(i, h);
+    hybrid_work[i * ${hidden}u + h].y = pair.x;
+    hybrid_work[i * ${hidden}u + h].z = pair.y;
   }
   workgroupBarrier();
 }
@@ -225,8 +241,8 @@ fn hybrid_neighbor_blocks(@builtin(global_invocation_id) id: vec3<u32>) {
   let block = blocks[index];
   var first = 0xffffffffu;
   var last = 0xffffffffu;
-  for (var i = 0u; i < block.count; i++) {
-    let token = block.start + i;
+  for (var i = 0u; i < block.part_count; i++) {
+    let token = block.part_start + i;
     let kind = features[token * 2u] & 3u;
     if (kind != 1u && kind != 2u) {
       if (first == 0xffffffffu) { first = token; }
@@ -236,25 +252,18 @@ fn hybrid_neighbor_blocks(@builtin(global_invocation_id) id: vec3<u32>) {
   hybrid_neighbors[index] = vec2<u32>(first, last);
 }
 
-// One workgroup per stream: exclusive scans over its blocks give each block the
-// last nonspace part before it (.y, a max-scan) and the first one after it
-// (.x, a reverse min-scan). Integer-only, so results match a serial walk.
-@compute @workgroup_size(${NEIGHBOR_LANES})
-fn hybrid_neighbor_prefixes(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_invocation_id) local: vec3<u32>) {
-  let index = flat_group(group);
-  if (index >= params.stream_count) { return; }
-  let stream = streams[index];
-  let lane = local.x;
-  // Previous: store part + 1 so zero means "none" and max() keeps the latest.
+// An exclusive max-scan over a stream's blocks. Forward, it leaves each block
+// the last nonspace part before it, stored as part + 1 so that zero means
+// "none". In reverse it leaves the first nonspace part after it, stored
+// bit-inverted so that "none" (0xffffffff) is zero and the nearest part is the
+// largest. Integer-only, so results match a serial walk.
+fn neighbor_prefix_scan(stream: TreeStream, lane: u32, reverse: bool) {
   var carry = 0u;
   for (var chunk = 0u; chunk < stream.block_count; chunk += ${NEIGHBOR_LANES}u) {
     let valid = chunk + lane < stream.block_count;
-    let b = stream.block_start + chunk + lane;
+    let b = stream.block_start + select(chunk + lane, stream.block_count - 1u - chunk - lane, reverse);
     var value = 0u;
-    if (valid) {
-      let last = hybrid_neighbors[b].y;
-      value = select(last + 1u, 0u, last == 0xffffffffu);
-    }
+    if (valid) { value = select(hybrid_neighbors[b].y + 1u, ~hybrid_neighbors[b].x, reverse); }
     neighbor_scan[lane] = value;
     for (var step = 1u; step < ${NEIGHBOR_LANES}u; step = step << 1u) {
       workgroupBarrier();
@@ -267,39 +276,25 @@ fn hybrid_neighbor_prefixes(@builtin(workgroup_id) group: vec3<u32>, @builtin(lo
     workgroupBarrier();
     var before = carry;
     if (lane > 0u) { before = max(carry, neighbor_scan[lane - 1u]); }
-    if (valid) { hybrid_neighbors[b].y = select(before - 1u, 0xffffffffu, before == 0u); }
+    if (valid) {
+      if (reverse) { hybrid_neighbors[b].x = ~before; } else { hybrid_neighbors[b].y = before - 1u; }
+    }
     carry = max(carry, neighbor_scan[${NEIGHBOR_LANES - 1}u]);
     workgroupBarrier();
   }
+}
+
+// One workgroup per stream gives each block its nearest nonspace parts outside it.
+@compute @workgroup_size(${NEIGHBOR_LANES})
+fn hybrid_neighbor_prefixes(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_invocation_id) local: vec3<u32>) {
+  let index = flat_group(group);
+  if (index >= params.stream_count) { return; }
+  let stream = streams[index];
+  neighbor_prefix_scan(stream, local.x, false);
   // A component store may rewrite the whole vec2; make the .y stores visible
   // before other invocations store .x into the same elements.
   storageBarrier(); workgroupBarrier();
-  // Next: 0xffffffff means "none" and is the identity for min().
-  carry = 0xffffffffu;
-  for (var chunk = 0u; chunk < stream.block_count; chunk += ${NEIGHBOR_LANES}u) {
-    let valid = chunk + lane < stream.block_count;
-    var b = 0u;
-    var value = 0xffffffffu;
-    if (valid) {
-      b = stream.block_start + stream.block_count - 1u - chunk - lane;
-      value = hybrid_neighbors[b].x;
-    }
-    neighbor_scan[lane] = value;
-    for (var step = 1u; step < ${NEIGHBOR_LANES}u; step = step << 1u) {
-      workgroupBarrier();
-      var previous = 0xffffffffu;
-      if (lane >= step) { previous = neighbor_scan[lane - step]; }
-      workgroupBarrier();
-      value = min(value, previous);
-      neighbor_scan[lane] = value;
-    }
-    workgroupBarrier();
-    var before = carry;
-    if (lane > 0u) { before = min(carry, neighbor_scan[lane - 1u]); }
-    if (valid) { hybrid_neighbors[b].x = before; }
-    carry = min(carry, neighbor_scan[${NEIGHBOR_LANES - 1}u]);
-    workgroupBarrier();
-  }
+  neighbor_prefix_scan(stream, local.x, true);
 }
 
 @compute @workgroup_size(${hidden * LOCAL_TOKEN_LANES})
@@ -307,24 +302,18 @@ fn hybrid_scan_blocks(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
   let index = flat_group(group);
   if (index >= params.block_count) { return; }
   let block = blocks[index];
-  let stream = streams[block.stream];
+  let stream = streams[block.block_stream];
   let h = local.x & ${hidden - 1}u;
   let token_lane = local.x >> 5u;
   load_local_states(index, block, stream, local.x);
-  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
-    let pair = affine_at(i, h);
-    hybrid_work[i * ${hidden}u + h].y = pair.x;
-    hybrid_work[i * ${hidden}u + h].z = pair.y;
-  }
-  workgroupBarrier();
   if (token_lane == 0u) {
     var forward = vec2<f32>(1.0, 0.0);
-    for (var i = 0u; i < block.count; i++) {
+    for (var i = 0u; i < block.part_count; i++) {
       let value = hybrid_work[i * ${hidden}u + h];
       forward = vec2<f32>(value.y * forward.x, value.y * forward.y + value.z);
     }
     var reverse = vec2<f32>(1.0, 0.0);
-    for (var i = block.count; i > 0u; i--) {
+    for (var i = block.part_count; i > 0u; i--) {
       let value = hybrid_work[(i - 1u) * ${hidden}u + h];
       reverse = vec2<f32>(value.y * reverse.x, value.y * reverse.y + value.z);
     }
@@ -386,27 +375,21 @@ fn hybrid_mix_tree_up(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
   let index = flat_group(group);
   if (index >= params.block_count) { return; }
   let block = blocks[index];
-  let stream = streams[block.stream];
+  let stream = streams[block.block_stream];
   let h = local.x & ${hidden - 1}u;
   let token_lane = local.x >> 5u;
   load_local_states(index, block, stream, local.x);
-  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
-    let pair = affine_at(i, h);
-    hybrid_work[i * ${hidden}u + h].y = pair.x;
-    hybrid_work[i * ${hidden}u + h].z = pair.y;
-  }
-  workgroupBarrier();
   if (token_lane == 0u) {
     let summary = (index * ${hidden}u + h) * 4u;
     var state = scratch[summary + 1u];
-    for (var i = 0u; i < block.count; i++) {
+    for (var i = 0u; i < block.part_count; i++) {
       let at = i * ${hidden}u + h;
       let value = hybrid_work[at];
       state = value.y * state + value.z;
       hybrid_work[at].w = state;
     }
     state = scratch[summary + 3u];
-    for (var i = block.count; i > 0u; i--) {
+    for (var i = block.part_count; i > 0u; i--) {
       let at = (i - 1u) * ${hidden}u + h;
       let value = hybrid_work[at];
       state = value.y * state + value.z;
@@ -414,8 +397,8 @@ fn hybrid_mix_tree_up(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
     }
   }
   workgroupBarrier();
-  for (var i = token_lane; i < block.count; i += ${LOCAL_TOKEN_LANES}u) {
-    let token = block.start + i;
+  for (var i = token_lane; i < block.part_count; i += ${LOCAL_TOKEN_LANES}u) {
+    let token = block.part_start + i;
     // .x still holds this part's local state: later steps only write .y-.w.
     var sum = hybrid_work[i * ${hidden}u + h].x + weights[${offset("stateMixBias")}u + h];
     let column = ${offset("stateMix")}u + h;
@@ -429,7 +412,7 @@ fn hybrid_mix_tree_up(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
   }
   workgroupBarrier();
   var width = ${BLOCK}u;
-  var valid = block.count;
+  var valid = block.part_count;
   var depth = 0u;
   loop {
     if (width <= 1u) { break; }
@@ -542,21 +525,22 @@ fn tree_global(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_invocatio
 
 @compute @workgroup_size(64)
 fn tree_down_classify(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_invocation_id) local: vec3<u32>) {
-  let block_index = flat_group(group);
+  // Classification is dispatched in chunks of blocks; see runTree in gpu.js.
+  let block_index = params.first_block + flat_group(group);
   if (block_index >= params.block_count) { return; }
   let block = blocks[block_index];
-  let stream = streams[block.stream];
+  let stream = streams[block.block_stream];
   // Both halves of the workgroup share each tree level: a half takes alternate
   // nodes, so a node's two children stay with the same 32 channel lanes.
   let tree_channel = local.x % ${hidden}u;
   let tree_half = local.x / ${hidden}u;
-  for (var part = tree_half; part < block.count; part += ${TREE_HALVES}u) {
+  for (var part = tree_half; part < block.part_count; part += ${TREE_HALVES}u) {
     local_tree[(${BLOCK - 1}u + part) * ${hidden}u + tree_channel] =
-      ${read(`leaf_states[(block.start + part) * ${hidden}u + tree_channel]`)};
+      ${read(`leaf_states[(block.part_start + part) * ${hidden}u + tree_channel]`)};
   }
   workgroupBarrier();
   var width = ${BLOCK}u;
-  var valid = block.count;
+  var valid = block.part_count;
   var depth = 0u;
   loop {
     if (width <= 1u) { break; }
@@ -597,7 +581,7 @@ fn tree_down_classify(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
     let parent_base = width - 1u;
     let child_base = width * 2u - 1u;
     let child_span = ${BLOCK}u / (width * 2u);
-    let child_valid = (block.count + child_span - 1u) / child_span;
+    let child_valid = (block.part_count + child_span - 1u) / child_span;
     {
       for (var parent_index = tree_half; parent_index < width; parent_index += ${TREE_HALVES}u) {
         let child = parent_index * 2u;
@@ -624,40 +608,52 @@ fn tree_down_classify(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
     depth = select(0u, depth - 1u, depth > 0u);
   }
 
+  // Each thread reads a part's leaf and tree context once, not once per unit.
+  var inputs: array<f32, ${hidden * 2}>;
   let slot = local.x / ${CLASSIFIER_LANES}u;
   let lane = local.x % ${CLASSIFIER_LANES}u;
   for (var batch = 0u; batch < ${BLOCK / CLASSIFIER_TOKENS}u; batch++) {
     let part = batch * ${CLASSIFIER_TOKENS}u + slot;
-    let token = block.start + part;
-    let token_valid = part < block.count;
+    let token = block.part_start + part;
+    let token_valid = part < block.part_count;
     let kind = select(1u, features[token * 2u] & 3u, token_valid);
     let styled = token_valid && kind != 1u && kind != 2u;
-    for (var a = lane; styled && a < ${auxiliary}u; a += ${CLASSIFIER_LANES}u) {
-      var value = weights[${offset("auxiliaryBias")}u + a];
+    if (styled) {
       for (var feature_channel = 0u; feature_channel < ${hidden}u; feature_channel++) {
-        let leaf = ${read(`leaf_states[token * ${hidden}u + feature_channel]`)};
-        let context = ${quantize(`local_tree[(${BLOCK - 1}u + part) * ${hidden}u + feature_channel]`)};
-        let column = ${offset("auxiliaryOutput")}u + a;
-        value += weights[column + feature_channel * ${auxiliary}u] * leaf +
-          weights[column + (${hidden}u + feature_channel) * ${auxiliary}u] * context;
+        inputs[feature_channel] = ${read(`leaf_states[token * ${hidden}u + feature_channel]`)};
+        inputs[${hidden}u + feature_channel] = ${quantize(`local_tree[(${BLOCK - 1}u + part) * ${hidden}u + feature_channel]`)};
       }
-      classifier_auxiliary[slot * ${auxiliary}u + a] = sigmoid(value);
+    }
+    for (var q = lane; styled && q < ${auxiliary / 4}u; q += ${CLASSIFIER_LANES}u) {
+      var value = weights4[${offset("auxiliaryBias") / 4}u + q];
+      let row = ${offset("auxiliaryOutput") / 4}u + q * ${hidden * 2}u;
+      for (var feature_channel = 0u; feature_channel < ${hidden}u; feature_channel++) {
+        value += weights4[row + feature_channel] * inputs[feature_channel] +
+          weights4[row + ${hidden}u + feature_channel] * inputs[${hidden}u + feature_channel];
+      }
+      let at = slot * ${auxiliary}u + q * 4u;
+      classifier_auxiliary[at] = sigmoid(value.x);
+      classifier_auxiliary[at + 1u] = sigmoid(value.y);
+      classifier_auxiliary[at + 2u] = sigmoid(value.z);
+      classifier_auxiliary[at + 3u] = sigmoid(value.w);
     }
     workgroupBarrier();
-    for (var c = lane; styled && c < ${classifier}u; c += ${CLASSIFIER_LANES}u) {
-      var value = weights[${offset("classifierBias")}u + c];
+    for (var q = lane; styled && q < ${classifier / 4}u; q += ${CLASSIFIER_LANES}u) {
+      var value = weights4[${offset("classifierBias") / 4}u + q];
+      let row = ${offset("classifierInput") / 4}u + q * ${hidden * 2 + auxiliary}u;
       for (var feature_channel = 0u; feature_channel < ${hidden}u; feature_channel++) {
-        let leaf = ${read(`leaf_states[token * ${hidden}u + feature_channel]`)};
-        let context = ${quantize(`local_tree[(${BLOCK - 1}u + part) * ${hidden}u + feature_channel]`)};
-        let column = ${offset("classifierInput")}u + c;
-        value += weights[column + feature_channel * ${classifier}u] * leaf +
-          weights[column + (${hidden}u + feature_channel) * ${classifier}u] * context;
+        value += weights4[row + feature_channel] * inputs[feature_channel] +
+          weights4[row + ${hidden}u + feature_channel] * inputs[${hidden}u + feature_channel];
       }
-      let auxiliary_column = ${offset("classifierInput")}u + ${hidden * 2 * classifier}u + c;
       for (var a = 0u; a < ${auxiliary}u; a++) {
-        value += weights[auxiliary_column + a * ${classifier}u] * classifier_auxiliary[slot * ${auxiliary}u + a];
+        value += weights4[row + ${hidden * 2}u + a] * classifier_auxiliary[slot * ${auxiliary}u + a];
       }
-      classifier_projected[slot * ${classifier}u + c] = tanh(value);
+      let projected = tanh(value);
+      let at = slot * ${classifier}u + q * 4u;
+      classifier_projected[at] = projected.x;
+      classifier_projected[at + 1u] = projected.y;
+      classifier_projected[at + 2u] = projected.z;
+      classifier_projected[at + 3u] = projected.w;
     }
     workgroupBarrier();
     for (var output = lane; styled && output < ${outputs}u; output += ${CLASSIFIER_LANES}u) {
@@ -671,14 +667,23 @@ fn tree_down_classify(@builtin(workgroup_id) group: vec3<u32>, @builtin(local_in
     workgroupBarrier();
     if (lane == 0u && token_valid) {
       var selected = 0u;
+      // The class needs four bits of its label byte. The other four carry the
+      // selected class's softmax probability in sixteenths, rounded down;
+      // whitespace is never classified and reports the top level.
+      var level = 15u;
       if (styled) {
         var selected_score = classifier_scores[slot * ${outputs}u];
         for (var output = 1u; output < ${outputs}u; output++) {
           let score = classifier_scores[slot * ${outputs}u + output];
           if (score > selected_score) { selected_score = score; selected = output; }
         }
+        var total = 0.0;
+        for (var output = 0u; output < ${outputs}u; output++) {
+          total += exp(classifier_scores[slot * ${outputs}u + output] - selected_score);
+        }
+        level = min(15u, u32(16.0 / total));
       }
-      let ignored = atomicOr(&labels[token / 4u], selected << ((token & 3u) * 8u));
+      let ignored = atomicOr(&labels[token / 4u], (selected | (level << 4u)) << ((token & 3u) * 8u));
     }
     workgroupBarrier();
   }

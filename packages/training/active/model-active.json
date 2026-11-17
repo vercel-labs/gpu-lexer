@@ -5,10 +5,10 @@
   "model": "hierarchical-tree",
   "featureVersion": 3,
   "tokenizerVersion": 2,
-  "createdAt": "2026-11-14T09:29:44.130Z",
-  "runId": "20261114T092944.130Z",
-  "selectedEpoch": 35,
-  "selectedSource": "raw",
+  "createdAt": "2026-11-17T07:14:11.182Z",
+  "runId": "20261117T071411.182Z",
+  "selectedEpoch": 29,
+  "selectedSource": "ema",
   "taxonomyVersion": 5,
   "inputSize": 755,
   "hiddenSize": 32,
@@ -16,7 +16,7 @@
     "direction": "bidirectional",
     "tree": "scale-aware-butterfly-binary",
     "blockParts": 32,
-    "classifierDimensions": 72,
+    "classifierDimensions": 176,
     "lexemeHashBuckets": 256,
     "secondaryLexemeHashBuckets": 128,
     "neighborSymbolHashBuckets": 32,
@@ -46,18 +46,22 @@
   },
   "acceptance": {
     "accepted": true,
+    "topAgreement": {
+      "candidate": 0.9387662724199477,
+      "baseline": 0.9346651828648639
+    },
     "criterion": "fixed-baseline-untouched-verification-accuracy",
     "languageGuards": "advisory",
-    "improvement": 0.05184709830699963,
-    "candidateAccuracy": 0.8820195550682018,
-    "baselineAccuracy": 0.8301724567612022,
+    "improvement": 0.0095179351708784,
+    "candidateAccuracy": 0.8989329445579757,
+    "baselineAccuracy": 0.8894150093870973,
     "guards": [
       {
         "family": "astro",
         "metric": "error",
         "support": 6603,
         "minimum": 100,
-        "delta": -0.078297743449947,
+        "delta": 0.0016659094351052575,
         "tolerance": 0.01,
         "passed": true
       },
@@ -66,8 +70,8 @@
         "metric": "falseColorRate",
         "support": 1675,
         "minimum": 100,
-        "delta": -0.11044776119402985,
-        "tolerance": 0.022400278295258036,
+        "delta": 0.015522388059701492,
+        "tolerance": 0.018293688871813672,
         "passed": true
       },
       {
@@ -75,8 +79,8 @@
         "metric": "error",
         "support": 4683,
         "minimum": 100,
-        "delta": -0.023062139654067892,
-        "tolerance": 0.018240382822685162,
+        "delta": -0.002562459961563096,
+        "tolerance": 0.015595195315110484,
         "passed": true
       },
       {
@@ -84,16 +88,16 @@
         "metric": "falseColorRate",
         "support": 1939,
         "minimum": 100,
-        "delta": -0.06601340897369778,
-        "tolerance": 0.029424371818522796,
-        "passed": true
+        "delta": 0.04280556988138218,
+        "tolerance": 0.02631063194464714,
+        "passed": false
       },
       {
         "family": "c",
         "metric": "error",
         "support": 13401,
         "minimum": 100,
-        "delta": -0.058353854189985815,
+        "delta": -0.011715543616148051,
         "tolerance": 0.01,
         "passed": true
       },
@@ -102,8 +106,8 @@
         "metric": "falseColorRate",
         "support": 1645,
         "minimum": 100,
-        "delta": -0.09361702127659574,
-        "tolerance": 0.02364527432508015,
+        "delta": 0.0018237082066869387,
+        "tolerance": 0.021139636033898974,
         "passed": true
       },
       {
@@ -111,7 +115,7 @@
         "metric": "error",
         "support": 12094,
         "minimum": 100,
-        "delta": -0.056887712915495284,
+        "delta": -0.0065321647097734414,
         "tolerance": 0.01,
         "passed": true
       },
@@ -120,8 +124,8 @@
         "metric": "falseColorRate",
         "support": 3594,
         "minimum": 100,
-        "delta": -0.11992209237618251,
-        "tolerance": 0.0146746968018377,
+        "delta": 0.0008347245409015061,
+        "tolerance": 0.01,
         "passed": true
       },
       {
@@ -129,8 +133,8 @@
         "metric": "error",
         "support": 4909,
         "minimum": 100,
-        "delta": -0.018944795273986556,
-        "tolerance": 0.010796080831981851,
+        "delta": -0.0010185373803218573,
+        "tolerance": 0.01,
         "passed": true
       },
       {
@@ -138,16 +142,16 @@
         "metric": "falseColorRate",
         "support": 639,
         "minimum": 100,
-        "delta": 0.035993740219092324,
-        "tolerance": 0.03467360288005925,
-        "passed": false
+        "delta": 0.025039123630672927,
+        "tolerance": 0.03697708045453741,
+        "passed": true
       },
       {
         "family": "csharp",
         "metric": "error",
         "support": 11625,
         "minimum": 100,
-        "delta": -0.08473118279569891,
+        "delta": 0.0035268817204301,
         "tolerance": 0.01,
         "passed": true
       },
@@ -156,16 +160,16 @@
         "metric": "falseColorRate",
         "support": 1262,
         "minimum": 100,
-        "delta": -0.021394611727416794,
-        "tolerance": 0.018005777814046546,
-        "passed": true
+        "delta": 0.023771790808240892,
+        "tolerance": 0.02160743070107916,
+        "passed": false
       },
       {
         "family": "css",
         "metric": "error",
         "support": 32404,
         "minimum": 100,
-        "delta": -0.0928897666954697,
+        "delta": -0.0026848537217627477,
         "tolerance": 0.01,
         "passed": true
       },
@@ -174,17 +178,17 @@
         "metric": "falseColorRate",
         "support": 9281,
         "minimum": 100,
-        "delta": -0.1250942786337679,
-        "tolerance": 0.01,
-        "passed": true
+        "delta": 0.029953668785691195,
+        "tolerance": 0.010217507886554766,
+        "passed": false
       },
       {
         "family": "diff",
         "metric": "error",
         "support": 2403,
         "minimum": 100,
-        "delta": -0.2738243861839368,
-        "tolerance": 0.021365994688363803,
+        "delta": -0.010819808572617558,
+        "tolerance": 0.013670660095443373,
         "passed": true
       },
       {
@@ -192,8 +196,8 @@
         "metric": "falseColorRate",
         "support": 2217,
         "minimum": 100,
-        "delta": -0.2584573748308525,
-        "tolerance": 0.021161453803385903,
+        "delta": -0.019846639603067207,
+        "tolerance": 0.013143542646335231,
         "passed": true
       },
       {
@@ -201,8 +205,8 @@
         "metric": "error",
         "support": 4313,
         "minimum": 100,
-        "delta": -0.0751217250173893,
-        "tolerance": 0.014619188523149633,
+        "delta": -0.0020867145838163598,
+        "tolerance": 0.010825492572195191,
         "passed": true
       },
       {
@@ -210,8 +214,8 @@
         "metric": "falseColorRate",
         "support": 2851,
         "minimum": 100,
-        "delta": -0.10417397404419503,
-        "tolerance": 0.016436884135029153,
+        "delta": -0.001052262364082776,
+        "tolerance": 0.01108002018614387,
         "passed": true
       },
       {
@@ -219,7 +223,7 @@
         "metric": "error",
         "support": 13990,
         "minimum": 100,
-        "delta": -0.03852751965689778,
+        "delta": 0.00007147962830593435,
         "tolerance": 0.01,
         "passed": true
       },
@@ -228,8 +232,8 @@
         "metric": "falseColorRate",
         "support": 1468,
         "minimum": 100,
-        "delta": -0.05585831062670299,
-        "tolerance": 0.027061025886139158,
+        "delta": -0.0006811989100817262,
+        "tolerance": 0.024133471830835876,
         "passed": true
       },
       {
@@ -237,7 +241,7 @@
         "metric": "error",
         "support": 19138,
         "minimum": 100,
-        "delta": -0.08010241404535479,
+        "delta": -0.006217995610826629,
         "tolerance": 0.01,
         "passed": true
       },
@@ -246,16 +250,16 @@
         "metric": "falseColorRate",
         "support": 3325,
         "minimum": 100,
-        "delta": -0.2348872180451128,
-        "tolerance": 0.018989613937958515,
-        "passed": true
+        "delta": 0.01924812030075186,
+        "tolerance": 0.015559164920751049,
+        "passed": false
       },
       {
         "family": "java",
         "metric": "error",
         "support": 13406,
         "minimum": 100,
-        "delta": -0.044979859764284646,
+        "delta": -0.007310159630016411,
         "tolerance": 0.01,
         "passed": true
       },
@@ -264,8 +268,8 @@
         "metric": "falseColorRate",
         "support": 923,
         "minimum": 100,
-        "delta": 0.008667388949079091,
-        "tolerance": 0.03678521655451656,
+        "delta": -0.05308775731310941,
+        "tolerance": 0.0292580343051595,
         "passed": true
       },
       {
@@ -273,7 +277,7 @@
         "metric": "error",
         "support": 50654,
         "minimum": 100,
-        "delta": -0.0675761045524539,
+        "delta": -0.0011845066529790338,
         "tolerance": 0.01,
         "passed": true
       },
@@ -282,7 +286,7 @@
         "metric": "falseColorRate",
         "support": 10870,
         "minimum": 100,
-        "delta": -0.21508739650413983,
+        "delta": -0.009659613615455382,
         "tolerance": 0.01,
         "passed": true
       },
@@ -291,8 +295,8 @@
         "metric": "error",
         "support": 8096,
         "minimum": 100,
-        "delta": -0.15773221343873517,
-        "tolerance": 0.011701250362469976,
+        "delta": 0.003458498023715423,
+        "tolerance": 0.01,
         "passed": true
       },
       {
@@ -300,8 +304,8 @@
         "metric": "falseColorRate",
         "support": 2703,
         "minimum": 100,
-        "delta": -0.4935257121716611,
-        "tolerance": 0.02267566208302105,
+        "delta": 0.008139104698483168,
+        "tolerance": 0.01923192442477552,
         "passed": true
       },
       {
@@ -309,8 +313,8 @@
         "metric": "error",
         "support": 10693,
         "minimum": 100,
-        "delta": -0.02758814177499297,
-        "tolerance": 0.01178709375105718,
+        "delta": -0.01954549705414757,
+        "tolerance": 0.01,
         "passed": true
       },
       {
@@ -318,8 +322,8 @@
         "metric": "falseColorRate",
         "support": 4708,
         "minimum": 100,
-        "delta": -0.08814783347493627,
-        "tolerance": 0.019900696053127324,
+        "delta": -0.03483432455395072,
+        "tolerance": 0.012587069779620362,
         "passed": true
       },
       {
@@ -327,25 +331,25 @@
         "metric": "error",
         "support": 6121,
         "minimum": 100,
-        "delta": -0.1349452703806568,
-        "tolerance": 0.015717216261651176,
-        "passed": true
+        "delta": 0.025649403692207168,
+        "tolerance": 0.014615968721235568,
+        "passed": false
       },
       {
         "family": "markdown",
         "metric": "falseColorRate",
         "support": 2486,
         "minimum": 100,
-        "delta": -0.07160096540627511,
-        "tolerance": 0.024626762849190038,
-        "passed": true
+        "delta": 0.041029766693483516,
+        "tolerance": 0.024715109202442423,
+        "passed": false
       },
       {
         "family": "php",
         "metric": "error",
         "support": 11483,
         "minimum": 100,
-        "delta": -0.04868065836453889,
+        "delta": 0.008273099364277628,
         "tolerance": 0.01,
         "passed": true
       },
@@ -354,17 +358,17 @@
         "metric": "falseColorRate",
         "support": 925,
         "minimum": 100,
-        "delta": -0.00648648648648649,
-        "tolerance": 0.020969265116218806,
-        "passed": true
+        "delta": 0.07567567567567567,
+        "tolerance": 0.026763581145537542,
+        "passed": false
       },
       {
         "family": "plpgsql",
         "metric": "error",
         "support": 3727,
         "minimum": 100,
-        "delta": -0.08532331634022,
-        "tolerance": 0.021868872461516576,
+        "delta": -0.0024148108398175383,
+        "tolerance": 0.021055867731454566,
         "passed": true
       },
       {
@@ -372,17 +376,17 @@
         "metric": "falseColorRate",
         "support": 1228,
         "minimum": 100,
-        "delta": -0.37377850162866455,
-        "tolerance": 0.03632560222765596,
-        "passed": true
+        "delta": 0.07899022801302932,
+        "tolerance": 0.03384365503643316,
+        "passed": false
       },
       {
         "family": "powershell",
         "metric": "error",
         "support": 6071,
         "minimum": 100,
-        "delta": -0.07412287926206555,
-        "tolerance": 0.012482503788745117,
+        "delta": 0.002800197661011361,
+        "tolerance": 0.01018011413838674,
         "passed": true
       },
       {
@@ -390,8 +394,8 @@
         "metric": "falseColorRate",
         "support": 827,
         "minimum": 100,
-        "delta": -0.09189842805320436,
-        "tolerance": 0.04411483943403604,
+        "delta": -0.013301088270858519,
+        "tolerance": 0.03920505851300065,
         "passed": true
       },
       {
@@ -399,7 +403,7 @@
         "metric": "error",
         "support": 27039,
         "minimum": 100,
-        "delta": -0.033913976108583904,
+        "delta": -0.008506231739339471,
         "tolerance": 0.01,
         "passed": true
       },
@@ -408,8 +412,8 @@
         "metric": "falseColorRate",
         "support": 4444,
         "minimum": 100,
-        "delta": -0.08348334833483348,
-        "tolerance": 0.011114151105659392,
+        "delta": -0.0022502250225022516,
+        "tolerance": 0.01,
         "passed": true
       },
       {
@@ -417,17 +421,17 @@
         "metric": "error",
         "support": 10017,
         "minimum": 100,
-        "delta": -0.008285913946291301,
-        "tolerance": 0.010050048436544466,
-        "passed": true
+        "delta": 0.011680143755615463,
+        "tolerance": 0.01,
+        "passed": false
       },
       {
         "family": "ruby",
         "metric": "falseColorRate",
         "support": 603,
         "minimum": 100,
-        "delta": -0.04809286898839138,
-        "tolerance": 0.05071039192270281,
+        "delta": -0.038142620232172464,
+        "tolerance": 0.050082162424685696,
         "passed": true
       },
       {
@@ -435,7 +439,7 @@
         "metric": "error",
         "support": 15496,
         "minimum": 100,
-        "delta": -0.030394940629839953,
+        "delta": -0.009938048528652557,
         "tolerance": 0.01,
         "passed": true
       },
@@ -444,8 +448,8 @@
         "metric": "falseColorRate",
         "support": 1394,
         "minimum": 100,
-        "delta": -0.06025824964131994,
-        "tolerance": 0.02308404973610117,
+        "delta": -0.005021520803443327,
+        "tolerance": 0.02226421759735958,
         "passed": true
       },
       {
@@ -453,7 +457,7 @@
         "metric": "error",
         "support": 14210,
         "minimum": 100,
-        "delta": -0.05791695988740324,
+        "delta": -0.005066854327938075,
         "tolerance": 0.01,
         "passed": true
       },
@@ -462,8 +466,8 @@
         "metric": "falseColorRate",
         "support": 459,
         "minimum": 100,
-        "delta": -0.10239651416122003,
-        "tolerance": 0.05942477482711425,
+        "delta": 0.008714596949891074,
+        "tolerance": 0.06158699354558993,
         "passed": true
       },
       {
@@ -471,7 +475,7 @@
         "metric": "error",
         "support": 6180,
         "minimum": 100,
-        "delta": -0.045307443365695796,
+        "delta": 0.006148867313915854,
         "tolerance": 0.01,
         "passed": true
       },
@@ -480,8 +484,8 @@
         "metric": "falseColorRate",
         "support": 818,
         "minimum": 100,
-        "delta": -0.1784841075794621,
-        "tolerance": 0.032528228848533416,
+        "delta": 0.007334963325183373,
+        "tolerance": 0.02274872640968018,
         "passed": true
       },
       {
@@ -489,7 +493,7 @@
         "metric": "error",
         "support": 10514,
         "minimum": 100,
-        "delta": -0.014266692029674719,
+        "delta": -0.0008560015217804751,
         "tolerance": 0.01,
         "passed": true
       },
@@ -498,8 +502,8 @@
         "metric": "falseColorRate",
         "support": 1012,
         "minimum": 100,
-        "delta": -0.03952569169960474,
-        "tolerance": 0.04322601209425138,
+        "delta": -0.002964426877470394,
+        "tolerance": 0.04356508520463767,
         "passed": true
       },
       {
@@ -507,7 +511,7 @@
         "metric": "error",
         "support": 27188,
         "minimum": 100,
-        "delta": -0.06403560394291599,
+        "delta": 0.0022804178313962017,
         "tolerance": 0.01,
         "passed": true
       },
@@ -516,8 +520,8 @@
         "metric": "falseColorRate",
         "support": 4457,
         "minimum": 100,
-        "delta": -0.19362800089746468,
-        "tolerance": 0.014035911542761148,
+        "delta": -0.008750280457706976,
+        "tolerance": 0.01,
         "passed": true
       },
       {
@@ -525,8 +529,8 @@
         "metric": "error",
         "support": 8933,
         "minimum": 100,
-        "delta": -0.10836225232284787,
-        "tolerance": 0.011092637388794175,
+        "delta": -0.023396395387887625,
+        "tolerance": 0.010072753805015744,
         "passed": true
       },
       {
@@ -534,8 +538,8 @@
         "metric": "falseColorRate",
         "support": 1682,
         "minimum": 100,
-        "delta": -0.21938168846611178,
-        "tolerance": 0.02767702018026999,
+        "delta": 0.0089179548156956,
+        "tolerance": 0.02335512674351592,
         "passed": true
       }
     ],
@@ -545,17 +549,17 @@
         "tier": "strict",
         "metric": "error",
         "support": 23638,
-        "delta": -0.11261528048058211,
+        "delta": 0.008799390811405364,
         "tolerance": 0.002,
-        "passed": true,
-        "reason": null
+        "passed": false,
+        "reason": "regression"
       },
       {
         "language": "css",
         "tier": "strict",
         "metric": "falseColorRate",
         "support": 6391,
-        "delta": -0.10937255515568768,
+        "delta": -0.0009388202159286497,
         "tolerance": 0.002,
         "passed": true,
         "reason": null
@@ -565,27 +569,27 @@
         "tier": "strict",
         "metric": "error",
         "support": 11017,
-        "delta": -0.12952709449033312,
+        "delta": 0.00771534900608151,
         "tolerance": 0.002,
-        "passed": true,
-        "reason": null
+        "passed": false,
+        "reason": "regression"
       },
       {
         "language": "html",
         "tier": "strict",
         "metric": "falseColorRate",
         "support": 2712,
-        "delta": -0.27101769911504425,
+        "delta": 0.025811209439528023,
         "tolerance": 0.002,
-        "passed": true,
-        "reason": null
+        "passed": false,
+        "reason": "regression"
       },
       {
         "language": "javascript",
         "tier": "strict",
         "metric": "error",
         "support": 49328,
-        "delta": -0.06833846902367824,
+        "delta": -0.0012974375608173856,
         "tolerance": 0.002,
         "passed": true,
         "reason": null
@@ -595,7 +599,7 @@
         "tier": "strict",
         "metric": "falseColorRate",
         "support": 10658,
-        "delta": -0.21645712141114656,
+        "delta": -0.009757928316757366,
         "tolerance": 0.002,
         "passed": true,
         "reason": null
@@ -605,7 +609,7 @@
         "tier": "strict",
         "metric": "error",
         "support": 35783,
-        "delta": -0.029706844032082274,
+        "delta": -0.004303719643406086,
         "tolerance": 0.002,
         "passed": true,
         "reason": null
@@ -615,7 +619,7 @@
         "tier": "strict",
         "metric": "falseColorRate",
         "support": 5103,
-        "delta": -0.0805408583186361,
+        "delta": -0.009602194787379973,
         "tolerance": 0.002,
         "passed": true,
         "reason": null
@@ -625,17 +629,17 @@
         "tier": "strict",
         "metric": "error",
         "support": 3334,
-        "delta": -0.04859028194361128,
+        "delta": 0.002999400119976005,
         "tolerance": 0.002,
-        "passed": true,
-        "reason": null
+        "passed": false,
+        "reason": "regression"
       },
       {
         "language": "tsx",
         "tier": "strict",
         "metric": "falseColorRate",
         "support": 586,
-        "delta": -0.1416382252559727,
+        "delta": -0.008532423208191127,
         "tolerance": 0.002,
         "passed": true,
         "reason": null
@@ -645,18 +649,58 @@
         "tier": "strict",
         "metric": "error",
         "support": 23792,
-        "delta": -0.06628278412911903,
+        "delta": 0.0021435776731674513,
         "tolerance": 0.002,
-        "passed": true,
-        "reason": null
+        "passed": false,
+        "reason": "regression"
       },
       {
         "language": "typescript",
         "tier": "strict",
         "metric": "falseColorRate",
         "support": 3862,
-        "delta": -0.20145002589331953,
+        "delta": -0.008803728638011392,
         "tolerance": 0.002,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "astro",
+        "tier": "mature",
+        "metric": "error",
+        "support": 6603,
+        "delta": 0.0016659094351052551,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "astro",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 1675,
+        "delta": 0.015522388059701492,
+        "tolerance": 0.01,
+        "passed": false,
+        "reason": "regression"
+      },
+      {
+        "language": "c",
+        "tier": "mature",
+        "metric": "error",
+        "support": 13401,
+        "delta": -0.01171554361614805,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "c",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 1645,
+        "delta": 0.00182370820668693,
+        "tolerance": 0.01,
         "passed": true,
         "reason": null
       },
@@ -665,7 +709,7 @@
         "tier": "mature",
         "metric": "error",
         "support": 12094,
-        "delta": -0.056887712915495284,
+        "delta": -0.0065321647097734414,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -675,7 +719,67 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 3594,
-        "delta": -0.11992209237618252,
+        "delta": 0.0008347245409015025,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "cpp",
+        "tier": "mature",
+        "metric": "error",
+        "support": 7784,
+        "delta": -0.025179856115107913,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "cpp",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 1178,
+        "delta": 0.00933786078098472,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "csharp",
+        "tier": "mature",
+        "metric": "error",
+        "support": 11625,
+        "delta": 0.0035268817204301074,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "csharp",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 1262,
+        "delta": 0.02377179080824089,
+        "tolerance": 0.01,
+        "passed": false,
+        "reason": "regression"
+      },
+      {
+        "language": "diff",
+        "tier": "mature",
+        "metric": "error",
+        "support": 2403,
+        "delta": -0.010819808572617561,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "diff",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 2217,
+        "delta": -0.019846639603067207,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -685,7 +789,7 @@
         "tier": "mature",
         "metric": "error",
         "support": 4313,
-        "delta": -0.07512172501738928,
+        "delta": -0.0020867145838163693,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -695,7 +799,7 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 2851,
-        "delta": -0.10417397404419503,
+        "delta": -0.001052262364082778,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -705,7 +809,7 @@
         "tier": "mature",
         "metric": "error",
         "support": 13990,
-        "delta": -0.03852751965689778,
+        "delta": 0.0000714796283059328,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -715,7 +819,27 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 1468,
-        "delta": -0.055858310626702996,
+        "delta": -0.0006811989100817438,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "java",
+        "tier": "mature",
+        "metric": "error",
+        "support": 13406,
+        "delta": -0.007310159630016411,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "java",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 923,
+        "delta": -0.05308775731310943,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -725,7 +849,7 @@
         "tier": "mature",
         "metric": "error",
         "support": 1326,
-        "delta": -0.0392156862745098,
+        "delta": 0.0030165912518853697,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -735,7 +859,7 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 212,
-        "delta": -0.14622641509433962,
+        "delta": -0.0047169811320754715,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -745,7 +869,7 @@
         "tier": "mature",
         "metric": "error",
         "support": 8096,
-        "delta": -0.15773221343873517,
+        "delta": 0.003458498023715415,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -755,7 +879,67 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 2703,
-        "delta": -0.49352571217166114,
+        "delta": 0.008139104698483167,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "make",
+        "tier": "mature",
+        "metric": "error",
+        "support": 10693,
+        "delta": -0.019545497054147574,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "make",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 4708,
+        "delta": -0.034834324553950725,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "php",
+        "tier": "mature",
+        "metric": "error",
+        "support": 11483,
+        "delta": 0.008273099364277628,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "php",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 925,
+        "delta": 0.07567567567567568,
+        "tolerance": 0.01,
+        "passed": false,
+        "reason": "regression"
+      },
+      {
+        "language": "powershell",
+        "tier": "mature",
+        "metric": "error",
+        "support": 6071,
+        "delta": 0.0028001976610113654,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "powershell",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 827,
+        "delta": -0.013301088270858524,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -765,7 +949,7 @@
         "tier": "mature",
         "metric": "error",
         "support": 15496,
-        "delta": -0.03039494062983996,
+        "delta": -0.009938048528652555,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -775,17 +959,57 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 1394,
-        "delta": -0.06025824964131994,
+        "delta": -0.005021520803443328,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
+      },
+      {
+        "language": "shell",
+        "tier": "mature",
+        "metric": "error",
+        "support": 9788,
+        "delta": -0.0026563138536984062,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "shell",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 375,
+        "delta": 0.005333333333333333,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "shellscript",
+        "tier": "mature",
+        "metric": "error",
+        "support": 5324,
+        "delta": -0.0033809166040570998,
+        "tolerance": 0.01,
+        "passed": true,
+        "reason": null
+      },
+      {
+        "language": "shellscript",
+        "tier": "mature",
+        "metric": "falseColorRate",
+        "support": 143,
+        "delta": 0.055944055944055944,
+        "tolerance": 0.01,
+        "passed": false,
+        "reason": "regression"
       },
       {
         "language": "svelte",
         "tier": "mature",
         "metric": "error",
         "support": 6180,
-        "delta": -0.045307443365695796,
+        "delta": 0.006148867313915857,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -795,7 +1019,7 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 818,
-        "delta": -0.1784841075794621,
+        "delta": 0.007334963325183374,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -805,7 +1029,7 @@
         "tier": "mature",
         "metric": "error",
         "support": 10514,
-        "delta": -0.01426669202967472,
+        "delta": -0.0008560015217804832,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -815,7 +1039,7 @@
         "tier": "mature",
         "metric": "falseColorRate",
         "support": 1012,
-        "delta": -0.039525691699604744,
+        "delta": -0.0029644268774703555,
         "tolerance": 0.01,
         "passed": true,
         "reason": null
@@ -823,7 +1047,21 @@
     ],
     "failures": [],
     "warnings": [
-      "cpp falseColorRate: regression"
+      "batchfile falseColorRate: regression",
+      "csharp falseColorRate: regression",
+      "css falseColorRate: regression",
+      "html falseColorRate: regression",
+      "markdown error: regression",
+      "markdown falseColorRate: regression",
+      "php falseColorRate: regression",
+      "plpgsql falseColorRate: regression",
+      "ruby error: regression",
+      "css error: regression",
+      "html error: regression",
+      "tsx error: regression",
+      "typescript error: regression",
+      "astro falseColorRate: regression",
+      "shellscript falseColorRate: regression"
     ]
   },
   "classNames": [
@@ -855,9 +1093,9 @@
     "square-depth-1",
     "square-depth-2+"
   ],
-  "parameterCount": 41609,
-  "runtimeParameterCount": 41609,
-  "runtimeWeightBytes": 31207,
+  "parameterCount": 50969,
+  "runtimeParameterCount": 50969,
+  "runtimeWeightBytes": 38227,
   "tensorLayout": [
     {
       "name": "featureEmbedding",
@@ -1014,35 +1252,35 @@
     {
       "name": "classifierInput",
       "shape": [
-        72,
+        176,
         80
       ],
       "offset": 29664,
-      "length": 5760
+      "length": 14080
     },
     {
       "name": "classifierBias",
       "shape": [
-        72
+        176
       ],
-      "offset": 35424,
-      "length": 72
+      "offset": 43744,
+      "length": 176
     },
     {
       "name": "output",
       "shape": [
         9,
-        72
+        176
       ],
-      "offset": 35496,
-      "length": 648
+      "offset": 43920,
+      "length": 1584
     },
     {
       "name": "outputBias",
       "shape": [
         9
       ],
-      "offset": 36144,
+      "offset": 45504,
       "length": 9
     },
     {
@@ -1051,7 +1289,7 @@
         16,
         64
       ],
-      "offset": 36153,
+      "offset": 45513,
       "length": 1024
     },
     {
@@ -1059,7 +1297,7 @@
       "shape": [
         16
       ],
-      "offset": 37177,
+      "offset": 46537,
       "length": 16
     },
     {
@@ -1068,7 +1306,7 @@
         5,
         32
       ],
-      "offset": 37193,
+      "offset": 46553,
       "length": 160
     },
     {
@@ -1077,7 +1315,7 @@
         2,
         32
       ],
-      "offset": 37353,
+      "offset": 46713,
       "length": 64
     },
     {
@@ -1086,7 +1324,7 @@
         32,
         32
       ],
-      "offset": 37417,
+      "offset": 46777,
       "length": 1024
     },
     {
@@ -1094,7 +1332,7 @@
       "shape": [
         32
       ],
-      "offset": 38441,
+      "offset": 47801,
       "length": 32
     },
     {
@@ -1103,7 +1341,7 @@
         32,
         32
       ],
-      "offset": 38473,
+      "offset": 47833,
       "length": 1024
     },
     {
@@ -1111,7 +1349,7 @@
       "shape": [
         32
       ],
-      "offset": 39497,
+      "offset": 48857,
       "length": 32
     },
     {
@@ -1120,7 +1358,7 @@
         32,
         64
       ],
-      "offset": 39529,
+      "offset": 48889,
       "length": 2048
     },
     {
@@ -1128,21 +1366,21 @@
       "shape": [
         32
       ],
-      "offset": 41577,
+      "offset": 50937,
       "length": 32
     }
   ],
   "quantization": {
     "type": "symmetric-int6-per-tensor",
     "bits": 6,
-    "parameterCount": 41609,
-    "packedByteLength": 31207,
+    "parameterCount": 50969,
+    "packedByteLength": 38227,
     "tensors": [
       {
         "name": "featureEmbedding",
         "offset": 0,
         "length": 24160,
-        "scale": 0.09500022088327716
+        "scale": 0.2621793746948242
       },
       {
         "name": "neighborScale",
@@ -1154,217 +1392,285 @@
         "name": "leafBias",
         "offset": 24256,
         "length": 32,
-        "scale": 0.006958847084353047
+        "scale": 0.01188559974393537
       },
       {
         "name": "mergeOwnLeft",
         "offset": 24288,
         "length": 384,
-        "scale": 0.06550459707936933
+        "scale": 0.08325056106813493
       },
       {
         "name": "mergeOwnRight",
         "offset": 24672,
         "length": 384,
-        "scale": 0.09118691567451723
+        "scale": 0.10837609537186162
       },
       {
         "name": "mergeCrossLeft",
         "offset": 25056,
         "length": 384,
-        "scale": 0.03356707865192044
+        "scale": 0.05020363100113407
       },
       {
         "name": "mergeCrossRight",
         "offset": 25440,
         "length": 384,
-        "scale": 0.03337926249350271
+        "scale": 0.04204939257714056
       },
       {
         "name": "mergeBias",
         "offset": 25824,
         "length": 384,
-        "scale": 0.022243134437068816
+        "scale": 0.03353706867464127
       },
       {
         "name": "downOwnParent",
         "offset": 26208,
         "length": 384,
-        "scale": 0.08344225729665448
+        "scale": 0.0809451687720514
       },
       {
         "name": "downOwnSelf",
         "offset": 26592,
         "length": 384,
-        "scale": 0.03624348871169552
+        "scale": 0.04019846070197321
       },
       {
         "name": "downOwnSibling",
         "offset": 26976,
         "length": 384,
-        "scale": 0.06634716833791425
+        "scale": 0.07147823610613423
       },
       {
         "name": "downCrossParent",
         "offset": 27360,
         "length": 384,
-        "scale": 0.044442138364238125
+        "scale": 0.04994158975539669
       },
       {
         "name": "downCrossSelf",
         "offset": 27744,
         "length": 384,
-        "scale": 0.03937289407176356
+        "scale": 0.05150891888526178
       },
       {
         "name": "downCrossSibling",
         "offset": 28128,
         "length": 384,
-        "scale": 0.028731082716295795
+        "scale": 0.036710143089294434
       },
       {
         "name": "downSkip",
         "offset": 28512,
         "length": 384,
-        "scale": 0.06366645905279344
+        "scale": 0.0840231833919402
       },
       {
         "name": "downLeftBias",
         "offset": 28896,
         "length": 384,
-        "scale": 0.026612435617754535
+        "scale": 0.04425309165831535
       },
       {
         "name": "downRightBias",
         "offset": 29280,
         "length": 384,
-        "scale": 0.06203617972712363
+        "scale": 0.0886865661990258
       },
       {
         "name": "classifierInput",
         "offset": 29664,
-        "length": 5760,
-        "scale": 0.08336112576146279
+        "length": 14080,
+        "scale": 0.11190279837577574
       },
       {
         "name": "classifierBias",
-        "offset": 35424,
-        "length": 72,
-        "scale": 0.009958534471450313
+        "offset": 43744,
+        "length": 176,
+        "scale": 0.016223780570491668
       },
       {
         "name": "output",
-        "offset": 35496,
-        "length": 648,
-        "scale": 0.05230037243135514
+        "offset": 43920,
+        "length": 1584,
+        "scale": 0.05351519200109666
       },
       {
         "name": "outputBias",
-        "offset": 36144,
+        "offset": 45504,
         "length": 9,
-        "scale": 0.010711094064097251
+        "scale": 0.018060778417894916
       },
       {
         "name": "auxiliaryOutput",
-        "offset": 36153,
+        "offset": 45513,
         "length": 1024,
-        "scale": 0.09558312354549285
+        "scale": 0.08612691202471333
       },
       {
         "name": "auxiliaryBias",
-        "offset": 37177,
+        "offset": 46537,
         "length": 16,
-        "scale": 0.037300240608953664
+        "scale": 0.05543075069304435
       },
       {
         "name": "localOffsetScale",
-        "offset": 37193,
+        "offset": 46553,
         "length": 160,
-        "scale": 0.056059095167344614
+        "scale": 0.059798959762819355
       },
       {
         "name": "localNonspaceScale",
-        "offset": 37353,
+        "offset": 46713,
         "length": 64,
-        "scale": 0.025237641026896816
+        "scale": 0.020740664774371732
       },
       {
         "name": "stateInput",
-        "offset": 37417,
+        "offset": 46777,
         "length": 1024,
-        "scale": 0.031535208225250244
+        "scale": 0.035369873046875
       },
       {
         "name": "stateInputBias",
-        "offset": 38441,
+        "offset": 47801,
         "length": 32,
-        "scale": 0.0058607785932479365
+        "scale": 0.011065134117680212
       },
       {
         "name": "stateGate",
-        "offset": 38473,
+        "offset": 47833,
         "length": 1024,
-        "scale": 0.07364657617384388
+        "scale": 0.08038856906275596
       },
       {
         "name": "stateGateBias",
-        "offset": 39497,
+        "offset": 48857,
         "length": 32,
-        "scale": 0.1361533288032778
+        "scale": 0.16413517921201645
       },
       {
         "name": "stateMix",
-        "offset": 39529,
+        "offset": 48889,
         "length": 2048,
-        "scale": 0.0437134119772142
+        "scale": 0.06225539791968561
       },
       {
         "name": "stateMixBias",
-        "offset": 41577,
+        "offset": 50937,
         "length": 32,
-        "scale": 0.019089191190658078
+        "scale": 0.030857564941529306
       }
     ]
   },
   "corpus": {
     "train": {
-      "sha256": "7e6e5131287c51c544d65661f2384b47a08dd061e036449f4c11b14e4d8d6268",
-      "tokens": 4679585,
-      "scoredTokens": 3079424,
-      "files": 4326,
-      "streams": 4326,
+      "sha256": "881825626c89497de7b604e59ec6b2de46010a1b9fe4d4257a0488957663ea0c",
+      "tokens": 6357620,
+      "scoredTokens": 4200000,
+      "files": 7833,
+      "streams": 7833,
       "sources": [
+        "AdaCore/Ada_Drivers_Library",
+        "Azure/bicep-registry-modules",
+        "Cyanilux/URP_ShaderCodeTemplates",
+        "FluxML/Flux.jl",
+        "GDQuest/godot-open-rpg",
+        "GoogleCloudPlatform/cloud-builders-community",
+        "HaxeFlixel/flixel",
+        "JuliaData/DataFrames.jl",
         "LuaLS/lua-language-server",
+        "MudBlazor/MudBlazor",
         "OpenZeppelin/openzeppelin-contracts",
+        "PostgREST/postgrest",
         "PowerShell/PowerShell",
+        "Reference-LAPACK/lapack",
+        "SDWebImage/SDWebImage",
+        "SaschaWillems/Vulkan",
+        "Schneegans/Gnome-Pie",
+        "SnapKit/Masonry",
+        "TwoTailsGames/Unity-Built-in-Shaders",
+        "alexveden/c3tools",
+        "apache/ant",
+        "apache/groovy",
+        "apache/hadoop",
+        "apache/jmeter",
+        "apache/kafka",
+        "apache/karaf",
+        "apache/tomcat",
+        "apex-enterprise-patterns/fflib-apex-common",
         "apple/swift-argument-parser",
+        "bazelbuild/bazel-skylib",
+        "bazelbuild/rules_go",
+        "behave/behave",
         "bootstrap",
+        "c3lang/vendor",
+        "contiki-ng/contiki-ng",
+        "cucumber/cucumber-js",
         "cython/cython",
         "dart-lang/samples",
+        "dense-analysis/ale",
+        "devcontainers/images",
+        "dlang/dub",
         "docker/awesome-compose",
+        "dominikh/go-mode.el",
+        "dotnet-architecture/eShopOnWeb",
         "dotnet/command-line-api",
         "duckdb/duckdb",
         "encode/httpx",
+        "etcd-io/etcd",
         "facebook/react",
+        "facebook/zstd",
         "fmtlib/fmt",
+        "fortran-lang/stdlib",
+        "gfx-rs/wgpu",
+        "ggml-org/whisper.cpp",
         "github-linguist/linguist",
+        "github/hubot-scripts",
         "go-chi/chi",
         "google/googletest",
         "google/gson",
         "h5bp/html5-boilerplate",
+        "haskell/aeson",
+        "icsharpcode/CodeConverter",
+        "jaspervdj/hakyll",
+        "jessfraz/dockerfiles",
+        "kubernetes-sigs/kind",
+        "kubernetes/ingress-nginx",
+        "lcallarec/live-chart",
+        "less/less.js",
         "libuv/libuv",
+        "lowRISC/ibex",
         "mdn/dom-examples",
         "mdn/learning-area",
+        "mesonbuild/meson",
+        "micropython/micropython",
+        "microsoft/terminal",
+        "microsoft/vscode-dev-containers",
+        "moby/moby",
         "necolas/normalize.css",
+        "netwide-assembler/nasm",
+        "nim-lang/nimble",
+        "nix-community/home-manager",
         "ohmyzsh/ohmyzsh",
+        "openssl/openssl",
         "pallets/flask",
         "postcss/postcss",
+        "prisma/prisma-examples",
+        "protocolbuffers/protobuf",
         "psf/requests",
+        "puppetlabs/puppetlabs-apache",
+        "puppetlabs/puppetlabs-stdlib",
+        "rapidsai/cudf",
         "react",
+        "rust-lang/rust-mode",
+        "sdkman/sdkman-cli",
         "serde-rs/serde",
         "sinatra/sinatra",
         "slimphp/Slim",
         "solidjs/solid",
+        "sorin-ionescu/prezto",
         "spf13/cobra",
         "sqlalchemy/mako",
         "sqlfluff/sqlfluff",
@@ -1372,14 +1678,25 @@
         "sveltejs/realworld",
         "sveltejs/svelte",
         "tailwindlabs/tailwindcss",
+        "terraform-aws-modules/terraform-aws-eks",
+        "terraform-google-modules/terraform-google-kubernetes-engine",
+        "tidyverse/dplyr",
+        "tigerbeetle/tigerbeetle",
         "tokio-rs/tokio",
+        "trailheadapps/lwc-recipes",
         "twbs/bootstrap",
+        "typelevel/cats",
         "typescript",
+        "valkey-io/valkey",
         "vercel/next.js",
+        "vibe-d/vibe.d",
         "vitejs/vite",
+        "voldyman/MarkMyWords",
         "vuejs/core",
         "vuejs/vitepress",
-        "withastro/astro"
+        "withastro/astro",
+        "zigtools/zls",
+        "zsh-users/zsh-syntax-highlighting"
       ]
     },
     "verification": {
@@ -1531,1737 +1848,1737 @@
     }
   },
   "verification": {
-    "accuracy": 0.8820195550682018,
-    "macroF1": 0.8232489969064931,
-    "falseColorRate": 0.2092066362555751,
+    "accuracy": 0.8989329445579757,
+    "macroF1": 0.842823095958417,
+    "falseColorRate": 0.1906450334759065,
     "confusion": [
       [
-        77837,
-        971,
-        5038,
-        269,
-        1424,
-        1230,
-        1176,
-        395,
-        10089
+        79664,
+        1020,
+        3781,
+        259,
+        1375,
+        1031,
+        1662,
+        377,
+        9260
       ],
       [
-        1596,
-        122082,
-        2651,
-        48,
-        432,
-        9,
-        26,
-        14,
-        655
-      ],
-      [
-        3814,
-        1229,
-        85985,
-        203,
-        290,
-        211,
-        194,
-        82,
-        2232
-      ],
-      [
-        475,
-        9,
-        187,
-        5756,
-        5,
-        0,
-        32,
-        3,
-        94
-      ],
-      [
-        2802,
-        440,
-        638,
-        67,
-        24956,
-        631,
-        430,
-        76,
-        1017
-      ],
-      [
-        1706,
-        25,
-        144,
-        0,
-        366,
-        5813,
-        272,
-        92,
-        32
-      ],
-      [
-        2177,
-        63,
-        418,
-        7,
-        402,
-        66,
-        8596,
+        892,
+        123915,
+        1904,
+        37,
+        243,
         10,
-        456
+        22,
+        6,
+        484
       ],
       [
-        1077,
+        2942,
+        1578,
+        87134,
+        118,
+        226,
+        125,
+        191,
+        74,
+        1852
+      ],
+      [
+        212,
         18,
-        456,
-        14,
-        49,
-        58,
-        30,
-        2377,
-        105
+        167,
+        5963,
+        4,
+        4,
+        43,
+        40,
+        110
       ],
       [
-        4989,
-        292,
-        1644,
-        49,
-        379,
-        45,
-        135,
-        49,
-        91301
+        2847,
+        437,
+        258,
+        67,
+        25246,
+        581,
+        478,
+        120,
+        1023
+      ],
+      [
+        1600,
+        13,
+        97,
+        6,
+        410,
+        5933,
+        240,
+        113,
+        38
+      ],
+      [
+        1239,
+        44,
+        439,
+        6,
+        243,
+        113,
+        9824,
+        10,
+        277
+      ],
+      [
+        885,
+        28,
+        507,
+        19,
+        58,
+        47,
+        88,
+        2455,
+        97
+      ],
+      [
+        3935,
+        418,
+        1250,
+        23,
+        418,
+        17,
+        78,
+        31,
+        92713
       ]
     ],
     "perClass": [
       {
         "class": "plain",
         "support": 98429,
-        "precision": 0.8068267805499985,
-        "recall": 0.7907933637444249,
-        "f1": 0.7987296179618475
+        "precision": 0.8455464040078119,
+        "recall": 0.8093549665240936,
+        "f1": 0.8270549456253731
       },
       {
         "class": "comment",
         "support": 127513,
-        "precision": 0.9756491300977391,
-        "recall": 0.9574082642554093,
-        "f1": 0.9664426342413376
+        "precision": 0.9721034588259291,
+        "recall": 0.9717832691568703,
+        "f1": 0.9719433376211841
       },
       {
         "class": "string",
         "support": 94240,
-        "precision": 0.8849744238943609,
-        "recall": 0.9124044991511036,
-        "f1": 0.8984801542311691
+        "precision": 0.9120445481855197,
+        "recall": 0.9245967741935484,
+        "f1": 0.9182777681173167
       },
       {
         "class": "number",
         "support": 6561,
-        "precision": 0.8975518478091377,
-        "recall": 0.8773052888279226,
-        "f1": 0.8873130877138893
+        "precision": 0.9176669744536781,
+        "recall": 0.9088553574150282,
+        "f1": 0.9132399111723716
       },
       {
         "class": "keyword",
         "support": 31057,
-        "precision": 0.8817439847366003,
-        "recall": 0.8035547541617026,
-        "f1": 0.8408355795148248
+        "precision": 0.8945186549976969,
+        "recall": 0.8128924236082042,
+        "f1": 0.8517543859649123
       },
       {
         "class": "type",
         "support": 8450,
-        "precision": 0.7209475381371698,
-        "recall": 0.6879289940828403,
-        "f1": 0.7040513534790771
+        "precision": 0.7547385828774965,
+        "recall": 0.7021301775147929,
+        "f1": 0.7274845196493164
       },
       {
         "class": "function",
         "support": 12195,
-        "precision": 0.7892755486181251,
-        "recall": 0.7048790487904879,
-        "f1": 0.7446937537901759
+        "precision": 0.7780769840012672,
+        "recall": 0.8055760557605576,
+        "f1": 0.7915877684219008
       },
       {
         "class": "constant",
         "support": 4184,
-        "precision": 0.7672692059393157,
-        "recall": 0.5681166347992351,
-        "f1": 0.6528426256522933
+        "precision": 0.7610043397396157,
+        "recall": 0.5867590822179732,
+        "f1": 0.6626180836707153
       },
       {
         "class": "operator",
         "support": 98883,
-        "precision": 0.861484605731216,
-        "recall": 0.9233235237604037,
-        "f1": 0.8913327866291784
+        "precision": 0.8758573129026773,
+        "recall": 0.9376030257981655,
+        "f1": 0.9056789930496197
       }
     ],
     "mixedLanguage": {
-      "accuracy": 0.9140936315853807,
+      "accuracy": 0.9104754919936439,
       "macroF1": 0
     },
     "perLanguage": {
       "tsx": {
         "support": 3334,
-        "errors": 74,
+        "errors": 68,
         "plainSupport": 586,
-        "falseColors": 37,
-        "accuracy": 0.9778044391121775,
-        "error": 0.022195560887822437,
-        "falseColorRate": 0.06313993174061433
+        "falseColors": 24,
+        "accuracy": 0.9796040791841631,
+        "error": 0.020395920815836834,
+        "falseColorRate": 0.040955631399317405
       },
       "javascript": {
         "support": 49328,
-        "errors": 1134,
+        "errors": 964,
         "plainSupport": 10658,
-        "falseColors": 386,
-        "accuracy": 0.977011028219267,
-        "error": 0.02298897178073305,
-        "falseColorRate": 0.036216926252580224
+        "falseColors": 241,
+        "accuracy": 0.9804573467401881,
+        "error": 0.01954265325981187,
+        "falseColorRate": 0.022612122349408896
       },
       "python": {
         "support": 35783,
-        "errors": 1331,
+        "errors": 875,
         "plainSupport": 5103,
-        "falseColors": 248,
-        "accuracy": 0.9628035659391331,
-        "error": 0.037196434060866895,
-        "falseColorRate": 0.04859886341367823
+        "falseColors": 212,
+        "accuracy": 0.9755470474806472,
+        "error": 0.024452952519352766,
+        "falseColorRate": 0.04154418969233784
       },
       "typescript": {
         "support": 23792,
-        "errors": 1020,
+        "errors": 959,
         "plainSupport": 3862,
-        "falseColors": 174,
-        "accuracy": 0.957128446536651,
-        "error": 0.042871553463349026,
-        "falseColorRate": 0.04505437597099948
+        "falseColors": 118,
+        "accuracy": 0.9596923335574983,
+        "error": 0.04030766644250168,
+        "falseColorRate": 0.030554117037804248
       },
       "shell": {
         "support": 9788,
-        "errors": 969,
+        "errors": 820,
         "plainSupport": 375,
-        "falseColors": 99,
-        "accuracy": 0.9010012259910094,
-        "error": 0.0989987740089906,
-        "falseColorRate": 0.264
+        "falseColors": 138,
+        "accuracy": 0.9162239476910503,
+        "error": 0.08377605230894973,
+        "falseColorRate": 0.368
       },
       "docker": {
         "support": 4313,
-        "errors": 447,
+        "errors": 300,
         "plainSupport": 2851,
-        "falseColors": 183,
-        "accuracy": 0.8963598423371203,
-        "error": 0.10364015766287966,
-        "falseColorRate": 0.06418800420904945
+        "falseColors": 134,
+        "accuracy": 0.930442847206121,
+        "error": 0.06955715279387897,
+        "falseColorRate": 0.04700105226236408
       },
       "java": {
         "support": 13406,
-        "errors": 853,
+        "errors": 843,
         "plainSupport": 923,
-        "falseColors": 192,
-        "accuracy": 0.9363717738326123,
-        "error": 0.06362822616738774,
-        "falseColorRate": 0.20801733477789816
+        "falseColors": 83,
+        "accuracy": 0.9371177084887364,
+        "error": 0.06288229151126361,
+        "falseColorRate": 0.08992416034669556
       },
       "cpp": {
         "support": 7784,
-        "errors": 682,
+        "errors": 495,
         "plainSupport": 1178,
-        "falseColors": 131,
-        "accuracy": 0.9123843782117164,
-        "error": 0.08761562178828367,
-        "falseColorRate": 0.11120543293718166
+        "falseColors": 149,
+        "accuracy": 0.9364080164439876,
+        "error": 0.06359198355601234,
+        "falseColorRate": 0.1264855687606112
       },
       "c": {
         "support": 13401,
-        "errors": 599,
+        "errors": 486,
         "plainSupport": 1645,
-        "falseColors": 156,
-        "accuracy": 0.9553018431460338,
-        "error": 0.04469815685396612,
-        "falseColorRate": 0.09483282674772037
+        "falseColors": 177,
+        "accuracy": 0.9637340496977838,
+        "error": 0.03626595030221625,
+        "falseColorRate": 0.10759878419452888
       },
       "make": {
         "support": 10693,
-        "errors": 2658,
+        "errors": 778,
         "plainSupport": 4708,
-        "falseColors": 1801,
-        "accuracy": 0.7514261666510802,
-        "error": 0.24857383334891986,
-        "falseColorRate": 0.3825403568394223
+        "falseColors": 432,
+        "accuracy": 0.9272421210137474,
+        "error": 0.07275787898625269,
+        "falseColorRate": 0.09175870858113849
       },
       "bat": {
         "support": 4683,
-        "errors": 1271,
+        "errors": 841,
         "plainSupport": 1939,
-        "falseColors": 567,
-        "accuracy": 0.7285927824044416,
-        "error": 0.2714072175955584,
-        "falseColorRate": 0.2924187725631769
+        "falseColors": 480,
+        "accuracy": 0.8204142643604527,
+        "error": 0.1795857356395473,
+        "falseColorRate": 0.2475502836513667
       },
       "php": {
         "support": 11483,
-        "errors": 834,
+        "errors": 1025,
         "plainSupport": 925,
-        "falseColors": 48,
-        "accuracy": 0.9273708961072891,
-        "error": 0.07262910389271096,
-        "falseColorRate": 0.05189189189189189
+        "falseColors": 124,
+        "accuracy": 0.9107376121222677,
+        "error": 0.0892623878777323,
+        "falseColorRate": 0.13405405405405404
       },
       "csharp": {
         "support": 11625,
-        "errors": 1006,
+        "errors": 1072,
         "plainSupport": 1262,
-        "falseColors": 57,
-        "accuracy": 0.9134623655913978,
-        "error": 0.08653763440860215,
-        "falseColorRate": 0.045166402535657686
+        "falseColors": 120,
+        "accuracy": 0.9077849462365591,
+        "error": 0.09221505376344086,
+        "falseColorRate": 0.09508716323296355
       },
       "powershell": {
         "support": 6071,
-        "errors": 659,
+        "errors": 554,
         "plainSupport": 827,
-        "falseColors": 213,
-        "accuracy": 0.8914511612584418,
-        "error": 0.10854883874155823,
-        "falseColorRate": 0.25755743651753327
+        "falseColors": 167,
+        "accuracy": 0.9087464997529238,
+        "error": 0.09125350024707626,
+        "falseColorRate": 0.20193470374848851
       },
       "cmake": {
         "support": 12094,
-        "errors": 637,
+        "errors": 438,
         "plainSupport": 3594,
-        "falseColors": 209,
-        "accuracy": 0.9473292541756243,
-        "error": 0.052670745824375725,
-        "falseColorRate": 0.05815247634947134
+        "falseColors": 141,
+        "accuracy": 0.9637836943939143,
+        "error": 0.036216305606085665,
+        "falseColorRate": 0.03923205342237062
       },
       "kotlin": {
         "support": 8096,
-        "errors": 855,
+        "errors": 814,
         "plainSupport": 2703,
-        "falseColors": 438,
-        "accuracy": 0.8943922924901185,
-        "error": 0.10560770750988142,
-        "falseColorRate": 0.16204217536071033
+        "falseColors": 426,
+        "accuracy": 0.8994565217391304,
+        "error": 0.10054347826086957,
+        "falseColorRate": 0.15760266370699222
       },
       "ruby": {
         "support": 10017,
-        "errors": 1521,
+        "errors": 1594,
         "plainSupport": 603,
-        "falseColors": 155,
-        "accuracy": 0.8481581311769991,
-        "error": 0.1518418688230009,
-        "falseColorRate": 0.2570480928689884
+        "falseColors": 151,
+        "accuracy": 0.8408705201158031,
+        "error": 0.15912947988419687,
+        "falseColorRate": 0.2504145936981758
       },
       "swift": {
         "support": 10514,
-        "errors": 890,
+        "errors": 876,
         "plainSupport": 1012,
-        "falseColors": 546,
-        "accuracy": 0.91535096062393,
-        "error": 0.08464903937607,
-        "falseColorRate": 0.5395256916996047
+        "falseColors": 501,
+        "accuracy": 0.9166825185466996,
+        "error": 0.08331748145330037,
+        "falseColorRate": 0.4950592885375494
       },
       "go": {
         "support": 13990,
-        "errors": 676,
+        "errors": 674,
         "plainSupport": 1468,
-        "falseColors": 207,
-        "accuracy": 0.9516797712651894,
-        "error": 0.04832022873481058,
-        "falseColorRate": 0.14100817438692098
+        "falseColors": 186,
+        "accuracy": 0.9518227305218013,
+        "error": 0.04817726947819871,
+        "falseColorRate": 0.12670299727520437
       },
       "rust": {
         "support": 15496,
-        "errors": 775,
+        "errors": 653,
         "plainSupport": 1394,
-        "falseColors": 110,
-        "accuracy": 0.9499870934434693,
-        "error": 0.05001290655653072,
-        "falseColorRate": 0.07890961262553801
+        "falseColors": 135,
+        "accuracy": 0.957860092927207,
+        "error": 0.04213990707279298,
+        "falseColorRate": 0.09684361549497848
       },
       "objective-c": {
         "support": 3262,
-        "errors": 837,
+        "errors": 501,
         "plainSupport": 587,
-        "falseColors": 122,
-        "accuracy": 0.743408951563458,
-        "error": 0.256591048436542,
-        "falseColorRate": 0.20783645655877342
+        "falseColors": 205,
+        "accuracy": 0.8464132434089515,
+        "error": 0.15358675659104842,
+        "falseColorRate": 0.3492333901192504
       },
       "lua": {
         "support": 6084,
-        "errors": 1856,
+        "errors": 1696,
         "plainSupport": 1553,
-        "falseColors": 481,
-        "accuracy": 0.6949375410913872,
-        "error": 0.3050624589086128,
-        "falseColorRate": 0.30972311654861556
+        "falseColors": 440,
+        "accuracy": 0.7212360289283366,
+        "error": 0.2787639710716634,
+        "falseColorRate": 0.28332260141661303
       },
       "asm": {
         "support": 3074,
-        "errors": 1449,
+        "errors": 1365,
         "plainSupport": 967,
-        "falseColors": 841,
-        "accuracy": 0.5286271958360442,
-        "error": 0.47137280416395577,
-        "falseColorRate": 0.8697001034126164
+        "falseColors": 836,
+        "accuracy": 0.5559531554977228,
+        "error": 0.44404684450227716,
+        "falseColorRate": 0.8645294725956567
       },
       "nix": {
         "support": 1322,
-        "errors": 295,
+        "errors": 298,
         "plainSupport": 224,
-        "falseColors": 53,
-        "accuracy": 0.7768532526475038,
-        "error": 0.2231467473524962,
-        "falseColorRate": 0.23660714285714285
+        "falseColors": 38,
+        "accuracy": 0.7745839636913767,
+        "error": 0.2254160363086233,
+        "falseColorRate": 0.16964285714285715
       },
       "perl": {
         "support": 2226,
-        "errors": 828,
+        "errors": 812,
         "plainSupport": 853,
-        "falseColors": 564,
-        "accuracy": 0.628032345013477,
-        "error": 0.3719676549865229,
-        "falseColorRate": 0.6611957796014069
+        "falseColors": 585,
+        "accuracy": 0.6352201257861636,
+        "error": 0.36477987421383645,
+        "falseColorRate": 0.6858147713950762
       },
       "hlsl": {
         "support": 4251,
-        "errors": 557,
+        "errors": 369,
         "plainSupport": 834,
-        "falseColors": 495,
-        "accuracy": 0.8689720065866855,
-        "error": 0.1310279934133145,
-        "falseColorRate": 0.5935251798561151
+        "falseColors": 300,
+        "accuracy": 0.9131968948482709,
+        "error": 0.08680310515172901,
+        "falseColorRate": 0.3597122302158273
       },
       "shaderlab": {
         "support": 2987,
-        "errors": 906,
+        "errors": 823,
         "plainSupport": 1923,
-        "falseColors": 438,
-        "accuracy": 0.6966856377636425,
-        "error": 0.30331436223635755,
-        "falseColorRate": 0.22776911076443057
+        "falseColors": 311,
+        "accuracy": 0.7244727150987613,
+        "error": 0.2755272849012387,
+        "falseColorRate": 0.16172646905876234
       },
       "xsl": {
         "support": 2170,
-        "errors": 206,
+        "errors": 140,
         "plainSupport": 343,
-        "falseColors": 129,
-        "accuracy": 0.9050691244239631,
-        "error": 0.09493087557603687,
-        "falseColorRate": 0.3760932944606414
+        "falseColors": 94,
+        "accuracy": 0.935483870967742,
+        "error": 0.06451612903225806,
+        "falseColorRate": 0.27405247813411077
       },
       "viml": {
         "support": 810,
-        "errors": 432,
+        "errors": 137,
         "plainSupport": 88,
-        "falseColors": 40,
-        "accuracy": 0.4666666666666667,
-        "error": 0.5333333333333333,
-        "falseColorRate": 0.45454545454545453
+        "falseColors": 11,
+        "accuracy": 0.8308641975308642,
+        "error": 0.16913580246913582,
+        "falseColorRate": 0.125
       },
       "objective-cpp": {
         "support": 384,
-        "errors": 39,
+        "errors": 46,
         "plainSupport": 46,
-        "falseColors": 11,
-        "accuracy": 0.8984375,
-        "error": 0.1015625,
-        "falseColorRate": 0.2391304347826087
+        "falseColors": 21,
+        "accuracy": 0.8802083333333334,
+        "error": 0.11979166666666667,
+        "falseColorRate": 0.45652173913043476
       },
       "fortran-fixed-form": {
         "support": 1485,
-        "errors": 601,
+        "errors": 250,
         "plainSupport": 396,
-        "falseColors": 229,
-        "accuracy": 0.5952861952861953,
-        "error": 0.4047138047138047,
-        "falseColorRate": 0.5782828282828283
+        "falseColors": 28,
+        "accuracy": 0.8316498316498316,
+        "error": 0.16835016835016836,
+        "falseColorRate": 0.0707070707070707
       },
       "fortran-free-form": {
         "support": 1422,
-        "errors": 543,
+        "errors": 291,
         "plainSupport": 361,
-        "falseColors": 226,
-        "accuracy": 0.6181434599156118,
-        "error": 0.3818565400843882,
-        "falseColorRate": 0.6260387811634349
+        "falseColors": 89,
+        "accuracy": 0.7953586497890295,
+        "error": 0.20464135021097046,
+        "falseColorRate": 0.24653739612188366
       },
       "shellscript": {
         "support": 5324,
-        "errors": 489,
+        "errors": 422,
         "plainSupport": 143,
-        "falseColors": 56,
-        "accuracy": 0.9081517655897822,
-        "error": 0.09184823441021787,
-        "falseColorRate": 0.3916083916083916
+        "falseColors": 54,
+        "accuracy": 0.9207362885048835,
+        "error": 0.07926371149511645,
+        "falseColorRate": 0.3776223776223776
       },
       "emacs-lisp": {
         "support": 5887,
-        "errors": 2666,
+        "errors": 2139,
         "plainSupport": 1212,
-        "falseColors": 260,
-        "accuracy": 0.5471377611686767,
-        "error": 0.45286223883132326,
-        "falseColorRate": 0.2145214521452145
+        "falseColors": 960,
+        "accuracy": 0.6366570409376593,
+        "error": 0.36334295906234076,
+        "falseColorRate": 0.7920792079207921
       },
       "html": {
         "support": 11017,
-        "errors": 578,
+        "errors": 633,
         "plainSupport": 2712,
-        "falseColors": 315,
-        "accuracy": 0.9475356267586458,
-        "error": 0.05246437324135427,
-        "falseColorRate": 0.1161504424778761
+        "falseColors": 403,
+        "accuracy": 0.9425433421076518,
+        "error": 0.05745665789234819,
+        "falseColorRate": 0.14859882005899705
       },
       "css": {
         "support": 23638,
-        "errors": 1318,
+        "errors": 1386,
         "plainSupport": 6391,
-        "falseColors": 376,
-        "accuracy": 0.9442423216854218,
-        "error": 0.05575767831457822,
-        "falseColorRate": 0.058832733531528715
+        "falseColors": 404,
+        "accuracy": 0.9413655977663085,
+        "error": 0.05863440223369151,
+        "falseColorRate": 0.06321389453919575
       },
       "scss": {
         "support": 6858,
-        "errors": 2069,
+        "errors": 1818,
         "plainSupport": 2332,
-        "falseColors": 34,
-        "accuracy": 0.6983085447652377,
-        "error": 0.3016914552347623,
-        "falseColorRate": 0.014579759862778732
+        "falseColors": 939,
+        "accuracy": 0.7349081364829396,
+        "error": 0.2650918635170604,
+        "falseColorRate": 0.40265866209262435
       },
       "vue": {
         "support": 8933,
-        "errors": 1101,
+        "errors": 1117,
         "plainSupport": 1682,
-        "falseColors": 210,
-        "accuracy": 0.8767491324303146,
-        "error": 0.12325086756968544,
-        "falseColorRate": 0.1248513674197384
+        "falseColors": 240,
+        "accuracy": 0.8749580208216725,
+        "error": 0.12504197917832754,
+        "falseColorRate": 0.1426872770511296
       },
       "svelte": {
         "support": 6180,
-        "errors": 224,
+        "errors": 232,
         "plainSupport": 818,
-        "falseColors": 41,
-        "accuracy": 0.9637540453074434,
-        "error": 0.036245954692556634,
-        "falseColorRate": 0.05012224938875306
+        "falseColors": 50,
+        "accuracy": 0.9624595469255663,
+        "error": 0.037540453074433655,
+        "falseColorRate": 0.061124694376528114
       },
       "astro": {
         "support": 6603,
-        "errors": 263,
+        "errors": 271,
         "plainSupport": 1675,
-        "falseColors": 123,
-        "accuracy": 0.9601696198697561,
-        "error": 0.03983038013024383,
-        "falseColorRate": 0.07343283582089552
+        "falseColors": 145,
+        "accuracy": 0.9589580493714978,
+        "error": 0.041041950628502195,
+        "falseColorRate": 0.08656716417910448
       },
       "diff": {
         "support": 2403,
-        "errors": 157,
+        "errors": 136,
         "plainSupport": 2217,
-        "falseColors": 106,
-        "accuracy": 0.9346650020807324,
-        "error": 0.06533499791926758,
-        "falseColorRate": 0.04781235904375282
+        "falseColors": 94,
+        "accuracy": 0.943404078235539,
+        "error": 0.05659592176446109,
+        "falseColorRate": 0.042399639152007215
       },
       "jsx": {
         "support": 1326,
-        "errors": 5,
+        "errors": 7,
         "plainSupport": 212,
-        "falseColors": 2,
-        "accuracy": 0.9962292609351433,
-        "error": 0.003770739064856712,
-        "falseColorRate": 0.009433962264150943
+        "falseColors": 0,
+        "accuracy": 0.9947209653092006,
+        "error": 0.005279034690799397,
+        "falseColorRate": 0
       },
       "sql": {
         "support": 3836,
-        "errors": 1271,
+        "errors": 1237,
         "plainSupport": 1242,
-        "falseColors": 318,
-        "accuracy": 0.6686652763295099,
-        "error": 0.3313347236704901,
-        "falseColorRate": 0.2560386473429952
+        "falseColors": 361,
+        "accuracy": 0.6775286757038581,
+        "error": 0.32247132429614184,
+        "falseColorRate": 0.29066022544283415
       },
       "dart": {
         "support": 4975,
-        "errors": 291,
+        "errors": 343,
         "plainSupport": 307,
-        "falseColors": 131,
-        "accuracy": 0.9415075376884422,
-        "error": 0.05849246231155779,
-        "falseColorRate": 0.42671009771986973
+        "falseColors": 168,
+        "accuracy": 0.9310552763819095,
+        "error": 0.06894472361809045,
+        "falseColorRate": 0.5472312703583062
       },
       "hcl": {
         "support": 4740,
-        "errors": 398,
+        "errors": 393,
         "plainSupport": 1228,
-        "falseColors": 204,
-        "accuracy": 0.9160337552742616,
-        "error": 0.0839662447257384,
-        "falseColorRate": 0.16612377850162866
+        "falseColors": 193,
+        "accuracy": 0.9170886075949367,
+        "error": 0.08291139240506329,
+        "falseColorRate": 0.15716612377850162
       },
       "r": {
         "support": 2035,
-        "errors": 532,
+        "errors": 515,
         "plainSupport": 833,
-        "falseColors": 328,
-        "accuracy": 0.7385749385749385,
-        "error": 0.26142506142506144,
-        "falseColorRate": 0.3937575030012005
+        "falseColors": 175,
+        "accuracy": 0.7469287469287469,
+        "error": 0.25307125307125306,
+        "falseColorRate": 0.21008403361344538
       },
       "hack": {
         "support": 157,
-        "errors": 47,
+        "errors": 49,
         "plainSupport": 29,
-        "falseColors": 24,
-        "accuracy": 0.7006369426751593,
-        "error": 0.29936305732484075,
-        "falseColorRate": 0.8275862068965517
+        "falseColors": 25,
+        "accuracy": 0.6878980891719746,
+        "error": 0.31210191082802546,
+        "falseColorRate": 0.8620689655172413
       },
       "jinja": {
         "support": 158,
-        "errors": 155,
+        "errors": 112,
         "plainSupport": 158,
-        "falseColors": 155,
-        "accuracy": 0.01898734177215189,
-        "error": 0.9810126582278481,
-        "falseColorRate": 0.9810126582278481
+        "falseColors": 112,
+        "accuracy": 0.2911392405063291,
+        "error": 0.7088607594936709,
+        "falseColorRate": 0.7088607594936709
       },
       "glsl": {
         "support": 4571,
-        "errors": 384,
+        "errors": 613,
         "plainSupport": 1103,
-        "falseColors": 133,
-        "accuracy": 0.9159921242616496,
-        "error": 0.08400787573835047,
-        "falseColorRate": 0.12058023572076156
+        "falseColors": 100,
+        "accuracy": 0.8658936775322686,
+        "error": 0.13410632246773135,
+        "falseColorRate": 0.09066183136899365
       },
       "liquid": {
         "support": 123,
-        "errors": 65,
+        "errors": 68,
         "plainSupport": 76,
-        "falseColors": 65,
-        "accuracy": 0.4715447154471545,
-        "error": 0.5284552845528455,
-        "falseColorRate": 0.8552631578947368
+        "falseColors": 67,
+        "accuracy": 0.44715447154471544,
+        "error": 0.5528455284552846,
+        "falseColorRate": 0.881578947368421
       },
       "matlab": {
         "support": 155,
-        "errors": 75,
+        "errors": 88,
         "plainSupport": 43,
-        "falseColors": 38,
-        "accuracy": 0.5161290322580645,
-        "error": 0.4838709677419355,
-        "falseColorRate": 0.8837209302325582
+        "falseColors": 31,
+        "accuracy": 0.432258064516129,
+        "error": 0.567741935483871,
+        "falseColorRate": 0.7209302325581395
       },
       "solidity": {
         "support": 2360,
-        "errors": 85,
+        "errors": 130,
         "plainSupport": 191,
-        "falseColors": 60,
-        "accuracy": 0.9639830508474576,
-        "error": 0.036016949152542374,
-        "falseColorRate": 0.31413612565445026
+        "falseColors": 55,
+        "accuracy": 0.9449152542372882,
+        "error": 0.05508474576271186,
+        "falseColorRate": 0.2879581151832461
       },
       "gherkin": {
         "support": 98,
-        "errors": 57,
+        "errors": 38,
         "plainSupport": 59,
-        "falseColors": 32,
-        "accuracy": 0.41836734693877553,
-        "error": 0.5816326530612245,
-        "falseColorRate": 0.5423728813559322
+        "falseColors": 3,
+        "accuracy": 0.6122448979591837,
+        "error": 0.3877551020408163,
+        "falseColorRate": 0.05084745762711865
       },
       "awk": {
         "support": 107,
-        "errors": 60,
+        "errors": 30,
         "plainSupport": 43,
-        "falseColors": 31,
-        "accuracy": 0.4392523364485982,
-        "error": 0.5607476635514018,
-        "falseColorRate": 0.7209302325581395
+        "falseColors": 21,
+        "accuracy": 0.719626168224299,
+        "error": 0.2803738317757009,
+        "falseColorRate": 0.4883720930232558
       },
       "mdx": {
         "support": 352,
-        "errors": 106,
+        "errors": 138,
         "plainSupport": 112,
-        "falseColors": 31,
-        "accuracy": 0.6988636363636364,
-        "error": 0.30113636363636365,
-        "falseColorRate": 0.2767857142857143
+        "falseColors": 68,
+        "accuracy": 0.6079545454545454,
+        "error": 0.39204545454545453,
+        "falseColorRate": 0.6071428571428571
       },
       "markdown": {
         "support": 5769,
-        "errors": 1191,
+        "errors": 1273,
         "plainSupport": 2374,
-        "falseColors": 553,
-        "accuracy": 0.7935517420696828,
-        "error": 0.2064482579303172,
-        "falseColorRate": 0.2329401853411963
+        "falseColors": 659,
+        "accuracy": 0.7793378401802739,
+        "error": 0.22066215981972612,
+        "falseColorRate": 0.2775905644481887
       },
       "zig": {
         "support": 3895,
-        "errors": 865,
+        "errors": 861,
         "plainSupport": 1452,
-        "falseColors": 543,
-        "accuracy": 0.7779204107830552,
-        "error": 0.2220795892169448,
-        "falseColorRate": 0.3739669421487603
+        "falseColors": 526,
+        "accuracy": 0.7789473684210526,
+        "error": 0.22105263157894736,
+        "falseColorRate": 0.3622589531680441
       },
       "xml": {
         "support": 2007,
-        "errors": 142,
+        "errors": 112,
         "plainSupport": 340,
-        "falseColors": 91,
-        "accuracy": 0.9292476332835077,
-        "error": 0.07075236671649228,
-        "falseColorRate": 0.2676470588235294
+        "falseColors": 67,
+        "accuracy": 0.9441953163926258,
+        "error": 0.05580468360737419,
+        "falseColorRate": 0.19705882352941176
       },
       "json": {
         "support": 605,
-        "errors": 4,
+        "errors": 0,
         "plainSupport": 0,
         "falseColors": 0,
-        "accuracy": 0.9933884297520661,
-        "error": 0.006611570247933884,
+        "accuracy": 1,
+        "error": 0,
         "falseColorRate": null
       },
       "yaml": {
         "support": 1022,
-        "errors": 595,
+        "errors": 579,
         "plainSupport": 0,
         "falseColors": 0,
-        "accuracy": 0.4178082191780822,
-        "error": 0.5821917808219178,
+        "accuracy": 0.4334637964774951,
+        "error": 0.5665362035225049,
         "falseColorRate": null
       },
       "haskell": {
         "support": 423,
-        "errors": 148,
+        "errors": 196,
         "plainSupport": 182,
-        "falseColors": 30,
-        "accuracy": 0.6501182033096926,
-        "error": 0.34988179669030733,
-        "falseColorRate": 0.16483516483516483
+        "falseColors": 96,
+        "accuracy": 0.5366430260047281,
+        "error": 0.46335697399527187,
+        "falseColorRate": 0.5274725274725275
       },
       "wgsl": {
         "support": 558,
-        "errors": 57,
+        "errors": 39,
         "plainSupport": 114,
-        "falseColors": 22,
-        "accuracy": 0.8978494623655914,
-        "error": 0.10215053763440861,
-        "falseColorRate": 0.19298245614035087
+        "falseColors": 24,
+        "accuracy": 0.9301075268817205,
+        "error": 0.06989247311827956,
+        "falseColorRate": 0.21052631578947367
       },
       "less": {
         "support": 1908,
-        "errors": 479,
+        "errors": 278,
         "plainSupport": 558,
-        "falseColors": 298,
-        "accuracy": 0.7489517819706499,
-        "error": 0.2510482180293501,
-        "falseColorRate": 0.5340501792114696
+        "falseColors": 172,
+        "accuracy": 0.8542976939203355,
+        "error": 0.14570230607966456,
+        "falseColorRate": 0.30824372759856633
       },
       "proto": {
         "support": 4362,
-        "errors": 308,
+        "errors": 291,
         "plainSupport": 268,
-        "falseColors": 122,
-        "accuracy": 0.9293901879871619,
-        "error": 0.07060981201283814,
-        "falseColorRate": 0.4552238805970149
+        "falseColors": 110,
+        "accuracy": 0.9332874828060522,
+        "error": 0.06671251719394773,
+        "falseColorRate": 0.41044776119402987
       },
       "graphql": {
         "support": 217,
-        "errors": 92,
+        "errors": 114,
         "plainSupport": 70,
-        "falseColors": 31,
-        "accuracy": 0.5760368663594471,
-        "error": 0.423963133640553,
-        "falseColorRate": 0.44285714285714284
+        "falseColors": 13,
+        "accuracy": 0.4746543778801844,
+        "error": 0.5253456221198156,
+        "falseColorRate": 0.18571428571428572
       },
       "toml": {
         "support": 1551,
-        "errors": 125,
+        "errors": 79,
         "plainSupport": 172,
-        "falseColors": 84,
-        "accuracy": 0.9194068343004513,
-        "error": 0.08059316569954868,
-        "falseColorRate": 0.4883720930232558
+        "falseColors": 43,
+        "accuracy": 0.9490651192778853,
+        "error": 0.050934880722114766,
+        "falseColorRate": 0.25
       },
       "scala": {
         "support": 384,
         "errors": 50,
         "plainSupport": 105,
-        "falseColors": 21,
+        "falseColors": 18,
         "accuracy": 0.8697916666666666,
         "error": 0.13020833333333334,
-        "falseColorRate": 0.2
+        "falseColorRate": 0.17142857142857143
       },
       "groovy": {
         "support": 370,
-        "errors": 125,
+        "errors": 113,
         "plainSupport": 87,
         "falseColors": 52,
-        "accuracy": 0.6621621621621622,
-        "error": 0.33783783783783783,
+        "accuracy": 0.6945945945945946,
+        "error": 0.3054054054054054,
         "falseColorRate": 0.5977011494252874
       },
       "vala": {
         "support": 1837,
-        "errors": 970,
+        "errors": 984,
         "plainSupport": 924,
-        "falseColors": 752,
-        "accuracy": 0.47196516058791504,
-        "error": 0.528034839412085,
-        "falseColorRate": 0.8138528138528138
+        "falseColors": 745,
+        "accuracy": 0.46434403919433864,
+        "error": 0.5356559608056614,
+        "falseColorRate": 0.8062770562770563
       },
       "qml": {
         "support": 141,
-        "errors": 52,
+        "errors": 54,
         "plainSupport": 67,
-        "falseColors": 49,
-        "accuracy": 0.6312056737588653,
-        "error": 0.36879432624113473,
-        "falseColorRate": 0.7313432835820896
+        "falseColors": 50,
+        "accuracy": 0.6170212765957447,
+        "error": 0.3829787234042553,
+        "falseColorRate": 0.746268656716418
       },
       "apex": {
         "support": 1283,
-        "errors": 23,
+        "errors": 31,
         "plainSupport": 50,
-        "falseColors": 3,
-        "accuracy": 0.9820732657833203,
-        "error": 0.017926734216679657,
-        "falseColorRate": 0.06
+        "falseColors": 2,
+        "accuracy": 0.9758378799688231,
+        "error": 0.024162120031176928,
+        "falseColorRate": 0.04
       },
       "c3": {
         "support": 4323,
-        "errors": 1050,
+        "errors": 932,
         "plainSupport": 889,
-        "falseColors": 24,
-        "accuracy": 0.7571131158917419,
-        "error": 0.24288688410825815,
-        "falseColorRate": 0.02699662542182227
+        "falseColors": 19,
+        "accuracy": 0.7844089752486699,
+        "error": 0.2155910247513301,
+        "falseColorRate": 0.021372328458942633
       },
       "d": {
         "support": 4538,
-        "errors": 1254,
+        "errors": 1206,
         "plainSupport": 1272,
-        "falseColors": 757,
-        "accuracy": 0.7236668135742618,
-        "error": 0.27633318642573823,
-        "falseColorRate": 0.595125786163522
+        "falseColors": 814,
+        "accuracy": 0.7342441604230938,
+        "error": 0.2657558395769061,
+        "falseColorRate": 0.639937106918239
       },
       "odin": {
         "support": 487,
-        "errors": 65,
+        "errors": 63,
         "plainSupport": 90,
-        "falseColors": 46,
-        "accuracy": 0.86652977412731,
-        "error": 0.13347022587268995,
-        "falseColorRate": 0.5111111111111111
+        "falseColors": 44,
+        "accuracy": 0.8706365503080082,
+        "error": 0.1293634496919918,
+        "falseColorRate": 0.4888888888888889
       },
       "gdscript": {
         "support": 1119,
-        "errors": 144,
+        "errors": 135,
         "plainSupport": 320,
-        "falseColors": 82,
-        "accuracy": 0.871313672922252,
-        "error": 0.128686327077748,
-        "falseColorRate": 0.25625
+        "falseColors": 83,
+        "accuracy": 0.8793565683646113,
+        "error": 0.12064343163538874,
+        "falseColorRate": 0.259375
       },
       "nim": {
         "support": 5890,
-        "errors": 1374,
+        "errors": 973,
         "plainSupport": 1276,
-        "falseColors": 739,
-        "accuracy": 0.766723259762309,
-        "error": 0.233276740237691,
-        "falseColorRate": 0.579153605015674
+        "falseColors": 441,
+        "accuracy": 0.8348047538200339,
+        "error": 0.16519524617996603,
+        "falseColorRate": 0.3456112852664577
       },
       "razor": {
         "support": 1169,
-        "errors": 637,
+        "errors": 465,
         "plainSupport": 830,
-        "falseColors": 585,
-        "accuracy": 0.45508982035928147,
-        "error": 0.5449101796407185,
-        "falseColorRate": 0.7048192771084337
+        "falseColors": 340,
+        "accuracy": 0.602224123182207,
+        "error": 0.397775876817793,
+        "falseColorRate": 0.40963855421686746
       },
       "actionscript-3": {
         "support": 1784,
-        "errors": 155,
+        "errors": 154,
         "plainSupport": 127,
-        "falseColors": 104,
-        "accuracy": 0.9131165919282511,
-        "error": 0.08688340807174888,
-        "falseColorRate": 0.8188976377952756
+        "falseColors": 102,
+        "accuracy": 0.9136771300448431,
+        "error": 0.08632286995515695,
+        "falseColorRate": 0.8031496062992126
       },
       "haxe": {
         "support": 2425,
-        "errors": 500,
+        "errors": 387,
         "plainSupport": 741,
-        "falseColors": 449,
-        "accuracy": 0.7938144329896908,
-        "error": 0.20618556701030927,
-        "falseColorRate": 0.6059379217273954
+        "falseColors": 332,
+        "accuracy": 0.8404123711340206,
+        "error": 0.15958762886597938,
+        "falseColorRate": 0.44804318488529016
       },
       "bicep": {
         "support": 600,
-        "errors": 172,
+        "errors": 163,
         "plainSupport": 281,
-        "falseColors": 149,
-        "accuracy": 0.7133333333333334,
-        "error": 0.2866666666666667,
-        "falseColorRate": 0.5302491103202847
+        "falseColors": 142,
+        "accuracy": 0.7283333333333333,
+        "error": 0.27166666666666667,
+        "falseColorRate": 0.505338078291815
       },
       "coffeescript": {
         "support": 2885,
-        "errors": 366,
+        "errors": 281,
         "plainSupport": 494,
-        "falseColors": 97,
-        "accuracy": 0.8731369150779896,
-        "error": 0.1268630849220104,
-        "falseColorRate": 0.19635627530364372
+        "falseColors": 109,
+        "accuracy": 0.9025996533795494,
+        "error": 0.0974003466204506,
+        "falseColorRate": 0.22064777327935223
       },
       "system-verilog": {
         "support": 3069,
-        "errors": 844,
+        "errors": 756,
         "plainSupport": 1086,
-        "falseColors": 376,
-        "accuracy": 0.724991854024112,
-        "error": 0.2750081459758879,
-        "falseColorRate": 0.3462246777163904
+        "falseColors": 451,
+        "accuracy": 0.7536656891495601,
+        "error": 0.24633431085043989,
+        "falseColorRate": 0.4152854511970534
       },
       "wasm": {
         "support": 745,
-        "errors": 100,
+        "errors": 72,
         "plainSupport": 32,
-        "falseColors": 23,
-        "accuracy": 0.8657718120805369,
-        "error": 0.1342281879194631,
-        "falseColorRate": 0.71875
+        "falseColors": 15,
+        "accuracy": 0.9033557046979865,
+        "error": 0.09664429530201342,
+        "falseColorRate": 0.46875
       },
       "nginx": {
         "support": 814,
-        "errors": 132,
+        "errors": 95,
         "plainSupport": 124,
-        "falseColors": 86,
-        "accuracy": 0.8378378378378378,
-        "error": 0.16216216216216217,
-        "falseColorRate": 0.6935483870967742
+        "falseColors": 60,
+        "accuracy": 0.8832923832923834,
+        "error": 0.1167076167076167,
+        "falseColorRate": 0.4838709677419355
       },
       "prisma": {
         "support": 3337,
-        "errors": 1023,
+        "errors": 686,
         "plainSupport": 718,
-        "falseColors": 397,
-        "accuracy": 0.693437219059035,
-        "error": 0.30656278094096495,
-        "falseColorRate": 0.552924791086351
+        "falseColors": 400,
+        "accuracy": 0.7944261312556188,
+        "error": 0.2055738687443812,
+        "falseColorRate": 0.5571030640668524
       },
       "ada": {
         "support": 102,
-        "errors": 34,
+        "errors": 52,
         "plainSupport": 33,
-        "falseColors": 17,
-        "accuracy": 0.6666666666666667,
-        "error": 0.3333333333333333,
-        "falseColorRate": 0.5151515151515151
+        "falseColors": 9,
+        "accuracy": 0.4901960784313726,
+        "error": 0.5098039215686274,
+        "falseColorRate": 0.2727272727272727
       },
       "angular-html": {
         "support": 8121,
-        "errors": 262,
+        "errors": 90,
         "plainSupport": 613,
-        "falseColors": 15,
-        "accuracy": 0.9677379633050117,
-        "error": 0.032262036694988304,
-        "falseColorRate": 0.024469820554649267
+        "falseColors": 24,
+        "accuracy": 0.9889176209826376,
+        "error": 0.011082379017362394,
+        "falseColorRate": 0.03915171288743882
       },
       "angular-ts": {
         "support": 62,
-        "errors": 1,
+        "errors": 3,
         "plainSupport": 9,
         "falseColors": 1,
-        "accuracy": 0.9838709677419355,
-        "error": 0.016129032258064516,
+        "accuracy": 0.9516129032258065,
+        "error": 0.04838709677419355,
         "falseColorRate": 0.1111111111111111
       },
       "vb": {
         "support": 3812,
-        "errors": 2805,
+        "errors": 2556,
         "plainSupport": 1104,
-        "falseColors": 726,
-        "accuracy": 0.2641657922350472,
-        "error": 0.7358342077649528,
-        "falseColorRate": 0.657608695652174
+        "falseColors": 453,
+        "accuracy": 0.329485834207765,
+        "error": 0.670514165792235,
+        "falseColorRate": 0.41032608695652173
       },
       "puppet": {
         "support": 2532,
-        "errors": 749,
+        "errors": 684,
         "plainSupport": 893,
-        "falseColors": 568,
-        "accuracy": 0.7041864139020537,
-        "error": 0.2958135860979463,
-        "falseColorRate": 0.6360582306830908
+        "falseColors": 517,
+        "accuracy": 0.7298578199052133,
+        "error": 0.27014218009478674,
+        "falseColorRate": 0.5789473684210527
       },
       "julia": {
         "support": 362,
-        "errors": 80,
+        "errors": 86,
         "plainSupport": 125,
-        "falseColors": 41,
-        "accuracy": 0.7790055248618785,
-        "error": 0.22099447513812154,
-        "falseColorRate": 0.328
+        "falseColors": 67,
+        "accuracy": 0.7624309392265194,
+        "error": 0.23756906077348067,
+        "falseColorRate": 0.536
       }
     },
-    "weightedError": 0.09311766879841407,
+    "weightedError": 0.07598502807686021,
     "perFamily": {
       "actionscript": {
         "support": 1784,
-        "errors": 155,
+        "errors": 154,
         "plainSupport": 127,
-        "falseColors": 104,
-        "error": 0.08688340807174888,
-        "falseColorRate": 0.8188976377952756
+        "falseColors": 102,
+        "error": 0.08632286995515695,
+        "falseColorRate": 0.8031496062992126
       },
       "ada": {
         "support": 102,
-        "errors": 34,
+        "errors": 52,
         "plainSupport": 33,
-        "falseColors": 17,
-        "error": 0.3333333333333333,
-        "falseColorRate": 0.5151515151515151
+        "falseColors": 9,
+        "error": 0.5098039215686274,
+        "falseColorRate": 0.2727272727272727
       },
       "apex": {
         "support": 1283,
-        "errors": 23,
+        "errors": 31,
         "plainSupport": 50,
-        "falseColors": 3,
-        "error": 0.017926734216679657,
-        "falseColorRate": 0.06
+        "falseColors": 2,
+        "error": 0.024162120031176928,
+        "falseColorRate": 0.04
       },
       "assembly": {
         "support": 3074,
-        "errors": 1449,
+        "errors": 1365,
         "plainSupport": 967,
-        "falseColors": 841,
-        "error": 0.47137280416395577,
-        "falseColorRate": 0.8697001034126164
+        "falseColors": 836,
+        "error": 0.44404684450227716,
+        "falseColorRate": 0.8645294725956567
       },
       "astro": {
         "support": 6603,
-        "errors": 263,
+        "errors": 271,
         "plainSupport": 1675,
-        "falseColors": 123,
-        "error": 0.03983038013024383,
-        "falseColorRate": 0.07343283582089552
+        "falseColors": 145,
+        "error": 0.041041950628502195,
+        "falseColorRate": 0.08656716417910448
       },
       "awk": {
         "support": 107,
-        "errors": 60,
+        "errors": 30,
         "plainSupport": 43,
-        "falseColors": 31,
-        "error": 0.5607476635514018,
-        "falseColorRate": 0.7209302325581395
+        "falseColors": 21,
+        "error": 0.2803738317757009,
+        "falseColorRate": 0.4883720930232558
       },
       "batchfile": {
         "support": 4683,
-        "errors": 1271,
+        "errors": 841,
         "plainSupport": 1939,
-        "falseColors": 567,
-        "error": 0.2714072175955584,
-        "falseColorRate": 0.2924187725631769
+        "falseColors": 480,
+        "error": 0.1795857356395473,
+        "falseColorRate": 0.2475502836513667
       },
       "bicep": {
         "support": 600,
-        "errors": 172,
+        "errors": 163,
         "plainSupport": 281,
-        "falseColors": 149,
-        "error": 0.2866666666666667,
-        "falseColorRate": 0.5302491103202847
+        "falseColors": 142,
+        "error": 0.27166666666666667,
+        "falseColorRate": 0.505338078291815
       },
       "c": {
         "support": 13401,
-        "errors": 599,
+        "errors": 486,
         "plainSupport": 1645,
-        "falseColors": 156,
-        "error": 0.04469815685396612,
-        "falseColorRate": 0.09483282674772037
+        "falseColors": 177,
+        "error": 0.03626595030221625,
+        "falseColorRate": 0.10759878419452888
       },
       "c3": {
         "support": 4323,
-        "errors": 1050,
+        "errors": 932,
         "plainSupport": 889,
-        "falseColors": 24,
-        "error": 0.24288688410825815,
-        "falseColorRate": 0.02699662542182227
+        "falseColors": 19,
+        "error": 0.2155910247513301,
+        "falseColorRate": 0.021372328458942633
       },
       "cmake": {
         "support": 12094,
-        "errors": 637,
+        "errors": 438,
         "plainSupport": 3594,
-        "falseColors": 209,
-        "error": 0.052670745824375725,
-        "falseColorRate": 0.05815247634947134
+        "falseColors": 141,
+        "error": 0.036216305606085665,
+        "falseColorRate": 0.03923205342237062
       },
       "coffeescript": {
         "support": 2885,
-        "errors": 366,
+        "errors": 281,
         "plainSupport": 494,
-        "falseColors": 97,
-        "error": 0.1268630849220104,
-        "falseColorRate": 0.19635627530364372
+        "falseColors": 109,
+        "error": 0.0974003466204506,
+        "falseColorRate": 0.22064777327935223
       },
       "cpp": {
         "support": 4909,
-        "errors": 351,
+        "errors": 252,
         "plainSupport": 639,
-        "falseColors": 83,
-        "error": 0.07150132409859442,
-        "falseColorRate": 0.1298904538341158
+        "falseColors": 91,
+        "error": 0.051334283968221636,
+        "falseColorRate": 0.14241001564945227
       },
       "csharp": {
         "support": 11625,
-        "errors": 1006,
+        "errors": 1072,
         "plainSupport": 1262,
-        "falseColors": 57,
-        "error": 0.08653763440860215,
-        "falseColorRate": 0.045166402535657686
+        "falseColors": 120,
+        "error": 0.09221505376344086,
+        "falseColorRate": 0.09508716323296355
       },
       "css": {
         "support": 32404,
-        "errors": 3866,
+        "errors": 3482,
         "plainSupport": 9281,
-        "falseColors": 708,
-        "error": 0.11930625848660659,
-        "falseColorRate": 0.07628488309449413
+        "falseColors": 1515,
+        "error": 0.10745586964572275,
+        "falseColorRate": 0.16323672018101498
       },
       "cuda": {
         "support": 2875,
-        "errors": 331,
+        "errors": 243,
         "plainSupport": 539,
-        "falseColors": 48,
-        "error": 0.11513043478260869,
-        "falseColorRate": 0.08905380333951762
+        "falseColors": 58,
+        "error": 0.08452173913043479,
+        "falseColorRate": 0.10760667903525047
       },
       "cython": {
         "support": 655,
-        "errors": 44,
+        "errors": 42,
         "plainSupport": 208,
-        "falseColors": 25,
-        "error": 0.06717557251908397,
-        "falseColorRate": 0.1201923076923077
+        "falseColors": 18,
+        "error": 0.06412213740458016,
+        "falseColorRate": 0.08653846153846154
       },
       "d": {
         "support": 4538,
-        "errors": 1254,
+        "errors": 1206,
         "plainSupport": 1272,
-        "falseColors": 757,
-        "error": 0.27633318642573823,
-        "falseColorRate": 0.595125786163522
+        "falseColors": 814,
+        "error": 0.2657558395769061,
+        "falseColorRate": 0.639937106918239
       },
       "dart": {
         "support": 4975,
-        "errors": 291,
+        "errors": 343,
         "plainSupport": 307,
-        "falseColors": 131,
-        "error": 0.05849246231155779,
-        "falseColorRate": 0.42671009771986973
+        "falseColors": 168,
+        "error": 0.06894472361809045,
+        "falseColorRate": 0.5472312703583062
       },
       "diff": {
         "support": 2403,
-        "errors": 157,
+        "errors": 136,
         "plainSupport": 2217,
-        "falseColors": 106,
-        "error": 0.06533499791926758,
-        "falseColorRate": 0.04781235904375282
+        "falseColors": 94,
+        "error": 0.05659592176446109,
+        "falseColorRate": 0.042399639152007215
       },
       "dockerfile": {
         "support": 4313,
-        "errors": 447,
+        "errors": 300,
         "plainSupport": 2851,
-        "falseColors": 183,
-        "error": 0.10364015766287966,
-        "falseColorRate": 0.06418800420904945
+        "falseColors": 134,
+        "error": 0.06955715279387897,
+        "falseColorRate": 0.04700105226236408
       },
       "emacs-lisp": {
         "support": 5887,
-        "errors": 2666,
+        "errors": 2139,
         "plainSupport": 1212,
-        "falseColors": 260,
-        "error": 0.45286223883132326,
-        "falseColorRate": 0.2145214521452145
+        "falseColors": 960,
+        "error": 0.36334295906234076,
+        "falseColorRate": 0.7920792079207921
       },
       "fortran": {
         "support": 2907,
-        "errors": 1144,
+        "errors": 541,
         "plainSupport": 757,
-        "falseColors": 455,
-        "error": 0.3935328517371861,
-        "falseColorRate": 0.6010568031704095
+        "falseColors": 117,
+        "error": 0.18610251117991056,
+        "falseColorRate": 0.154557463672391
       },
       "gdscript": {
         "support": 1119,
-        "errors": 144,
+        "errors": 135,
         "plainSupport": 320,
-        "falseColors": 82,
-        "error": 0.128686327077748,
-        "falseColorRate": 0.25625
+        "falseColors": 83,
+        "error": 0.12064343163538874,
+        "falseColorRate": 0.259375
       },
       "gherkin": {
         "support": 98,
-        "errors": 57,
+        "errors": 38,
         "plainSupport": 59,
-        "falseColors": 32,
-        "error": 0.5816326530612245,
-        "falseColorRate": 0.5423728813559322
+        "falseColors": 3,
+        "error": 0.3877551020408163,
+        "falseColorRate": 0.05084745762711865
       },
       "glsl": {
         "support": 4571,
-        "errors": 384,
+        "errors": 613,
         "plainSupport": 1103,
-        "falseColors": 133,
-        "error": 0.08400787573835047,
-        "falseColorRate": 0.12058023572076156
+        "falseColors": 100,
+        "error": 0.13410632246773135,
+        "falseColorRate": 0.09066183136899365
       },
       "go": {
         "support": 13990,
-        "errors": 676,
+        "errors": 674,
         "plainSupport": 1468,
-        "falseColors": 207,
-        "error": 0.04832022873481058,
-        "falseColorRate": 0.14100817438692098
+        "falseColors": 186,
+        "error": 0.04817726947819871,
+        "falseColorRate": 0.12670299727520437
       },
       "graphql": {
         "support": 217,
-        "errors": 92,
+        "errors": 114,
         "plainSupport": 70,
-        "falseColors": 31,
-        "error": 0.423963133640553,
-        "falseColorRate": 0.44285714285714284
+        "falseColors": 13,
+        "error": 0.5253456221198156,
+        "falseColorRate": 0.18571428571428572
       },
       "groovy": {
         "support": 370,
-        "errors": 125,
+        "errors": 113,
         "plainSupport": 87,
         "falseColors": 52,
-        "error": 0.33783783783783783,
+        "error": 0.3054054054054054,
         "falseColorRate": 0.5977011494252874
       },
       "hack": {
         "support": 157,
-        "errors": 47,
+        "errors": 49,
         "plainSupport": 29,
-        "falseColors": 24,
-        "error": 0.29936305732484075,
-        "falseColorRate": 0.8275862068965517
+        "falseColors": 25,
+        "error": 0.31210191082802546,
+        "falseColorRate": 0.8620689655172413
       },
       "haskell": {
         "support": 423,
-        "errors": 148,
+        "errors": 196,
         "plainSupport": 182,
-        "falseColors": 30,
-        "error": 0.34988179669030733,
-        "falseColorRate": 0.16483516483516483
+        "falseColors": 96,
+        "error": 0.46335697399527187,
+        "falseColorRate": 0.5274725274725275
       },
       "haxe": {
         "support": 2425,
-        "errors": 500,
+        "errors": 387,
         "plainSupport": 741,
-        "falseColors": 449,
-        "error": 0.20618556701030927,
-        "falseColorRate": 0.6059379217273954
+        "falseColors": 332,
+        "error": 0.15958762886597938,
+        "falseColorRate": 0.44804318488529016
       },
       "hcl": {
         "support": 4740,
-        "errors": 398,
+        "errors": 393,
         "plainSupport": 1228,
-        "falseColors": 204,
-        "error": 0.0839662447257384,
-        "falseColorRate": 0.16612377850162866
+        "falseColors": 193,
+        "error": 0.08291139240506329,
+        "falseColorRate": 0.15716612377850162
       },
       "hlsl": {
         "support": 4251,
-        "errors": 557,
+        "errors": 369,
         "plainSupport": 834,
-        "falseColors": 495,
-        "error": 0.1310279934133145,
-        "falseColorRate": 0.5935251798561151
+        "falseColors": 300,
+        "error": 0.08680310515172901,
+        "falseColorRate": 0.3597122302158273
       },
       "html": {
         "support": 19138,
-        "errors": 840,
+        "errors": 723,
         "plainSupport": 3325,
-        "falseColors": 330,
-        "error": 0.043891733723482075,
-        "falseColorRate": 0.09924812030075188
+        "falseColors": 427,
+        "error": 0.0377782422405685,
+        "falseColorRate": 0.12842105263157894
       },
       "java": {
         "support": 13406,
-        "errors": 853,
+        "errors": 843,
         "plainSupport": 923,
-        "falseColors": 192,
-        "error": 0.06362822616738774,
-        "falseColorRate": 0.20801733477789816
+        "falseColors": 83,
+        "error": 0.06288229151126361,
+        "falseColorRate": 0.08992416034669556
       },
       "javascript": {
         "support": 50654,
-        "errors": 1139,
+        "errors": 971,
         "plainSupport": 10870,
-        "falseColors": 388,
-        "error": 0.022485884629052,
-        "falseColorRate": 0.035694572217111316
+        "falseColors": 241,
+        "error": 0.019169266000710703,
+        "falseColorRate": 0.022171113155473782
       },
       "json": {
         "support": 605,
-        "errors": 4,
+        "errors": 0,
         "plainSupport": 0,
         "falseColors": 0,
-        "error": 0.006611570247933884,
+        "error": 0,
         "falseColorRate": null
       },
       "julia": {
         "support": 362,
-        "errors": 80,
+        "errors": 86,
         "plainSupport": 125,
-        "falseColors": 41,
-        "error": 0.22099447513812154,
-        "falseColorRate": 0.328
+        "falseColors": 67,
+        "error": 0.23756906077348067,
+        "falseColorRate": 0.536
       },
       "kotlin": {
         "support": 8096,
-        "errors": 855,
+        "errors": 814,
         "plainSupport": 2703,
-        "falseColors": 438,
-        "error": 0.10560770750988142,
-        "falseColorRate": 0.16204217536071033
+        "falseColors": 426,
+        "error": 0.10054347826086957,
+        "falseColorRate": 0.15760266370699222
       },
       "lua": {
         "support": 6084,
-        "errors": 1856,
+        "errors": 1696,
         "plainSupport": 1553,
-        "falseColors": 481,
-        "error": 0.3050624589086128,
-        "falseColorRate": 0.30972311654861556
+        "falseColors": 440,
+        "error": 0.2787639710716634,
+        "falseColorRate": 0.28332260141661303
       },
       "m4": {
         "support": 709,
-        "errors": 143,
+        "errors": 154,
         "plainSupport": 57,
-        "falseColors": 36,
-        "error": 0.2016925246826516,
-        "falseColorRate": 0.631578947368421
+        "falseColors": 30,
+        "error": 0.21720733427362482,
+        "falseColorRate": 0.5263157894736842
       },
       "makefile": {
         "support": 10693,
-        "errors": 2658,
+        "errors": 778,
         "plainSupport": 4708,
-        "falseColors": 1801,
-        "error": 0.24857383334891986,
-        "falseColorRate": 0.3825403568394223
+        "falseColors": 432,
+        "error": 0.07275787898625269,
+        "falseColorRate": 0.09175870858113849
       },
       "mako": {
         "support": 158,
-        "errors": 155,
+        "errors": 112,
         "plainSupport": 158,
-        "falseColors": 155,
-        "error": 0.9810126582278481,
-        "falseColorRate": 0.9810126582278481
+        "falseColors": 112,
+        "error": 0.7088607594936709,
+        "falseColorRate": 0.7088607594936709
       },
       "markdown": {
         "support": 6121,
-        "errors": 1297,
+        "errors": 1411,
         "plainSupport": 2486,
-        "falseColors": 584,
-        "error": 0.2118934814572782,
-        "falseColorRate": 0.23491552695092519
+        "falseColors": 727,
+        "error": 0.23051788923378533,
+        "falseColorRate": 0.2924376508447305
       },
       "matlab": {
         "support": 155,
-        "errors": 75,
+        "errors": 88,
         "plainSupport": 43,
-        "falseColors": 38,
-        "error": 0.4838709677419355,
-        "falseColorRate": 0.8837209302325582
+        "falseColors": 31,
+        "error": 0.567741935483871,
+        "falseColorRate": 0.7209302325581395
       },
       "meson": {
         "support": 1076,
-        "errors": 67,
+        "errors": 41,
         "plainSupport": 210,
-        "falseColors": 46,
-        "error": 0.062267657992565055,
-        "falseColorRate": 0.21904761904761905
+        "falseColors": 37,
+        "error": 0.03810408921933085,
+        "falseColorRate": 0.1761904761904762
       },
       "nginx": {
         "support": 814,
-        "errors": 132,
+        "errors": 95,
         "plainSupport": 124,
-        "falseColors": 86,
-        "error": 0.16216216216216217,
-        "falseColorRate": 0.6935483870967742
+        "falseColors": 60,
+        "error": 0.1167076167076167,
+        "falseColorRate": 0.4838709677419355
       },
       "nim": {
         "support": 5890,
-        "errors": 1374,
+        "errors": 973,
         "plainSupport": 1276,
-        "falseColors": 739,
-        "error": 0.233276740237691,
-        "falseColorRate": 0.579153605015674
+        "falseColors": 441,
+        "error": 0.16519524617996603,
+        "falseColorRate": 0.3456112852664577
       },
       "nix": {
         "support": 1322,
-        "errors": 295,
+        "errors": 298,
         "plainSupport": 224,
-        "falseColors": 53,
-        "error": 0.2231467473524962,
-        "falseColorRate": 0.23660714285714285
+        "falseColors": 38,
+        "error": 0.2254160363086233,
+        "falseColorRate": 0.16964285714285715
       },
       "objective-c": {
         "support": 3262,
-        "errors": 837,
+        "errors": 501,
         "plainSupport": 587,
-        "falseColors": 122,
-        "error": 0.256591048436542,
-        "falseColorRate": 0.20783645655877342
+        "falseColors": 205,
+        "error": 0.15358675659104842,
+        "falseColorRate": 0.3492333901192504
       },
       "objective-cpp": {
         "support": 384,
-        "errors": 39,
+        "errors": 46,
         "plainSupport": 46,
-        "falseColors": 11,
-        "error": 0.1015625,
-        "falseColorRate": 0.2391304347826087
+        "falseColors": 21,
+        "error": 0.11979166666666667,
+        "falseColorRate": 0.45652173913043476
       },
       "odin": {
         "support": 487,
-        "errors": 65,
+        "errors": 63,
         "plainSupport": 90,
-        "falseColors": 46,
-        "error": 0.13347022587268995,
-        "falseColorRate": 0.5111111111111111
+        "falseColors": 44,
+        "error": 0.1293634496919918,
+        "falseColorRate": 0.4888888888888889
       },
       "perl": {
         "support": 2226,
-        "errors": 828,
+        "errors": 812,
         "plainSupport": 853,
-        "falseColors": 564,
-        "error": 0.3719676549865229,
-        "falseColorRate": 0.6611957796014069
+        "falseColors": 585,
+        "error": 0.36477987421383645,
+        "falseColorRate": 0.6858147713950762
       },
       "php": {
         "support": 11483,
-        "errors": 834,
+        "errors": 1025,
         "plainSupport": 925,
-        "falseColors": 48,
-        "error": 0.07262910389271096,
-        "falseColorRate": 0.05189189189189189
+        "falseColors": 124,
+        "error": 0.0892623878777323,
+        "falseColorRate": 0.13405405405405404
       },
       "plist": {
         "support": 674,
-        "errors": 55,
+        "errors": 51,
         "plainSupport": 167,
-        "falseColors": 49,
-        "error": 0.08160237388724036,
-        "falseColorRate": 0.2934131736526946
+        "falseColors": 45,
+        "error": 0.07566765578635015,
+        "falseColorRate": 0.2694610778443114
       },
       "plpgsql": {
         "support": 3727,
-        "errors": 1230,
+        "errors": 1162,
         "plainSupport": 1228,
-        "falseColors": 304,
-        "error": 0.3300241481083982,
-        "falseColorRate": 0.247557003257329
+        "falseColors": 348,
+        "error": 0.3117789106519989,
+        "falseColorRate": 0.28338762214983715
       },
       "powershell": {
         "support": 6071,
-        "errors": 659,
+        "errors": 554,
         "plainSupport": 827,
-        "falseColors": 213,
-        "error": 0.10854883874155823,
-        "falseColorRate": 0.25755743651753327
+        "falseColors": 167,
+        "error": 0.09125350024707626,
+        "falseColorRate": 0.20193470374848851
       },
       "prisma": {
         "support": 3337,
-        "errors": 1023,
+        "errors": 686,
         "plainSupport": 718,
-        "falseColors": 397,
-        "error": 0.30656278094096495,
-        "falseColorRate": 0.552924791086351
+        "falseColors": 400,
+        "error": 0.2055738687443812,
+        "falseColorRate": 0.5571030640668524
       },
       "procfile": {
         "support": 193,
-        "errors": 48,
+        "errors": 82,
         "plainSupport": 2,
         "falseColors": 1,
-        "error": 0.24870466321243523,
+        "error": 0.42487046632124353,
         "falseColorRate": 0.5
       },
       "protobuf": {
         "support": 4362,
-        "errors": 308,
+        "errors": 291,
         "plainSupport": 268,
-        "falseColors": 122,
-        "error": 0.07060981201283814,
-        "falseColorRate": 0.4552238805970149
+        "falseColors": 110,
+        "error": 0.06671251719394773,
+        "falseColorRate": 0.41044776119402987
       },
       "puppet": {
         "support": 2532,
-        "errors": 749,
+        "errors": 684,
         "plainSupport": 893,
-        "falseColors": 568,
-        "error": 0.2958135860979463,
-        "falseColorRate": 0.6360582306830908
+        "falseColors": 517,
+        "error": 0.27014218009478674,
+        "falseColorRate": 0.5789473684210527
       },
       "python": {
         "support": 27039,
-        "errors": 1054,
+        "errors": 621,
         "plainSupport": 4444,
-        "falseColors": 167,
-        "error": 0.03898073153592958,
-        "falseColorRate": 0.03757875787578758
+        "falseColors": 144,
+        "error": 0.022966825696216577,
+        "falseColorRate": 0.032403240324032405
       },
       "qml": {
         "support": 141,
-        "errors": 52,
+        "errors": 54,
         "plainSupport": 67,
-        "falseColors": 49,
-        "error": 0.36879432624113473,
-        "falseColorRate": 0.7313432835820896
+        "falseColors": 50,
+        "error": 0.3829787234042553,
+        "falseColorRate": 0.746268656716418
       },
       "r": {
         "support": 2035,
-        "errors": 532,
+        "errors": 515,
         "plainSupport": 833,
-        "falseColors": 328,
-        "error": 0.26142506142506144,
-        "falseColorRate": 0.3937575030012005
+        "falseColors": 175,
+        "error": 0.25307125307125306,
+        "falseColorRate": 0.21008403361344538
       },
       "razor": {
         "support": 1169,
-        "errors": 637,
+        "errors": 465,
         "plainSupport": 830,
-        "falseColors": 585,
-        "error": 0.5449101796407185,
-        "falseColorRate": 0.7048192771084337
+        "falseColors": 340,
+        "error": 0.397775876817793,
+        "falseColorRate": 0.40963855421686746
       },
       "rss": {
         "support": 127,
-        "errors": 2,
+        "errors": 4,
         "plainSupport": 52,
-        "falseColors": 2,
-        "error": 0.015748031496062992,
-        "falseColorRate": 0.038461538461538464
+        "falseColors": 4,
+        "error": 0.031496062992125984,
+        "falseColorRate": 0.07692307692307693
       },
       "ruby": {
         "support": 10017,
-        "errors": 1521,
+        "errors": 1594,
         "plainSupport": 603,
-        "falseColors": 155,
-        "error": 0.1518418688230009,
-        "falseColorRate": 0.2570480928689884
+        "falseColors": 151,
+        "error": 0.15912947988419687,
+        "falseColorRate": 0.2504145936981758
       },
       "rust": {
         "support": 15496,
-        "errors": 775,
+        "errors": 653,
         "plainSupport": 1394,
-        "falseColors": 110,
-        "error": 0.05001290655653072,
-        "falseColorRate": 0.07890961262553801
+        "falseColors": 135,
+        "error": 0.04213990707279298,
+        "falseColorRate": 0.09684361549497848
       },
       "scala": {
         "support": 384,
         "errors": 50,
         "plainSupport": 105,
-        "falseColors": 21,
+        "falseColors": 18,
         "error": 0.13020833333333334,
-        "falseColorRate": 0.2
+        "falseColorRate": 0.17142857142857143
       },
       "shaderlab": {
         "support": 2987,
-        "errors": 906,
+        "errors": 823,
         "plainSupport": 1923,
-        "falseColors": 438,
-        "error": 0.30331436223635755,
-        "falseColorRate": 0.22776911076443057
+        "falseColors": 311,
+        "error": 0.2755272849012387,
+        "falseColorRate": 0.16172646905876234
       },
       "shell": {
         "support": 14210,
-        "errors": 1267,
+        "errors": 1006,
         "plainSupport": 459,
-        "falseColors": 118,
-        "error": 0.08916256157635467,
-        "falseColorRate": 0.2570806100217865
+        "falseColors": 161,
+        "error": 0.07079521463757917,
+        "falseColorRate": 0.35076252723311546
       },
       "smarty": {
         "support": 123,
-        "errors": 65,
+        "errors": 68,
         "plainSupport": 76,
-        "falseColors": 65,
-        "error": 0.5284552845528455,
-        "falseColorRate": 0.8552631578947368
+        "falseColors": 67,
+        "error": 0.5528455284552846,
+        "falseColorRate": 0.881578947368421
       },
       "solidity": {
         "support": 2360,
-        "errors": 85,
+        "errors": 130,
         "plainSupport": 191,
-        "falseColors": 60,
-        "error": 0.036016949152542374,
-        "falseColorRate": 0.31413612565445026
+        "falseColors": 55,
+        "error": 0.05508474576271186,
+        "falseColorRate": 0.2879581151832461
       },
       "starlark": {
         "support": 7013,
-        "errors": 166,
+        "errors": 171,
         "plainSupport": 241,
-        "falseColors": 10,
-        "error": 0.02367032653643234,
-        "falseColorRate": 0.04149377593360996
+        "falseColors": 13,
+        "error": 0.024383288179095963,
+        "falseColorRate": 0.05394190871369295
       },
       "svelte": {
         "support": 6180,
-        "errors": 224,
+        "errors": 232,
         "plainSupport": 818,
-        "falseColors": 41,
-        "error": 0.036245954692556634,
-        "falseColorRate": 0.05012224938875306
+        "falseColors": 50,
+        "error": 0.037540453074433655,
+        "falseColorRate": 0.061124694376528114
       },
       "svg": {
         "support": 464,
-        "errors": 5,
+        "errors": 1,
         "plainSupport": 9,
-        "falseColors": 4,
-        "error": 0.010775862068965518,
-        "falseColorRate": 0.4444444444444444
+        "falseColors": 0,
+        "error": 0.0021551724137931034,
+        "falseColorRate": 0
       },
       "swift": {
         "support": 10514,
-        "errors": 890,
+        "errors": 876,
         "plainSupport": 1012,
-        "falseColors": 546,
-        "error": 0.08464903937607,
-        "falseColorRate": 0.5395256916996047
+        "falseColors": 501,
+        "error": 0.08331748145330037,
+        "falseColorRate": 0.4950592885375494
       },
       "systemverilog": {
         "support": 3069,
-        "errors": 844,
+        "errors": 756,
         "plainSupport": 1086,
-        "falseColors": 376,
-        "error": 0.2750081459758879,
-        "falseColorRate": 0.3462246777163904
+        "falseColors": 451,
+        "error": 0.24633431085043989,
+        "falseColorRate": 0.4152854511970534
       },
       "toml": {
         "support": 1551,
-        "errors": 125,
+        "errors": 79,
         "plainSupport": 172,
-        "falseColors": 84,
-        "error": 0.08059316569954868,
-        "falseColorRate": 0.4883720930232558
+        "falseColors": 43,
+        "error": 0.050934880722114766,
+        "falseColorRate": 0.25
       },
       "tsql": {
         "support": 109,
-        "errors": 41,
+        "errors": 75,
         "plainSupport": 14,
-        "falseColors": 14,
-        "error": 0.3761467889908257,
-        "falseColorRate": 1
+        "falseColors": 13,
+        "error": 0.6880733944954128,
+        "falseColorRate": 0.9285714285714286
       },
       "typescript": {
         "support": 27188,
-        "errors": 1095,
+        "errors": 1030,
         "plainSupport": 4457,
-        "falseColors": 212,
-        "error": 0.04027512137707812,
-        "falseColorRate": 0.0475656271034328
+        "falseColors": 143,
+        "error": 0.03788436074738855,
+        "falseColorRate": 0.03208436167825892
       },
       "vala": {
         "support": 1837,
-        "errors": 970,
+        "errors": 984,
         "plainSupport": 924,
-        "falseColors": 752,
-        "error": 0.528034839412085,
-        "falseColorRate": 0.8138528138528138
+        "falseColors": 745,
+        "error": 0.5356559608056614,
+        "falseColorRate": 0.8062770562770563
       },
       "vb": {
         "support": 3812,
-        "errors": 2805,
+        "errors": 2556,
         "plainSupport": 1104,
-        "falseColors": 726,
-        "error": 0.7358342077649528,
-        "falseColorRate": 0.657608695652174
+        "falseColors": 453,
+        "error": 0.670514165792235,
+        "falseColorRate": 0.41032608695652173
       },
       "vim-script": {
         "support": 810,
-        "errors": 432,
+        "errors": 137,
         "plainSupport": 88,
-        "falseColors": 40,
-        "error": 0.5333333333333333,
-        "falseColorRate": 0.45454545454545453
+        "falseColors": 11,
+        "error": 0.16913580246913582,
+        "falseColorRate": 0.125
       },
       "vue": {
         "support": 8933,
-        "errors": 1101,
+        "errors": 1117,
         "plainSupport": 1682,
-        "falseColors": 210,
-        "error": 0.12325086756968544,
-        "falseColorRate": 0.1248513674197384
+        "falseColors": 240,
+        "error": 0.12504197917832754,
+        "falseColorRate": 0.1426872770511296
       },
       "webassembly": {
         "support": 745,
-        "errors": 100,
+        "errors": 72,
         "plainSupport": 32,
-        "falseColors": 23,
-        "error": 0.1342281879194631,
-        "falseColorRate": 0.71875
+        "falseColors": 15,
+        "error": 0.09664429530201342,
+        "falseColorRate": 0.46875
       },
       "wgsl": {
         "support": 558,
-        "errors": 57,
+        "errors": 39,
         "plainSupport": 114,
-        "falseColors": 22,
-        "error": 0.10215053763440861,
-        "falseColorRate": 0.19298245614035087
+        "falseColors": 24,
+        "error": 0.06989247311827956,
+        "falseColorRate": 0.21052631578947367
       },
       "xml": {
         "support": 742,
-        "errors": 80,
+        "errors": 56,
         "plainSupport": 112,
-        "falseColors": 36,
-        "error": 0.1078167115902965,
-        "falseColorRate": 0.32142857142857145
+        "falseColors": 18,
+        "error": 0.07547169811320754,
+        "falseColorRate": 0.16071428571428573
       },
       "xslt": {
         "support": 2170,
-        "errors": 206,
+        "errors": 140,
         "plainSupport": 343,
-        "falseColors": 129,
-        "error": 0.09493087557603687,
-        "falseColorRate": 0.3760932944606414
+        "falseColors": 94,
+        "error": 0.06451612903225806,
+        "falseColorRate": 0.27405247813411077
       },
       "yaml": {
         "support": 1022,
-        "errors": 595,
+        "errors": 579,
         "plainSupport": 0,
         "falseColors": 0,
-        "error": 0.5821917808219178,
+        "error": 0.5665362035225049,
         "falseColorRate": null
       },
       "zig": {
         "support": 3895,
-        "errors": 865,
+        "errors": 861,
         "plainSupport": 1452,
-        "falseColors": 543,
-        "error": 0.2220795892169448,
-        "falseColorRate": 0.3739669421487603
+        "falseColors": 526,
+        "error": 0.22105263157894736,
+        "falseColorRate": 0.3622589531680441
       }
     },
     "missingFamilies": [],
@@ -3411,12 +3728,23 @@
         "typescript"
       ],
       "matureLanguages": [
+        "astro",
+        "c",
         "cmake",
+        "cpp",
+        "csharp",
+        "diff",
         "docker",
         "go",
+        "java",
         "jsx",
         "kotlin",
+        "make",
+        "php",
+        "powershell",
         "rust",
+        "shell",
+        "shellscript",
         "svelte",
         "swift"
       ],
@@ -3584,12 +3912,23 @@
         "typescript"
       ],
       "matureLanguages": [
+        "astro",
+        "c",
         "cmake",
+        "cpp",
+        "csharp",
+        "diff",
         "docker",
         "go",
+        "java",
         "jsx",
         "kotlin",
+        "make",
+        "php",
+        "powershell",
         "rust",
+        "shell",
+        "shellscript",
         "svelte",
         "swift"
       ],
@@ -3621,7 +3960,7 @@
     "labelSource": "shiki-spans-v1",
     "precision": "int6",
     "hiddenSize": 32,
-    "classifierSize": 72,
+    "classifierSize": 176,
     "weightBits": 6,
     "hashBuckets": 256,
     "batchTokens": 65536,
@@ -3651,6 +3990,7 @@
     "mixedF1Tolerance": 0.005,
     "qatEpochs": 48,
     "emaDecay": 0.99,
+    "topLanguageLossShare": 0.5,
     "emaStartEpoch": 1,
     "distillationWeight": 0,
     "distillationTemperature": 1,
@@ -3665,10 +4005,71 @@
     "excludedFamilies": [
       "lisp"
     ],
-    "noRegressionGates": false,
-    "repairSearch": false,
-    "repairMaxSeconds": null,
     "initialIsBaseline": true,
+    "selectionGuard": {
+      "topFamilies": {
+        "javascript": 0.21395303846631972,
+        "python": 0.1552774953344903,
+        "typescript": 0.10531892664749452,
+        "shell": 0.08765498012695022,
+        "dockerfile": 0.06547284784827336,
+        "java": 0.04061281313892167,
+        "cpp": 0.03569342566489417,
+        "c": 0.034294471781931866,
+        "makefile": 0.031142744759307308,
+        "batchfile": 0.023726785334410964,
+        "php": 0.021125359855419266,
+        "csharp": 0.021333668864623328,
+        "powershell": 0.019485337320412355,
+        "cmake": 0.01979339887529005,
+        "kotlin": 0.016384128916562664,
+        "ruby": 0.015908037221302157,
+        "swift": 0.014275647267441486,
+        "go": 0.014876278504573313,
+        "plpgsql": 0.01161758199073586,
+        "rust": 0.012012586957581364,
+        "objective-c": 0.010439632895517898,
+        "lua": 0.009439651410194937,
+        "dart": 0.007922354734410737,
+        "procfile": 0.006095976307259001,
+        "assembly": 0.006142829775681463
+      },
+      "minLanguageSupport": 400,
+      "minEffectiveFiles": 3,
+      "languageDropTolerance": 0.05,
+      "baselineLanguageAccuracy": {
+        "tsx": 0.9826034793041392,
+        "javascript": 0.9791599091793708,
+        "python": 0.9712433278372411,
+        "typescript": 0.9618359112306658,
+        "shell": 0.9135676338373518,
+        "docker": 0.9283561326223047,
+        "java": 0.92980754885872,
+        "cpp": 0.9112281603288798,
+        "c": 0.9520185060816357,
+        "make": 0.9076966239595997,
+        "bat": 0.8178518043988896,
+        "php": 0.9190107114865453,
+        "csharp": 0.9113118279569893,
+        "cmake": 0.9572515296841408,
+        "kotlin": 0.9029150197628458,
+        "ruby": 0.8525506638714186,
+        "swift": 0.9158265170249191,
+        "go": 0.9518942101501072,
+        "rust": 0.9479220443985544,
+        "lua": 0.6987179487179487,
+        "hlsl": 0.8896730181133851,
+        "emacs-lisp": 0.5980975029726516,
+        "html": 0.9502586911137333,
+        "css": 0.9501649885777138,
+        "vue": 0.8515616254337848,
+        "svelte": 0.9686084142394822,
+        "astro": 0.960623958806603,
+        "sql": 0.6840458811261731,
+        "markdown": 0.8041254983532675,
+        "xml": 0.9322371699053313
+      }
+    },
     "trainingLanguageMultipliers": {}
   },
   "checkpointRole": "promoted-continuation-baseline"

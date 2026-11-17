@@ -10,13 +10,16 @@ const ENTRY_POINTS = [
 const MINIFIED_ENTRY_POINTS = "abcdefg";
 const STRUCT_MEMBERS = {
   stream_count: "a",
-  token_count: "b",
+  first_block: "b",
   block_count: "c",
   tree_nodes: "d",
   block_start: "e",
   tree_offset: "f",
   tree_power: "g",
   local_index: "h",
+  part_start: "i",
+  part_count: "j",
+  block_stream: "k",
 };
 
 export async function generatedShaderContents(model) {

@@ -1,5 +1,5 @@
 import { profileHighlight } from "../../src/browser-profile.js";
-import { createInspectableRuntime as createRuntime } from "../../../core/src/gpu.js";
+import { createInspectableRuntime as createRuntime } from "../../../core/src/inspect.js";
 
 const runner = createRuntime();
 

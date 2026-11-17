@@ -48,7 +48,7 @@ const dist = new URL("../dist/", import.meta.url);
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await Promise.all(ENTRIES.map((entry) => copyFile(
-  new URL("../src/index.d.ts", import.meta.url),
+  new URL(`../src/${entry}.d.ts`, import.meta.url),
   new URL(`${entry}.d.ts`, dist),
 )));
 const result = await build({

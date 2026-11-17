@@ -15,7 +15,8 @@ struct Params { labels: u32, blocks: u32, block_size: u32, _pad: u32 }
 @group(0) @binding(4) var<uniform> params: Params;
 
 fn label_at(index: u32) -> u32 {
-  return (labels[index >> 2u] >> ((index & 3u) * 8u)) & 255u;
+  // The high four bits of a label byte are its confidence level, not its class.
+  return (labels[index >> 2u] >> ((index & 3u) * 8u)) & 15u;
 }
 
 @compute @workgroup_size(64)

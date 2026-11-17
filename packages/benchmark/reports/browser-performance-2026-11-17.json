@@ -1,0 +1,165 @@
+{
+  "status": "done",
+  "copies": 10,
+  "characters": 5556500,
+  "source": "https://unpkg.com/three@0.97.0/build/three.min.js",
+  "warmups": 1,
+  "measuredRuns": 3,
+  "statistic": "median of fresh-worker samples",
+  "method": "Each sample is a fresh dedicated worker that times one call after one warm-up call; engine order rotates every round; DOM rendering excluded.",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+  "times": {
+    "gpu-lexer": 187,
+    "Prism.js": 1163.5,
+    "Highlight.js": 1400.1,
+    "Sugar High": 813.3,
+    "Starry Night": 11339.4,
+    "Shiki": 30271.9,
+    "Highlights": 81.6
+  },
+  "samples": {
+    "gpu-lexer": [
+      192.8,
+      187,
+      186
+    ],
+    "Prism.js": [
+      1224,
+      1163.5,
+      1141.7
+    ],
+    "Highlight.js": [
+      1417.1,
+      1400.1,
+      1363.4
+    ],
+    "Sugar High": [
+      813.3,
+      835.1,
+      810.5
+    ],
+    "Starry Night": [
+      11369.8,
+      11339.4,
+      11330.7
+    ],
+    "Shiki": [
+      30710.2,
+      29924.3,
+      30271.9
+    ],
+    "Highlights": [
+      81.6,
+      83.1,
+      80.1
+    ]
+  },
+  "date": "2026-11-17",
+  "modelRun": "20261117T071411.182Z",
+  "sourceSha256": "3ed7c9316c0724813330f2720111f295827ac22a04da471f167c0fa06b9f28e5",
+  "hardware": {
+    "model": "MacBook Pro",
+    "chip": "Apple M4 Pro",
+    "gpuCores": 20,
+    "memoryGB": 24,
+    "macOS": "26.7.3",
+    "chrome": "157.0.8103.79 (headless)"
+  },
+  "gpuLexerBeforeAfter": {
+    "method": "Same runner, gpu-lexer only, 9 fresh-worker samples per series, three series per build; both workers bundled from the built package. The before series ran earlier the same day with --enable-unsafe-webgpu, the after series with default flags; the committed 0.0.5 package measured 235, 214 and 236 ms with that flag and 227, 229 and 228 ms without. samplesMs lists the last series of each build, rounded to a millisecond.",
+    "before": {
+      "ref": "working tree before the runtime changes, checkpoint 20261117T071411.182Z",
+      "mediansMs": [
+        270.1,
+        270.1,
+        270
+      ],
+      "samplesMs": [
+        273,
+        267,
+        292,
+        269,
+        270,
+        291,
+        270,
+        270,
+        269
+      ]
+    },
+    "after": {
+      "ref": "working tree",
+      "mediansMs": [
+        191,
+        190.2,
+        189.9
+      ],
+      "samplesMs": [
+        199,
+        189,
+        188,
+        205,
+        189,
+        192,
+        191,
+        190,
+        189
+      ]
+    }
+  },
+  "labelParity": {
+    "reference": "2a78273 runtime code built with the weights of checkpoint 20261117T071411.182Z; it has no confidence, so types and ranges are compared",
+    "files": 1929,
+    "spans": 434688,
+    "modes": {
+      "f16": {
+        "mismatches": 0
+      }
+    },
+    "note": "Every verification file was compared one request at a time and batched. Types and ranges also match on seven ordinary sources repeated to 2,170,320 parts (1,397,470 spans), on one and three copies of three.min.js, and in FP32 on three copies (484,117 spans).",
+    "previousRuntime": {
+      "input": "10 copies of three.min.js",
+      "spans": 1559165,
+      "result": "the hash over every span type, range and confidence is unchanged"
+    },
+    "jsReference": {
+      "input": "one copy of three.min.js",
+      "spans": 168813,
+      "differingSpans": 4,
+      "note": "All four are near-ties at 0.44 to 0.5 confidence. Types and ranges of the committed runtime code are identical to the new runtime on this input."
+    }
+  },
+  "gpuPassesMs": {
+    "method": "Median of 7 warmed calls in one worker with timestamp queries, 10 copies of three.min.js, FP16.",
+    "before": {
+      "hybrid_scan_blocks": 22.9,
+      "hybrid_scan_prefixes": 4.5,
+      "hybrid_mix_tree_up": 36.2,
+      "tree_global": 9.7,
+      "tree_down_classify": 123.2
+    },
+    "after": {
+      "hybrid_scan_blocks": 22.6,
+      "hybrid_scan_prefixes": 4.5,
+      "hybrid_mix_tree_up": 35.1,
+      "tree_global": 9.6,
+      "tree_down_classify": 72.7
+    }
+  },
+  "notes": [
+    "gpu-lexer returns span objects; Highlights and Shiki return themed tokens (codeToTokens, github-light); Starry Night returns a HAST tree; Sugar High, Prism.js and Highlight.js return HTML.",
+    "The 176-unit classifier of checkpoint 20261117T071411.182Z raised gpu-lexer from about 228 ms to 270 ms before the runtime changes recorded here."
+  ],
+  "libraryVersions": {
+    "@pierre/highlights": "0.2.0",
+    "sugar-high": "2.3.1",
+    "prismjs": "1.30.0",
+    "highlight.js": "11.12.0",
+    "@wooorm/starry-night": "3.11.0",
+    "shiki": "4.4.3"
+  },
+  "sizes": {
+    "method": "pnpm --filter @gpu-lexer/benchmark size (minified + Brotli 11)",
+    "gpu-lexer": 31005,
+    "Highlights (all 80 languages)": 98187
+  }
+}
