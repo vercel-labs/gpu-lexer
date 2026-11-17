@@ -138,7 +138,7 @@ for (const options of [
     const { metadata, weights } = fixture(options);
     if (options.bits === 6) {
       assert.ok(metadata.runtimeParameterCount <= 75_000);
-      assert.ok(weights.length > 37_500);
+      assert.ok(weights.length > 41_000);
     } else assert.ok(metadata.runtimeParameterCount > 75_000);
     assert.throws(() => validateModel(metadata, weights), /tree int[46] layout/);
   });

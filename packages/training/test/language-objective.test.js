@@ -10,8 +10,68 @@ import { pinBaseline, fixedBaselineMetrics } from "../src/tree-training-policy.j
 
 import {
   assertSameProvenance, compareLanguageMetrics, compareStrictLanguages,
-  createLanguageObjective, languageMetrics,
+  createLanguageObjective, heldOutEffectiveFiles, languageDrops, languageMetrics, topLanguageAgreement,
+  topLanguageWeights,
 } from "../src/language-objective.js";
+
+test("top-language agreement weights the 25 most popular families", () => {
+  const weights = topLanguageWeights();
+  assert.equal(Object.keys(weights).length, 25);
+  assert.ok(!("html" in weights) && !("css" in weights), "supplemental families are not ranked");
+  const perFamily = Object.fromEntries(Object.keys(weights).map((family) => [family, { support: 100, errors: 10 }]));
+  assert.ok(Math.abs(topLanguageAgreement({ perFamily }, weights) - 0.9) < 1e-12);
+  perFamily.javascript = { support: 100, errors: 0 };
+  assert.ok(Math.abs(topLanguageAgreement({ perFamily }, weights) - (0.9 + 0.1 * weights.javascript)) < 1e-12);
+  delete perFamily.python;
+  assert.throws(() => topLanguageAgreement({ perFamily }, weights), /needs python metrics/);
+});
+
+test("language drops skip languages too small to measure and sort by size", () => {
+  const baseline = { perLanguage: { yaml: { support: 1000, errors: 300 }, vue: { support: 800, errors: 80 },
+    awk: { support: 100, errors: 10 }, zig: { support: 500, errors: 100 } } };
+  const candidate = { perLanguage: { yaml: { support: 1000, errors: 600 }, vue: { support: 800, errors: 100 },
+    awk: { support: 100, errors: 90 }, zig: { support: 500, errors: 50 } } };
+  const drops = languageDrops(candidate, baseline);
+  assert.deepEqual(drops.map(({ language }) => language), ["yaml", "vue"]);
+  assert.ok(Math.abs(drops[0].drop - 0.3) < 1e-12 && Math.abs(drops[1].drop - 0.025) < 1e-12);
+});
+
+test("effective held-out files discount a language that rests on one large file", () => {
+  const file = (language, parts, unsupervised = 0) => ({ language, targets: new Uint8Array(parts + unsupervised),
+    supervisionWeights: Float32Array.from({ length: parts + unsupervised }, (_, index) => Number(index < parts)) });
+  const files = heldOutEffectiveFiles([
+    ...Array.from({ length: 10 }, () => file("javascript", 100)),
+    file("glsl", 4000), ...Array.from({ length: 5 }, () => file("glsl", 20)),
+    file("haskell", 423, 50), file("empty", 0, 10),
+  ]);
+  assert.ok(Math.abs(files.javascript - 10) < 1e-12);
+  assert.ok(files.glsl > 1 && files.glsl < 1.1);
+  assert.equal(files.haskell, 1);
+  assert.equal(files.empty, 0);
+  const baseline = { perLanguage: { glsl: { support: 4100, errors: 400 }, javascript: { support: 1000, errors: 50 } } };
+  const candidate = { perLanguage: { glsl: { support: 4100, errors: 1400 }, javascript: { support: 1000, errors: 110 } } };
+  assert.deepEqual(languageDrops(candidate, baseline, { languages: ["javascript"] }).map(({ language }) => language),
+    ["javascript"]);
+});
+
+test("a guarded promotion must hold top-language agreement and reports large drops", () => {
+  const weights = { javascript: 0.75, python: 0.25 };
+  const guard = { topFamilies: weights, minLanguageSupport: 400, languageDropTolerance: 0.02 };
+  const metrics = (accuracy, javascript, python, yaml) => ({ accuracy,
+    perFamily: { javascript: { support: 1000, errors: javascript }, python: { support: 1000, errors: python } },
+    perLanguage: { javascript: { support: 1000, errors: javascript }, yaml: { support: 500, errors: yaml } } });
+  const weighted = { strictGuards: [], guards: [], warnings: [] };
+  const baseline = metrics(0.9, 50, 100, 100);
+  const better = accuracyTreePromotionDecision(metrics(0.91, 40, 100, 100), baseline, weighted, "advisory", guard);
+  assert.equal(better.accepted, true);
+  assert.ok(better.topAgreement.candidate > better.topAgreement.baseline);
+  const regressed = accuracyTreePromotionDecision(metrics(0.91, 60, 100, 50), baseline, weighted, "advisory", guard);
+  assert.deepEqual(regressed.failures, ["top-language weighted agreement regressed"]);
+  const dropped = accuracyTreePromotionDecision(metrics(0.91, 40, 100, 150), baseline, weighted, "advisory", guard);
+  assert.equal(dropped.accepted, true);
+  assert.deepEqual(dropped.warnings, ["yaml agreement dropped 10.0 points"]);
+  assert.equal(accuracyTreePromotionDecision(metrics(0.91, 60, 100, 150), baseline, weighted, "advisory").accepted, true);
+});
 import { createTreeModel, evaluateTree, treeAuxiliaryNames, treeTensorNames } from "../src/tree-model.js";
 import { accuracyTreePromotionDecision, evaluateTreePromotion, validateTreeComparisonProvenance } from "../src/promote.js";
 import { classNames } from "../src/classes.js";

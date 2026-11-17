@@ -9,7 +9,7 @@ import { dequantizeTensors, quantizeTensors } from "./quantization.js";
 import { resolveTorchRuntime, runTorchTraining } from "./torch-runner.js";
 import {
   TREE_FEATURE_VERSION, TREE_FORMAT_VERSION, TREE_HYBRID_FORMAT_VERSION, TREE_MODEL, TREE_TOKENIZER_VERSION,
-  createTreeModel, loadTreeShard, migrateTreeFeatureV2Model,
+  createTreeModel, loadTreeShard, migrateTreeFeatureV2Model, widenTreeClassifier,
   treeAuxiliaryNames, treeTensorLayout, treeTensorNamesFor,
 } from "./tree-model.js";
 import {
@@ -19,6 +19,7 @@ import {
 import { languageFamily } from "./corpus.js";
 import { balanceLanguageRecords, balancedAuxiliaryPositiveWeights, upsampleMixedRecords } from "./training-data.js";
 import { treeTrainingPolicy, assertObjectiveCoverage, fixedBaselineMetrics } from "./tree-training-policy.js";
+import { heldOutEffectiveFiles, topLanguageWeights } from "./language-objective.js";
 import {
   TREE_AUTO_REPLAY_REPEATS, TREE_REPLAY_FAMILIES, mineTreeReplay, treeReplayFraction,
 } from "./tree-replay.js";
@@ -26,7 +27,10 @@ import { websiteExampleSourceKeys } from "./website-examples.js";
 
 const runsRoot = fileURLToPath(new URL("../runs/", import.meta.url));
 const TREE_PARAMETER_CEILING = 75_000;
-const TREE_PACKED_BYTE_BUDGET = 37_500;
+// The package budget is 35,000 bytes minified with Brotli. The packed int6
+// weights compress to about two thirds of their size and the runtime and
+// shader take about 7,500 bytes, which leaves room for 41,000 packed bytes.
+const TREE_PACKED_BYTE_BUDGET = 41_000;
 
 /** Defaults for continuing a checkpoint on its own taxonomy.
  *
@@ -41,6 +45,9 @@ export const TREE_CONTINUATION = Object.freeze({
   epochs: 48, batchTokens: 65_536,
   learningRate: 0.0064, finalLearningRate: 0.00001,
   emaDecay: 0.99, emaStartEpoch: 1,
+  // Half of the loss is shared among the top languages by popularity, so that
+  // training data added for other languages cannot dilute them.
+  topLanguageLossShare: 0.5,
 });
 
 export async function trainTree(options = {}) {
@@ -66,6 +73,14 @@ export async function trainTree(options = {}) {
     else initial = active;
   }
   if (initial && !teacherMode) initial = await loadDeployedCheckpoint(initial.path);
+  // A wider classifier warm-starts from the deployed model: the added units
+  // start with no say in any class, so epoch zero is still the baseline.
+  const widenedFrom = initial?.metadata.architecture?.classifierDimensions;
+  if (initial && options.classifierSize > widenedFrom) {
+    initial = { ...initial, model: widenTreeClassifier(initial.model, options.classifierSize,
+      createRandom(options.seed ?? 1337)) };
+    log(`widening the classifier from ${widenedFrom} to ${options.classifierSize} units without changing its output`);
+  }
   if (initial && teacherMode) throw new Error("tree teacher training cannot continue a runtime checkpoint");
   // Polish only checkpoints trained on this taxonomy. Changed labels need
   // the full learning schedule while retaining compatible starting weights.
@@ -130,6 +145,7 @@ export async function trainTree(options = {}) {
     boundaryLossMultiplier: options.boundaryLossMultiplier ?? 1.25,
     mixedF1Tolerance: 0.005, qatEpochs: teacherMode ? 0 : options.qatEpochs ?? (polishMode ? schedule.epochs : 6),
     emaDecay: options.emaDecay ?? (polishMode ? TREE_CONTINUATION.emaDecay : 0.999),
+    topLanguageLossShare: options.topLanguageLossShare ?? (polishMode ? TREE_CONTINUATION.topLanguageLossShare : 0),
     emaStartEpoch: options.emaStartEpoch ?? (polishMode ? TREE_CONTINUATION.emaStartEpoch : 20),
     distillationWeight: teacher ? options.distillationWeight ?? (polishMode ? 0.2 : 0.25) : 0,
     distillationTemperature: teacher ? options.distillationTemperature ?? 2 : 1,
@@ -150,6 +166,13 @@ export async function trainTree(options = {}) {
   config.initialIsBaseline = Boolean(initial && config.fixedBaseline?.runId === initial.metadata.runId);
   if (!Number.isFinite(config.boundaryLossMultiplier) || config.boundaryLossMultiplier < 1) {
     throw new RangeError("boundary loss multiplier must be at least 1");
+  }
+  // The browser runtime computes four classifier units per vec4 load.
+  if (!teacherMode && config.classifierSize % 4) {
+    throw new RangeError("classifier size must be a multiple of 4");
+  }
+  if (!(config.topLanguageLossShare >= 0 && config.topLanguageLossShare <= 1)) {
+    throw new RangeError("top-language loss share must be between 0 and 1");
   }
   if (!Number.isFinite(config.emaDecay) || config.emaDecay <= 0 || config.emaDecay >= 1) {
     throw new RangeError("EMA decay must be between 0 and 1");
@@ -208,6 +231,17 @@ export async function trainTree(options = {}) {
   );
   if (config.fixedBaselineMetrics) {
     config.fixedBaselineMetrics.languageObjective = config.languageObjective;
+  }
+  config.selectionGuard = treeSelectionGuard(config, targetedFineTune,
+    { effectiveFiles: heldOutEffectiveFiles(verification.records) });
+  if (config.selectionGuard) {
+    const measured = Object.keys(config.selectionGuard.baselineLanguageAccuracy).length;
+    log(`checkpoint selection: top-language agreement, less any drop over ` +
+      `${(100 * config.selectionGuard.languageDropTolerance).toFixed(0)} points among the ${measured} of ` +
+      `${Object.keys(config.fixedBaselineMetrics.perLanguage).length} languages with enough held-out files to measure one`);
+  }
+  if (config.selectionGuard && config.topLanguageLossShare > 0) {
+    log(`top languages hold ${(100 * config.topLanguageLossShare).toFixed(0)}% of the agreement loss`);
   }
   config.trainingLanguageMultipliers = config.languageGuards === "advisory" ? {} : agreementLanguageMultipliers(
     config.fixedBaselineMetrics,
@@ -369,6 +403,30 @@ export async function trainTree(options = {}) {
   return { path: run.path, metadata, selection: result.selection, model: selected };
 }
 
+/** Accuracy-selected runs against a fixed baseline choose their checkpoint by
+ * top-language agreement, penalized by the worst drop of any language with
+ * enough held-out parts to measure one. Targeted fine-tunes keep their gates.
+ *
+ * Most held-out languages rest on one file, and such a score moves by ten
+ * points or more between neighboring epochs. The drop penalty therefore only
+ * counts languages backed by at least three files' worth of parts, and only
+ * beyond five points: anything tighter would select on that noise.
+ */
+export function treeSelectionGuard(config, targetedFineTune = false, {
+  topFamilies = topLanguageWeights(), minLanguageSupport = 400, minEffectiveFiles = 3,
+  languageDropTolerance = 0.05, effectiveFiles = {},
+} = {}) {
+  const baseline = config.fixedBaselineMetrics;
+  if (!baseline || targetedFineTune || config.selectionMetric !== "accuracy") return null;
+  return {
+    topFamilies, minLanguageSupport, minEffectiveFiles, languageDropTolerance,
+    baselineLanguageAccuracy: Object.fromEntries(Object.entries(baseline.perLanguage)
+      .filter(([language, counts]) => counts.support >= minLanguageSupport &&
+        effectiveFiles[language] >= minEffectiveFiles)
+      .map(([language, counts]) => [language, 1 - counts.errors / counts.support])),
+  };
+}
+
 export function shouldPolishTreeCheckpoint(metadata, { teacherMode = false, targetedFineTune = false } = {}) {
   return Boolean(metadata && !teacherMode && !targetedFineTune && metadata.taxonomyVersion === taxonomyVersion);
 }
@@ -517,7 +575,7 @@ function validateTreeInitial(initial, config) {
       metadata.labelSource !== config.labelSource || metadata.featureVersion !== TREE_FEATURE_VERSION ||
       metadata.tokenizerVersion !== TREE_TOKENIZER_VERSION || metadata.inputSize !== config.inputSize ||
       metadata.hiddenSize !== config.hiddenSize ||
-      metadata.architecture?.classifierDimensions !== config.classifierSize ||
+      metadata.architecture?.classifierDimensions > config.classifierSize ||
       metadata.architecture?.lexemeHashBuckets !== config.hashBuckets ||
       metadata.architecture?.scaleBuckets !== config.scaleBuckets ||
       JSON.stringify(metadata.classNames) !== JSON.stringify(classNames) ||
@@ -569,7 +627,9 @@ export function treeWarmStartMismatch(metadata, options = {}) {
     ["classifier", options.classifierSize, metadata.architecture?.classifierDimensions],
     ["hash", options.hashBuckets, metadata.architecture?.lexemeHashBuckets],
   ];
-  const changed = requested.filter(([, value, current]) => value !== undefined && value !== current)
+  // A larger classifier is not a mismatch: it is widened from the checkpoint.
+  const changed = requested.filter(([name, value, current]) => value !== undefined && value !== current &&
+    !(name === "classifier" && value > current))
     .map(([name, value, current]) => `${name} ${current} -> ${value}`);
   return changed.length ? `requested architecture changes shape (${changed.join(", ")})` : null;
 }
@@ -602,7 +662,7 @@ function createRandom(seed) {
 function parse(arguments_) {
   const result = {};
   const integer = new Set(["agreementEpochs", "calibrationEpochs", "epochs", "fineTuneEpochs", "hiddenSize", "classifierSize", "hashBuckets", "batchTokens", "patience", "seed", "progressEvery", "qatEpochs", "emaStartEpoch", "maxTrainTokens", "maxVerificationTokens", "minimumFamilyTokens", "weightBits", "distillationWarmupEpochs", "distillationRampEpochs", "maxHardReplayRepeats"]);
-  const aliases = { "language-guards": "languageGuards", "selection-metric": "selectionMetric", "language-objective": "languageObjectivePath", "baseline-run": "baselineRun", "initial-run": "initialRun", "class-weight-power": "classWeightPower", "agreement-epochs": "agreementEpochs", "calibration-epochs": "calibrationEpochs", context: "treeContext", "train-shard": "trainShard", "verification-shard": "verificationShard", "mining-shard": "miningShard", epochs: "epochs", "fine-tune-epochs": "fineTuneEpochs", hidden: "hiddenSize", classifier: "classifierSize", hash: "hashBuckets", bits: "weightBits", batch: "batchTokens", patience: "patience", seed: "seed", "progress-every": "progressEvery", "qat-epochs": "qatEpochs", "ema-start-epoch": "emaStartEpoch", "max-train-tokens": "maxTrainTokens", "max-verification-tokens": "maxVerificationTokens", "min-family-tokens": "minimumFamilyTokens", "boundary-loss": "boundaryLossMultiplier", "replay-fraction": "replayFraction", "max-replay-repeats": "maxHardReplayRepeats", teacher: "teacherMode", fresh: "fresh", "teacher-run": "teacherRun", "distillation-weight": "distillationWeight", "distillation-temperature": "distillationTemperature", "distillation-warmup": "distillationWarmupEpochs", "distillation-ramp": "distillationRampEpochs", device: "device", python: "python", output: "output", lr: "learningRate", "final-lr": "finalLearningRate", "agreement-lr": "agreementLearningRate", "agreement-final-lr": "agreementFinalLearningRate", "calibration-lr": "calibrationLearningRate", "calibration-final-lr": "calibrationFinalLearningRate", "failure-lr": "focusedReplayLearningRate", "failure-final-lr": "focusedReplayFinalLearningRate", "ema-decay": "emaDecay" };
+  const aliases = { "language-guards": "languageGuards", "selection-metric": "selectionMetric", "language-objective": "languageObjectivePath", "baseline-run": "baselineRun", "initial-run": "initialRun", "class-weight-power": "classWeightPower", "agreement-epochs": "agreementEpochs", "calibration-epochs": "calibrationEpochs", context: "treeContext", "train-shard": "trainShard", "verification-shard": "verificationShard", "mining-shard": "miningShard", epochs: "epochs", "fine-tune-epochs": "fineTuneEpochs", hidden: "hiddenSize", classifier: "classifierSize", hash: "hashBuckets", bits: "weightBits", batch: "batchTokens", patience: "patience", seed: "seed", "progress-every": "progressEvery", "qat-epochs": "qatEpochs", "ema-start-epoch": "emaStartEpoch", "max-train-tokens": "maxTrainTokens", "max-verification-tokens": "maxVerificationTokens", "min-family-tokens": "minimumFamilyTokens", "boundary-loss": "boundaryLossMultiplier", "replay-fraction": "replayFraction", "max-replay-repeats": "maxHardReplayRepeats", teacher: "teacherMode", fresh: "fresh", "teacher-run": "teacherRun", "distillation-weight": "distillationWeight", "distillation-temperature": "distillationTemperature", "distillation-warmup": "distillationWarmupEpochs", "distillation-ramp": "distillationRampEpochs", device: "device", python: "python", output: "output", lr: "learningRate", "final-lr": "finalLearningRate", "agreement-lr": "agreementLearningRate", "agreement-final-lr": "agreementFinalLearningRate", "calibration-lr": "calibrationLearningRate", "calibration-final-lr": "calibrationFinalLearningRate", "failure-lr": "focusedReplayLearningRate", "failure-final-lr": "focusedReplayFinalLearningRate", "ema-decay": "emaDecay", "top-language-loss-share": "topLanguageLossShare" };
   for (let index = 0; index < arguments_.length; index++) {
     if (arguments_[index] === "--") continue;
     const [raw, inline] = arguments_[index].replace(/^--/, "").split("=", 2);
@@ -611,7 +671,7 @@ function parse(arguments_) {
     if (name === "teacherMode" || name === "fresh") { result[name] = true; continue; }
     const value = inline ?? arguments_[++index];
     result[name] = integer.has(name) ? Number.parseInt(value, 10)
-      : ["classWeightPower", "learningRate", "finalLearningRate", "agreementLearningRate", "agreementFinalLearningRate", "calibrationLearningRate", "calibrationFinalLearningRate", "focusedReplayLearningRate", "focusedReplayFinalLearningRate", "replayFraction", "boundaryLossMultiplier", "distillationWeight", "distillationTemperature", "emaDecay"].includes(name) ? Number(value) : value;
+      : ["classWeightPower", "learningRate", "finalLearningRate", "agreementLearningRate", "agreementFinalLearningRate", "calibrationLearningRate", "calibrationFinalLearningRate", "focusedReplayLearningRate", "focusedReplayFinalLearningRate", "replayFraction", "boundaryLossMultiplier", "distillationWeight", "distillationTemperature", "emaDecay", "topLanguageLossShare"].includes(name) ? Number(value) : value;
   }
   return result;
 }

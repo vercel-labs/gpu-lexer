@@ -13,6 +13,8 @@ from train import (
     trainable_tensors_for_stage, training_loss, training_stage,
 )
 from tree_model import (
+    guarded_selection,
+    top_language_importance,
     batch_family_factors, class_weights_for_counts, family_importance,
     normalized_family_weights, promotion_candidate_issues, protected_families_eligible,
     reference_counts, strict_language_failures, weighted_family_error,
@@ -266,6 +268,47 @@ class ObjectiveTests(unittest.TestCase):
         self.assertEqual(rates[0], 6.4e-3)
         self.assertAlmostEqual(rates[-1], 1e-5)
         self.assertEqual(rates, sorted(rates, reverse=True))
+
+    def test_guarded_selection_trades_top_agreement_against_the_worst_language_drop(self):
+        guard = {"topFamilies": {"javascript": 0.75, "python": 0.25}, "languageDropTolerance": 0.02,
+                 "baselineLanguageAccuracy": {"javascript": 0.95, "yaml": 0.80}}
+        def metrics(javascript, python, yaml):
+            return {"accuracy": 0.5,
+                    "perFamily": {"javascript": {"support": 100, "errors": javascript},
+                                  "python": {"support": 100, "errors": python}},
+                    "perLanguage": {"javascript": {"accuracy": 1 - javascript / 100}, "yaml": {"accuracy": yaml}}}
+        self.assertIsNone(guarded_selection(metrics(5, 10, 0.8), None))
+        steady = guarded_selection(metrics(5, 10, 0.8), guard)
+        self.assertAlmostEqual(steady["topAgreement"], 0.9375)
+        self.assertAlmostEqual(steady["selectionScore"], 0.9375)
+        self.assertIsNone(steady["worstLanguageDrop"]["language"])
+        # One point more top agreement does not pay for a ten-point YAML drop.
+        dropped = guarded_selection(metrics(4, 8, 0.7), guard)
+        self.assertAlmostEqual(dropped["topAgreement"], 0.95)
+        self.assertEqual(dropped["worstLanguageDrop"]["language"], "yaml")
+        self.assertAlmostEqual(dropped["selectionScore"], 0.95 - 0.08)
+        within = guarded_selection(metrics(4, 8, 0.785), guard)
+        self.assertAlmostEqual(within["selectionScore"], 0.95)
+        missing = guarded_selection({**metrics(4, 8, 0.8), "perLanguage": {"javascript": {"accuracy": 0.96}}}, guard)
+        self.assertAlmostEqual(missing["worstLanguageDrop"]["drop"], 0.8)
+        self.assertEqual(checkpoint_score({**metrics(4, 8, 0.7), **dropped}, "accuracy"), dropped["selectionScore"])
+        self.assertEqual(checkpoint_score(metrics(4, 8, 0.7), "accuracy"), 0.5)
+
+    def test_top_language_importance_reserves_a_share_of_the_loss(self):
+        support = {"javascript": 100, "python": 300, "yaml": 600, "procfile": 1, "empty": 0}
+        top = {"javascript": 0.6, "python": 0.3, "procfile": 0.1}
+        self.assertEqual(top_language_importance(support, top, 0),
+                         {"javascript": 1, "python": 1, "yaml": 1, "procfile": 1, "empty": 0.0})
+        factors = top_language_importance(support, top, 0.5, limit=1000)
+        self.assertAlmostEqual(factors["yaml"], 0.5)
+        self.assertAlmostEqual(factors["javascript"], 0.5 + 0.5 * 0.6 * 1001 / 100)
+        # The weighted part count is unchanged, and the top families hold their share of it.
+        weighted = {family: factors[family] * count for family, count in support.items()}
+        self.assertAlmostEqual(sum(weighted.values()), 1001)
+        self.assertAlmostEqual(weighted["javascript"] - 0.5 * 100, 0.5 * 0.6 * 1001)
+        self.assertEqual(top_language_importance(support, top, 0.5)["procfile"], 8.0)
+        with self.assertRaises(ValueError):
+            top_language_importance(support, top, 1.5)
 
     def test_calibration_updates_only_classification_heads(self):
         self.assertEqual(

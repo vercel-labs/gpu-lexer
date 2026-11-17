@@ -9,9 +9,10 @@ import { gzipSync } from "node:zlib";
 import { prepareTreeSource, releaseTreePrepared } from "../../core/src/prepare-tree.js";
 import { treeFeatureIndices, treeInputSize } from "../../core/src/tree-features.js";
 import {
-  createTreeModel, loadTreeShard, migrateTreeFeatureV2Model, prepareTreeSourceV2,
-  treeAuxiliaryNames, treeProbabilities, treeTensorLayout,
+  createTreeModel, createTreeRecord, loadTreeShard, migrateTreeFeatureV2Model, prepareTreeSourceV2,
+  treeAuxiliaryNames, treeProbabilities, treeTensorLayout, treeTensorNamesFor, widenTreeClassifier,
 } from "../src/tree-model.js";
+import { quantizeTensors } from "../src/quantization.js";
 import { classNames } from "../src/classes.js";
 import { writeTorchDataset } from "../src/torch-data.js";
 import { __testing as torchTesting } from "../src/torch-runner.js";
@@ -19,6 +20,27 @@ import { __testing as torchTesting } from "../src/torch-runner.js";
 const repositoryRoot = resolve(new URL("../../../", import.meta.url).pathname);
 const python = resolve(repositoryRoot, ".venv/bin/python");
 const trainer = new URL("../torch/train.py", import.meta.url).pathname;
+
+test("a widened classifier labels exactly as before and keeps every existing int6 code", () => {
+  let state = 7;
+  const random = () => { state = (state * 1103515245 + 12345) % 2147483648; return state / 2147483648; };
+  const shape = { treeContext: "hybrid", hiddenSize: 32, classifierSize: 72, hashBuckets: 256 };
+  const model = createTreeModel({ ...shape, random });
+  const wide = widenTreeClassifier(model, 96, random);
+  assert.equal(wide.classifierBias.length, 96);
+  assert.equal(wide.classifierInput.length, 96 * (64 + treeAuxiliaryNames.length));
+  assert.equal(wide.output.length, classNames.length * 96);
+  const source = "const answer = compute(42) // why\nif (answer) { print('yes') }\n";
+  const { record } = createTreeRecord({ source, sourceLabels: [], sourceLabelsVersion: 1, language: "javascript",
+    family: "javascript", sourceName: "test", path: "a.js", origin: "test" }, 256);
+  const before = treeProbabilities(model, record, { hiddenSize: 32, classifierSize: 72 });
+  const after = treeProbabilities(wide, record, { hiddenSize: 32, classifierSize: 96 });
+  assert.deepEqual(after, before);
+  const narrow = quantizeTensors(model, treeTensorNamesFor(model), 6).metadata.tensors;
+  const widened = quantizeTensors(wide, treeTensorNamesFor(wide), 6).metadata.tensors;
+  for (const [index, tensor] of narrow.entries()) assert.equal(widened[index].scale, tensor.scale, tensor.name);
+  assert.throws(() => widenTreeClassifier(model, 72), /can only grow/);
+});
 
 test("richer hybrid tree remains inside the packed runtime budget", () => {
   const model = createTreeModel({ treeContext: "hybrid", hiddenSize: 32, classifierSize: 72,

@@ -26,6 +26,34 @@ def normalized_family_weights(objective: dict, families=()) -> dict[str, float]:
     return {family: weight / total for family, weight in weights.items()}
 
 
+def guarded_selection(metrics: dict, guard: dict | None) -> dict | None:
+    """Score a checkpoint by popularity-weighted agreement, less its worst language drop.
+
+    The score is the agreement over the guard's top families, weighted by their
+    popularity, minus however far the worst guarded language fell below its
+    baseline agreement beyond the tolerance. One large drop therefore costs as
+    much as the same number of points of top-language agreement.
+    """
+    if not guard:
+        return None
+    families = metrics["perFamily"]
+    agreement = sum(
+        weight * (1 - families[family]["errors"] / families[family]["support"])
+        for family, weight in guard["topFamilies"].items()
+    )
+    worst_language, worst_drop = None, 0.0
+    for language, baseline in guard["baselineLanguageAccuracy"].items():
+        current = metrics["perLanguage"].get(language)
+        drop = baseline - (current["accuracy"] if current else 0.0)
+        if drop > worst_drop:
+            worst_language, worst_drop = language, drop
+    return {
+        "topAgreement": agreement,
+        "worstLanguageDrop": {"language": worst_language, "drop": worst_drop},
+        "selectionScore": agreement - max(0.0, worst_drop - guard["languageDropTolerance"]),
+    }
+
+
 def weighted_family_error(per_family: dict, weights: dict[str, float]) -> float:
     unknown = set(per_family) - set(weights)
     if unknown:
@@ -78,6 +106,23 @@ def family_importance(support: dict[str, int], weights: dict[str, float]) -> dic
     if missing:
         raise ValueError("training stage has no supervised support for: " + ", ".join(sorted(missing)))
     return {family: weights.get(family, 0.0) * total / count if count else 0.0
+            for family, count in support.items()}
+
+
+def top_language_importance(
+    support: dict[str, int], top_families: dict[str, float], share: float, limit: float = 8.0
+) -> dict[str, float]:
+    """Loss factors that give the top families a fixed share of the training loss.
+
+    Every part keeps `1 - share` of its natural weight. The remaining `share`
+    is divided among the top families in proportion to their popularity, so
+    adding training data for other languages cannot dilute them. A factor is
+    capped so that a family with very few parts is not simply memorized.
+    """
+    if not 0 <= share <= 1:
+        raise ValueError("top-language loss share must be between 0 and 1")
+    total = sum(support.values())
+    return {family: min(limit, (1 - share) + share * top_families.get(family, 0.0) * total / count) if count else 0.0
             for family, count in support.items()}
 
 

@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "policy": {
     "allowedLicenses": ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "CC0-1.0"],
-    "targetTokens": { "train": 3000000, "verification": 240000, "mining": 300000 },
+    "targetTokens": { "train": 4200000, "verification": 240000, "mining": 300000 },
     "strata": { "author": 0.70, "tests": 0.15, "documentation": 0.10, "compiled": 0.05 },
     "popularityWeightedStrata": ["author", "tests", "documentation", "compiled"],
     "minimumPopularityTokens": 10000,
@@ -48,7 +48,35 @@
       "vue": 6,
       "svelte": 4,
       "astro": 4,
-      "diff": 4
+      "diff": 4,
+      "yaml": 4,
+      "zig": 0.5,
+      "haskell": 0.5,
+      "julia": 0.5,
+      "vb": 3,
+      "ada": 0.5,
+      "nim": 0.5,
+      "d": 0.5,
+      "scala": 0.5,
+      "puppet": 0.5,
+      "haxe": 0.5,
+      "bicep": 0.5,
+      "systemverilog": 0.5,
+      "prisma": 0.3,
+      "graphql": 0.2,
+      "coffeescript": 0.5,
+      "nginx": 0.1,
+      "json": 1,
+      "xml": 1,
+      "toml": 0.5,
+      "protobuf": 0.5,
+      "c3": 0.5,
+      "razor": 0.5,
+      "gdscript": 0.5,
+      "groovy": 0.5,
+      "vala": 0.5,
+      "wgsl": 0.3,
+      "apex": 0.3
     },
     "maxFileBytes": 65536,
     "maxFilesPerRepository": 192,
@@ -110,6 +138,85 @@
       ,{ "repo": "duckdb/duckdb", "commit": "6790309fde14c0d9875aff05266ddabae870793d", "license": "MIT" }
       ,{ "repo": "PowerShell/PowerShell", "commit": "6ca24ccf024140ca061580c43751db27605c4815", "license": "MIT" }
       ,{ "repo": "sqlfluff/sqlfluff", "commit": "63df28344f8bdfb934723aeaf740678aedf2d35b", "license": "MIT" }
+      ,{ "repo": "jessfraz/dockerfiles", "commit": "8ff991327fd1c68369c2fb576215d0eabffca0e1", "license": "MIT", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "microsoft/vscode-dev-containers", "commit": "06b27a9a1d39dba6a7a8cca108cfb806c5c6e0d1", "license": "MIT", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "devcontainers/images", "commit": "3509d5a42c8f8eba67ae8dbeea071b03eedf5f23", "license": "MIT", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "GoogleCloudPlatform/cloud-builders-community", "commit": "e210dd2d9b8dd1c2a11b6bcb64e47922c0b016f8", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "moby/moby", "commit": "06db1734267bf7770914b417bff6556d835bf8cc", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "kubernetes/ingress-nginx", "commit": "dbb11b92ddb77bee9c35e462479129354c84f939", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "kubernetes-sigs/kind", "commit": "0750810930d68f34d5b4e1e2f8339879c4554daa", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "etcd-io/etcd", "commit": "f577f0d80fc58210a94aee6e09aebf6b2ad96165", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "micropython/micropython", "commit": "350908ad35b7006ba9bcfe137f7dc392a8460188", "license": "MIT", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "contiki-ng/contiki-ng", "commit": "0b7f04d380c11bf27e8c48381184cee4e693fa92", "license": "BSD-3-Clause", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "facebook/zstd", "commit": "7f02a2899325306c1efab565e16620840f1102f3", "license": "BSD-3-Clause", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "valkey-io/valkey", "commit": "ec905ca5128f77e4d2827482ab0a8fb00ed35419", "license": "BSD-3-Clause", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "ggml-org/whisper.cpp", "commit": "aba02defd6bb6ff5de63721c21e3456645c153e2", "license": "MIT", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "apache/tomcat", "commit": "009d0e03494bbd8456b5f526a89359cd2e4a50dd", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "apache/ant", "commit": "e75209d539f7076223d8dbd5946fd0d403cf9a56", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "apache/kafka", "commit": "1fd9dd580562289db72da35e057592bb23f2dd9e", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "apache/hadoop", "commit": "d03eda317a278b5943fea2f4797f11dce4eaf60a", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "apache/jmeter", "commit": "ba2e9ba15a73ddac44e8ef28e3dbdf4d155b5f3c", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "apache/groovy", "commit": "a62efdd0395e5ebf958290dce5aabf997347cca2", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml", "groovy"] }
+      ,{ "repo": "apache/karaf", "commit": "0f69706d32147afe7488444536e5bd279f3e0091", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "microsoft/terminal", "commit": "f6de9e0618015def1c9dda5b82f9d3abf03eb799", "license": "MIT", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "sorin-ionescu/prezto", "commit": "cff2d01871425b1b80710f8ec6a475c5a53145b4", "license": "MIT", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "zsh-users/zsh-syntax-highlighting", "commit": "e6683f20e5c38d3e5447f45845d04ddda75d0f23", "license": "BSD-3-Clause", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "sdkman/sdkman-cli", "commit": "5dbdea513a043658ab185ddf6de27a508a3486dc", "license": "Apache-2.0", "families": ["shell", "makefile", "dockerfile", "batchfile", "yaml"] }
+      ,{ "repo": "zigtools/zls", "commit": "37521c9834dc723108c28329c736f35e0e0743d6", "license": "MIT", "families": ["zig", "yaml"] }
+      ,{ "repo": "tigerbeetle/tigerbeetle", "commit": "a2a3c7064519e08233abe26c54a43fca2f9ad9bc", "license": "Apache-2.0", "families": ["zig", "yaml"] }
+      ,{ "repo": "haskell/aeson", "commit": "42190167dbe120578a06d67b13b4d96991b34e01", "license": "BSD-3-Clause", "families": ["haskell", "yaml"] }
+      ,{ "repo": "PostgREST/postgrest", "commit": "86a350d1889663b80c7c9879860a804585216c89", "license": "MIT", "families": ["haskell", "yaml"] }
+      ,{ "repo": "jaspervdj/hakyll", "commit": "064ed163d0224df54099e81754ee23ea2fb9e113", "license": "BSD-3-Clause", "families": ["haskell", "yaml"] }
+      ,{ "repo": "FluxML/Flux.jl", "commit": "7c7726008930204c547f6780e7d021134cc496c9", "license": "MIT", "families": ["julia", "yaml"] }
+      ,{ "repo": "JuliaData/DataFrames.jl", "commit": "62b1c93dd2f45edac469c7f71756debae4108435", "license": "MIT", "families": ["julia", "yaml"] }
+      ,{ "repo": "icsharpcode/CodeConverter", "commit": "3de4bcc323f481c635f1cfbd10e83d731920544c", "license": "MIT", "families": ["vb", "yaml"] }
+      ,{ "repo": "AdaCore/Ada_Drivers_Library", "commit": "d331ed4f6d6a5edca2e9bcfd01f13d608d9d1537", "license": "BSD-3-Clause", "families": ["ada", "yaml"] }
+      ,{ "repo": "nim-lang/nimble", "commit": "6f30bc2bd36003e096e2aecb4a22ca8c2f107563", "license": "BSD-3-Clause", "families": ["nim", "yaml"] }
+      ,{ "repo": "dlang/dub", "commit": "17f7129e08a834004a50eee60b29836d88198a7b", "license": "MIT", "families": ["d", "yaml"] }
+      ,{ "repo": "vibe-d/vibe.d", "commit": "34c40da135e2a744024a7010902bbfb42e87dbf2", "license": "MIT", "families": ["d", "yaml"] }
+      ,{ "repo": "typelevel/cats", "commit": "e28985fe2a0d7123a8fb84cbb70c72b5e3d935ca", "license": "MIT", "families": ["scala", "yaml"] }
+      ,{ "repo": "puppetlabs/puppetlabs-apache", "commit": "e4fe8c7bc706d4993af6235cc72140704a230d79", "license": "Apache-2.0", "families": ["puppet", "yaml"] }
+      ,{ "repo": "puppetlabs/puppetlabs-stdlib", "commit": "388def1a9a9a673c48c8fdcdf6f7e5de9ea6b9a8", "license": "Apache-2.0", "families": ["puppet", "yaml"] }
+      ,{ "repo": "HaxeFlixel/flixel", "commit": "d6a80ceb0c1c986985e7460d25bf68edd063a3b9", "license": "MIT", "families": ["haxe", "yaml"] }
+      ,{ "repo": "Azure/bicep-registry-modules", "commit": "2544042ac741cd306d669c320b8650ce71fc7755", "license": "MIT", "families": ["bicep", "yaml"] }
+      ,{ "repo": "lowRISC/ibex", "commit": "3d524f19ee8e464b3fb0e29c77dc9ff45934815a", "license": "Apache-2.0", "families": ["systemverilog", "yaml"] }
+      ,{ "repo": "prisma/prisma-examples", "commit": "45d6bf6193c66bc869240df90c75b2e4b45d008f", "license": "Apache-2.0", "families": ["prisma", "yaml"] }
+      ,{ "repo": "dense-analysis/ale", "commit": "422c0e8ef42e2315a5b58dc281fccc59b816c37a", "license": "BSD-2-Clause", "families": ["vim-script", "yaml"] }
+      ,{ "repo": "netwide-assembler/nasm", "commit": "fbdc88565ccccfa0e8c69b21b1953d1eded02e89", "license": "BSD-2-Clause", "families": ["assembly", "yaml"] }
+      ,{ "repo": "behave/behave", "commit": "134ab59cd1432178d83a6a1b0c534fb038ef3979", "license": "BSD-2-Clause", "families": ["gherkin", "yaml"] }
+      ,{ "repo": "cucumber/cucumber-js", "commit": "a39ed8693f890c834731d6e33214967bd4256b78", "license": "MIT", "families": ["gherkin", "yaml"] }
+      ,{ "repo": "tidyverse/dplyr", "commit": "819c99f7284b3a413b391c60bea49ae7bfb8bafc", "license": "MIT", "families": ["r", "yaml"] }
+      ,{ "repo": "nix-community/home-manager", "commit": "a1293da7dd8e497e08d26173f97e2976b36a31ea", "license": "MIT", "families": ["nix", "yaml"] }
+      ,{ "repo": "rust-lang/rust-mode", "commit": "265e243732761b925e03ebb61930a3aeea034d0e", "license": "Apache-2.0", "families": ["emacs-lisp"] }
+      ,{ "repo": "dominikh/go-mode.el", "commit": "3a71d28ab47df685e54ca6046a7a3dd3e28b682c", "license": "BSD-3-Clause", "families": ["emacs-lisp"] }
+      ,{ "repo": "terraform-aws-modules/terraform-aws-eks", "commit": "91b8a8d944e3cf169483108acd12d5b1e47856f7", "license": "Apache-2.0", "families": ["hcl"] }
+      ,{ "repo": "terraform-google-modules/terraform-google-kubernetes-engine", "commit": "945d9aacad1bdd8ed6b5a239d4e13f3f224b0648", "license": "Apache-2.0", "families": ["hcl"] }
+      ,{ "repo": "gfx-rs/wgpu", "commit": "49c8107e13f7d3176fb00c78a46b6d0352e39ed0", "license": "Apache-2.0", "families": ["wgsl", "glsl"] }
+      ,{ "repo": "TwoTailsGames/Unity-Built-in-Shaders", "commit": "6a63f93bc1f20ce6cd47f981c7494e8328915621", "license": "MIT", "families": ["shaderlab"] }
+      ,{ "repo": "rapidsai/cudf", "commit": "b5d67ff74576d086c55539e6e0346d205b4a2214", "license": "Apache-2.0", "families": ["cuda"] }
+      ,{ "repo": "protocolbuffers/protobuf", "commit": "cf1e10c24b0f93df0e5c073fe49ae82c3740b7cf", "license": "BSD-3-Clause", "families": ["protobuf", "objective-c"] }
+      ,{ "repo": "c3lang/vendor", "commit": "110a46060e53c135d7a8d166f691c1899c4155b7", "license": "MIT", "families": ["c3"] }
+      ,{ "repo": "alexveden/c3tools", "commit": "32b5f03645dc9abfd341c42bcdbb66801afeb94e", "license": "MIT", "families": ["c3"] }
+      ,{ "repo": "SDWebImage/SDWebImage", "commit": "c3ad5e1a9bf55c9b76d4c362430b5fcded96c502", "license": "MIT", "families": ["objective-c"] }
+      ,{ "repo": "SnapKit/Masonry", "commit": "8bd77ea92bbe995e14c454f821200b222e5a8804", "license": "MIT", "families": ["objective-c"] }
+      ,{ "repo": "fortran-lang/stdlib", "commit": "c182aa57109bc5764a7c0d98cebfcf615b07d740", "license": "MIT", "families": ["fortran"] }
+      ,{ "repo": "Reference-LAPACK/lapack", "commit": "902162d5571931849594bb1de6357084dc05d4d7", "license": "BSD-3-Clause", "families": ["fortran"] }
+      ,{ "repo": "github/hubot-scripts", "commit": "ec0b06aa9f2169c8427cdf77f49a0de698c969b1", "license": "MIT", "families": ["coffeescript"] }
+      ,{ "repo": "openssl/openssl", "commit": "899d0ca02559e105b9cb30964e3478dfbd8c4578", "license": "Apache-2.0", "families": ["perl"] }
+      ,{ "repo": "MudBlazor/MudBlazor", "commit": "d508eb259dc2d69f27a44d4df8caf97ea262a128", "license": "MIT", "families": ["razor"] }
+      ,{ "repo": "dotnet-architecture/eShopOnWeb", "commit": "4da8212117e87d808d4bbc7da6286fd2147ce606", "license": "MIT", "families": ["razor"] }
+      ,{ "repo": "GDQuest/godot-open-rpg", "commit": "d59f2f71bc046ac53239a4e590861269e7100a36", "license": "MIT", "families": ["gdscript"] }
+      ,{ "repo": "less/less.js", "commit": "713331655e437401dfea6cd233893a69762734e1", "license": "Apache-2.0", "families": ["css"] }
+      ,{ "repo": "trailheadapps/lwc-recipes", "commit": "b5af6ecb2f8d5d75d161b2a702d899f6e4ffc878", "license": "CC0-1.0", "families": ["apex"] }
+      ,{ "repo": "apex-enterprise-patterns/fflib-apex-common", "commit": "69ad914b24e1bcbcf5e3f2cb0795c9541895a3a9", "license": "BSD-3-Clause", "families": ["apex"] }
+      ,{ "repo": "Schneegans/Gnome-Pie", "commit": "0140a404f37d33dea074e8c134c82e47f56c5ece", "license": "MIT", "families": ["vala"] }
+      ,{ "repo": "lcallarec/live-chart", "commit": "9d34b487602919675dd78f7c91e1f27c26eb874b", "license": "MIT", "families": ["vala"] }
+      ,{ "repo": "voldyman/MarkMyWords", "commit": "970b45927ee451985a92dae01a8dec6df5336ccb", "license": "MIT", "families": ["vala"] }
+      ,{ "repo": "SaschaWillems/Vulkan", "commit": "d2d49bf7f2d8469ad9fee47b2a43b430d7e10e1b", "license": "MIT", "families": ["glsl"] }
+      ,{ "repo": "Cyanilux/URP_ShaderCodeTemplates", "commit": "457b34127e0f4431275ebb0926513da049ec294b", "license": "CC0-1.0", "families": ["shaderlab", "hlsl"] }
+      ,{ "repo": "mesonbuild/meson", "commit": "bc09128681d345f2eb71d3de43e0f47af58b025c", "license": "Apache-2.0", "families": ["meson"] }
+      ,{ "repo": "bazelbuild/rules_go", "commit": "e2d52babf3211185108cf73a93c9461681f15ac4", "license": "Apache-2.0", "families": ["starlark"] }
+      ,{ "repo": "bazelbuild/bazel-skylib", "commit": "a920cdfe02154b916b493b4ffdd08087f0498fc7", "license": "Apache-2.0", "families": ["starlark"] }
     ],
     "npm": [
       { "name": "react", "version": "19.2.8", "license": "MIT" },

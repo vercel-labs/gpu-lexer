@@ -21,8 +21,8 @@ from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tree_model import (
-    batch_family_factors, class_weights_for_counts, family_importance, family_of,
-    normalized_family_weights, promotion_candidate_issues,
+    batch_family_factors, class_weights_for_counts, family_importance, family_of, guarded_selection,
+    normalized_family_weights, promotion_candidate_issues, top_language_importance,
     protected_families_eligible, protected_family_failures, reference_counts, strict_language_failures,
     weighted_family_error,
 )
@@ -1054,6 +1054,7 @@ def evaluate(model: QuantizedModel, dataset: SparseDataset, config: dict, device
             value["error"] = value["errors"] / value["support"] if value["support"] else None
             value["falseColors"] = value["falseColorCount"]
             value["falseColorRate"] = value["falseColors"] / value["plainSupport"] if value["plainSupport"] else None
+        result.update(guarded_selection(result, config.get("selectionGuard")) or {})
     model.train()
     return result
 
@@ -1090,7 +1091,8 @@ def evaluate_required(model: QuantizedModel, dataset: SparseDataset | None, conf
 
 def checkpoint_score(metrics: dict, selection_metric: str = "weightedError") -> float:
     if selection_metric == "accuracy":
-        return metrics["accuracy"]
+        # With a selection guard every evaluated checkpoint carries a guarded score.
+        return metrics.get("selectionScore", metrics["accuracy"])
     if "weightedError" in metrics:
         return -metrics["weightedError"]
     return metrics["accuracy"] + metrics["macroF1"] * 0.25 + metrics["mixedLanguage"]["macroF1"] * 0.05
@@ -1129,7 +1131,23 @@ def selection_issues(metrics: dict, baseline: dict | None, config: dict, objecti
         (failures if language_guards == "strict" or structural else warnings).append(issue)
     if baseline is not None and not metrics["accuracy"] > baseline["accuracy"]:
         failures.append("verification accuracy did not improve")
+    if baseline is not None and "topAgreement" in metrics and "topAgreement" in baseline:
+        if metrics["topAgreement"] < baseline["topAgreement"]:
+            failures.append("top-language weighted agreement regressed")
+        worst = metrics["worstLanguageDrop"]
+        if worst["drop"] > config["selectionGuard"]["languageDropTolerance"]:
+            warnings.append(f"{worst['language']} agreement dropped {worst['drop'] * 100:.1f} points")
     return failures, warnings
+
+
+def selection_summary(metrics: dict, ema_metrics: dict | None) -> str:
+    if "topAgreement" not in metrics:
+        return ""
+    def one(value: dict) -> str:
+        worst = value["worstLanguageDrop"]
+        drop = f"{worst['language']} -{worst['drop'] * 100:.1f}" if worst["language"] else "none"
+        return f"{format_percent(value['topAgreement'])} (worst drop {drop})"
+    return f" top={one(metrics)}" + (f" ema-top={one(ema_metrics)}" if ema_metrics else "")
 
 
 def device_state(model: QuantizedModel) -> dict[str, Tensor]:
@@ -1326,6 +1344,9 @@ def main() -> None:
         if measured_initial_metrics is not None and config.get("initialIsBaseline", False)
         else measured_initial_metrics
     )
+    for value in (initial_metrics, config.get("fixedBaselineMetrics")):
+        if value is not None:
+            value.update(guarded_selection(value, config.get("selectionGuard")) or {})
     if measured_initial_metrics is not None and config.get("initialIsBaseline", False):
         log(f"epoch 0 anchored to exact deployed baseline at {format_percent(initial_metrics['accuracy'])} accuracy")
     initial_required = evaluate_required(model, required, config, device) if initial_metrics else None
@@ -1391,6 +1412,11 @@ def main() -> None:
             if (stage not in ("polish", "agreement", "calibration") and
                     config.get("selectionMetric") != "accuracy"):
                 importance = family_importance(family_support, weights)
+            top_share = config.get("topLanguageLossShare", 0)
+            if stage == "agreement" and top_share > 0 and config.get("selectionGuard"):
+                importance = top_language_importance(
+                    family_support, config["selectionGuard"]["topFamilies"], top_share
+                )
             if stage in ("polish", "agreement", "calibration") or "classWeightPower" in config:
                 class_weights = class_weights_for_counts(
                     class_counts, 0 if stage in ("polish", "agreement", "calibration") else config["classWeightPower"]
@@ -1548,6 +1574,7 @@ def main() -> None:
             f"mixed-f1={format_percent(metrics['mixedLanguage']['macroF1'])}"
             f"{' weighted-error=' + format_percent(metrics['weightedError']) if tree_objective else ''}"
             f"{' ema=' + format_percent(ema_metrics['accuracy']) + '/' + format_percent(ema_metrics['macroF1']) if ema_metrics else ''}"
+            f"{selection_summary(metrics, ema_metrics)}"
             f"{' target=' + str(required_metrics['correct']) + '/' + str(required_metrics['total']) if required_metrics else ''} "
             f"[{suffix}]"
         )

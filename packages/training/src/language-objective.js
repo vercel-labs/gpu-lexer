@@ -203,6 +203,66 @@ export function compareLanguageMetrics(candidate, baseline, objective) {
     guards, strictGuards, failures, warnings };
 }
 
+/** The most popular families of the pinned snapshot, with weights that sum to one.
+ * This is the weighting of the website's Top-25 agreement chart.
+ */
+export function topLanguageWeights(count = 25,
+  popularityPath = new URL("../data/language-popularity.json", import.meta.url)) {
+  const top = JSON.parse(readFileSync(popularityPath, "utf8")).languages
+    .filter((row) => !row.supplemental).slice(0, count);
+  const total = top.reduce((sum, row) => sum + row.pushers, 0);
+  if (top.length !== count || !(total > 0)) throw new Error(`popularity snapshot has no top ${count}`);
+  return Object.fromEntries(top.map((row) => [row.family, row.pushers / total]));
+}
+
+export function topLanguageAgreement(metrics, weights) {
+  let agreement = 0;
+  for (const [family, weight] of Object.entries(weights)) {
+    const counts = metrics.perFamily?.[family];
+    if (!counts?.support) throw new Error(`top-language agreement needs ${family} metrics`);
+    agreement += weight * (1 - counts.errors / counts.support);
+  }
+  return agreement;
+}
+
+/** Languages whose agreement fell, largest drop first. Small languages are
+ * skipped: a few hundred parts usually come from one file and swing by several
+ * points between otherwise equivalent checkpoints.
+ */
+/** How many held-out files effectively back each language's score.
+ *
+ * This is the inverse Simpson index of a language's supervised parts over its
+ * files: ten equal files count as ten, and one large file beside nine tiny
+ * ones counts as about one. A score that rests on one or two files moves by
+ * ten points between neighboring epochs, so it cannot show a real drop.
+ */
+export function heldOutEffectiveFiles(records) {
+  const totals = {};
+  for (const record of records) {
+    let parts = 0;
+    for (let index = 0; index < record.targets.length; index++) {
+      parts += Number(record.supervisionWeights?.[index] !== 0);
+    }
+    const total = totals[record.language ?? "unknown"] ??= { parts: 0, squares: 0 };
+    total.parts += parts;
+    total.squares += parts * parts;
+  }
+  return Object.fromEntries(Object.entries(totals)
+    .map(([language, { parts, squares }]) => [language, squares ? parts * parts / squares : 0]));
+}
+
+export function languageDrops(candidate, baseline, { minSupport = 400, languages = null } = {}) {
+  const drops = [];
+  const measured = languages && new Set(languages);
+  for (const [language, before] of Object.entries(baseline.perLanguage ?? {})) {
+    if (!(before.support >= minSupport) || (measured && !measured.has(language))) continue;
+    const after = candidate.perLanguage?.[language];
+    const drop = (1 - before.errors / before.support) - (after?.support ? 1 - after.errors / after.support : 0);
+    if (drop > 0) drops.push({ language, drop, support: before.support });
+  }
+  return drops.sort((left, right) => right.drop - left.drop);
+}
+
 export function compareStrictLanguages(candidate, baseline, objective) {
   validateLanguageObjective(objective);
   const guards = [];

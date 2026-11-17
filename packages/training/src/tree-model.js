@@ -126,6 +126,37 @@ export function createTreeModel({
   return model;
 }
 
+/** Add classifier units without changing the model's function.
+ *
+ * New units read the leaf and tree context through small random weights, and
+ * every class starts with a zero weight on them. The existing tensors keep
+ * their largest magnitudes, so their int6 scales and codes are unchanged and
+ * the widened model deploys to exactly the same labels until it is trained.
+ */
+export function widenTreeClassifier(source, classifierSize, random = Math.random) {
+  const current = source.classifierBias.length;
+  if (!Number.isSafeInteger(classifierSize) || classifierSize <= current) {
+    throw new RangeError(`classifier can only grow; ${current} -> ${classifierSize}`);
+  }
+  const inputs = source.classifierInput.length / current;
+  const classes = source.output.length / current;
+  const classifierInput = new Float32Array(classifierSize * inputs);
+  classifierInput.set(source.classifierInput);
+  let largest = 0;
+  for (const value of source.classifierInput) largest = Math.max(largest, Math.abs(value));
+  const scale = Math.min(largest, Math.sqrt(6 / (inputs + classifierSize)));
+  for (let index = source.classifierInput.length; index < classifierInput.length; index++) {
+    classifierInput[index] = (random() * 2 - 1) * scale;
+  }
+  const classifierBias = new Float32Array(classifierSize);
+  classifierBias.set(source.classifierBias);
+  const output = new Float32Array(classes * classifierSize);
+  for (let index = 0; index < classes; index++) {
+    output.set(source.output.subarray(index * current, (index + 1) * current), index * classifierSize);
+  }
+  return { ...source, classifierInput, classifierBias, output };
+}
+
 /** Expand a feature-v2 model into feature v3 without changing its function. */
 export function migrateTreeFeatureV2Model(source, {
   treeContext = source.stateInput ? "hybrid" : "tree",

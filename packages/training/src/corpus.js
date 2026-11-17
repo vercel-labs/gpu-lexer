@@ -31,6 +31,14 @@ const languagesByExtension = new Map([
   [".sol", "solidity"], [".m4", "shellscript"], [".el", "emacs-lisp"], [".feature", "gherkin"],
   [".bzl", "python"], [".star", "python"], [".awk", "awk"], [".astro", "astro"],
   [".diff", "diff"], [".patch", "diff"],
+  [".yml", "yaml"], [".yaml", "yaml"], [".zig", "zig"], [".hs", "haskell"], [".jl", "julia"],
+  [".vb", "vb"], [".adb", "ada"], [".ads", "ada"], [".nim", "nim"], [".d", "d"], [".scala", "scala"],
+  [".pp", "puppet"], [".hx", "haxe"], [".bicep", "bicep"], [".sv", "system-verilog"],
+  [".svh", "system-verilog"], [".prisma", "prisma"], [".graphql", "graphql"], [".gql", "graphql"],
+  [".proto", "proto"], [".c3", "c3"], [".c3i", "c3"], [".coffee", "coffeescript"],
+  [".toml", "toml"], [".cshtml", "razor"], [".razor", "razor"],
+  [".gd", "gdscript"], [".wgsl", "wgsl"], [".groovy", "groovy"], [".gradle", "groovy"],
+  [".less", "less"], [".cls", "apex"], [".vala", "vala"], [".json", "json"], [".xml", "xml"], [".svg", "xml"],
 ]);
 
 const languageFamilies = new Map([
@@ -38,6 +46,7 @@ const languageFamilies = new Map([
   ["shellscript", "shell"], ["docker", "dockerfile"], ["make", "makefile"], ["bat", "batchfile"],
   ["sql", "plpgsql"], ["asm", "assembly"], ["jinja", "mako"], ["xsl", "xslt"],
   ["viml", "vim-script"], ["fortran-fixed-form", "fortran"], ["fortran-free-form", "fortran"],
+  ["system-verilog", "systemverilog"], ["proto", "protobuf"], ["less", "css"],
 ]);
 
 const namedLanguages = new Map([
@@ -76,6 +85,16 @@ const sampleLanguages = new Map([
   ["svelte", ["svelte", "svelte"]],
   ["astro", ["astro", "astro"]],
   ["diff", ["diff", "diff"]], ["patch", ["diff", "diff"]],
+  ["yaml", ["yaml", "yaml"]], ["zig", ["zig", "zig"]], ["haskell", ["haskell", "haskell"]],
+  ["julia", ["julia", "julia"]], ["visual basic .net", ["vb", "vb"]], ["nim", ["nim", "nim"]],
+  ["d", ["d", "d"]], ["scala", ["scala", "scala"]], ["puppet", ["puppet", "puppet"]],
+  ["graphql", ["graphql", "graphql"]], ["nginx", ["nginx", "nginx"]], ["bicep", ["bicep", "bicep"]],
+  ["systemverilog", ["system-verilog", "systemverilog"]], ["prisma", ["prisma", "prisma"]],
+  ["coffeescript", ["coffeescript", "coffeescript"]], ["apex", ["apex", "apex"]],
+  ["toml", ["toml", "toml"]],
+  ["json", ["json", "json"]], ["xml", ["xml", "xml"]], ["groovy", ["groovy", "groovy"]],
+  ["protocol buffer", ["proto", "protobuf"]], ["less", ["less", "css"]], ["wgsl", ["wgsl", "wgsl"]],
+  ["gdscript", ["gdscript", "gdscript"]], ["html+razor", ["razor", "razor"]],
 ]);
 
 export function languageFamily(language) {
@@ -94,9 +113,14 @@ export function languageForPath(path) {
     if (descriptor) return { language: descriptor[0], family: descriptor[1] };
   }
   const basename = normalized.slice(normalized.lastIndexOf("/") + 1).toLowerCase();
-  const named = namedLanguages.get(basename);
+  const named = namedLanguages.get(basename) ?? conventionalBuildFile(basename);
   if (named) return { language: named[0], family: named[1] };
-  const grammar = languagesByExtension.get(extnameFromPath(basename));
+  const extension = extnameFromPath(basename);
+  // .d is also DTrace and Make dependencies, .pp also Pascal, .m also MATLAB
+  // and Mathematica, .pl also Prolog, .f also Forth, .gd also GAP: inside a
+  // sample directory for some other language, such an extension is not evidence.
+  if (sample && sharedExtensions.has(extension)) return null;
+  const grammar = languagesByExtension.get(extension);
   if (!grammar) return null;
   let family = languageFamily(grammar);
   if (grammar === "python" && /(?:\.pyx|\.pxd)$/i.test(basename)) family = "cython";
@@ -110,6 +134,21 @@ export const teacherLanguages = Object.freeze([...new Set([
   ...languagesByExtension.values(), ...[...namedLanguages.values()].map(([language]) => language),
   ...[...sampleLanguages.values()].map(([language]) => language),
 ])]);
+
+// Dockerfile.alpine, base.dockerfile, Containerfile, GNUmakefile, Makefile.common, rules.mk.
+// A suffix that names another format (Makefile.am, Dockerfile.template, Makefile.py) is not one.
+const sharedExtensions = new Set([".d", ".pp", ".m", ".pl", ".pm", ".f", ".for", ".gd", ".cls"]);
+const buildFileSuffixes = /^(?:am|in|md|txt|json|ya?ml|toml|lock|template|tmpl|tpl|j2|erb|dockerignore|orig|bak)$/;
+function conventionalBuildFile(basename) {
+  const extension = extnameFromPath(basename);
+  if (extension === ".mk" || basename === "gnumakefile") return ["make", "makefile"];
+  if (extension === ".dockerfile" || basename === "containerfile") return ["docker", "dockerfile"];
+  const match = basename.match(/^(makefile|dockerfile|containerfile)[._-](.+)$/);
+  if (!match) return null;
+  const suffix = match[2].slice(match[2].lastIndexOf(".") + 1);
+  if (buildFileSuffixes.test(suffix) || languagesByExtension.has(`.${suffix}`)) return null;
+  return match[1] === "makefile" ? ["make", "makefile"] : ["docker", "dockerfile"];
+}
 
 function extnameFromPath(basename) {
   const index = basename.lastIndexOf(".");
@@ -131,6 +170,8 @@ export function validateCorpusManifest(manifest, popularity) {
   if (Math.abs(strataTotal - 1) > 1e-9) throw new Error("corpus strata must sum to 1");
   const gitSeen = new Map();
   const npmSeen = new Map();
+  const popularityFamilies = new Set(popularity.languages.map((entry) => entry.family ?? languageFamily(entry.shiki[0])));
+  const samplingFamilies = new Set([...popularityFamilies, ...Object.keys(manifest.policy.trainingSamplingWeights ?? {})]);
   for (const [split, minimums] of Object.entries(manifest.policy.minimumLanguageTokens ?? {})) {
     if (!splits.includes(split) || !minimums || Object.entries(minimums).some(([language, minimum]) =>
       !teacherLanguages.includes(language) || !Number.isSafeInteger(minimum) || minimum < 1)) {
@@ -142,6 +183,12 @@ export function validateCorpusManifest(manifest, popularity) {
     for (const entry of manifest[split].git) {
       validateLicense(entry, allowed);
       if (!/^[\da-f]{40}$/.test(entry.commit)) throw new Error(`${entry.repo} must pin a full commit SHA`);
+      // A source may be limited to the families it was added for, so a large
+      // repository does not also reshape the mix of every other language.
+      if (entry.families !== undefined && (!Array.isArray(entry.families) || !entry.families.length ||
+          entry.families.some((family) => !samplingFamilies.has(family)))) {
+        throw new Error(`${entry.repo} families must be a non-empty list of weighted language families`);
+      }
       if (gitSeen.has(entry.repo)) throw new Error(`${entry.repo} occurs in both ${gitSeen.get(entry.repo)} and ${split}`);
       gitSeen.set(entry.repo, split);
     }
@@ -153,7 +200,6 @@ export function validateCorpusManifest(manifest, popularity) {
     }
   }
 
-  const popularityFamilies = new Set(popularity.languages.map((entry) => entry.family ?? languageFamily(entry.shiki[0])));
   for (const language of manifest.policy.requiredLanguagesPerSplit) {
     if (!popularityFamilies.has(language)) throw new Error(`${language} has no popularity weight`);
   }

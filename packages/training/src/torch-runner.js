@@ -97,7 +97,7 @@ export async function runTorchTraining({
         "boundaryLossMultiplier",
         "migrationExpectedAccuracy",
         "distillationWeight", "distillationTemperature", "distillationWarmupEpochs",
-        "distillationRampEpochs",
+        "distillationRampEpochs", "selectionGuard", "topLanguageLossShare",
       ]),
       device: runtime.device,
       sameVerification,

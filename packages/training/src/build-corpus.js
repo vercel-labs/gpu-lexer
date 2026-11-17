@@ -276,6 +276,7 @@ async function findCandidates(root, maxFileBytes, origin, split, entry) {
     const descriptor = languageForPath(path);
     if (!descriptor || isGeneratedFile(path)) continue;
     const { language, family } = descriptor;
+    if (entry.families && !entry.families.includes(family)) continue;
     const url = pathToFileURL(pathname);
     const stratum = origin === "npm" ? "compiled" : classifyGitPath(path, language);
     if (!stratum) continue;

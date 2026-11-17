@@ -6,7 +6,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 import { classNames } from "./classes.js";
-import { assertSameProvenance, compareLanguageMetrics, validateLanguageObjective } from "./language-objective.js";
+import {
+  assertSameProvenance, compareLanguageMetrics, languageDrops, topLanguageAgreement, topLanguageWeights,
+  validateLanguageObjective,
+} from "./language-objective.js";
 import { loadFloatCheckpoint, writeActiveCheckpoint } from "./checkpoint.js";
 import {
   dequantizeTensors, encodeWeightSymbols, quantizeTensors, WEIGHT_SYMBOL_ENCODING,
@@ -33,7 +36,7 @@ const generatedRunPointer = fileURLToPath(new URL("./promoted-run.generated.js",
 const correctnessBenchmark = fileURLToPath(new URL("../../benchmark/src/correctness.js", import.meta.url));
 const runFile = promisify(execFile);
 const MAX_TREE_PARAMETERS = 75_000;
-const MAX_TREE_PACKED_BYTES = 37_500;
+const MAX_TREE_PACKED_BYTES = 41_000;
 
 export async function promote(runArgument, { force = false } = {}) {
   if (!runArgument) {
@@ -189,7 +192,8 @@ export async function evaluateTreePromotion(metadata, deployed, verificationShar
   const accuracySelection = metadata.config?.selectionMetric === "accuracy";
   const accuracyImprovement = candidate.accuracy - baseline.accuracy;
   const automaticDecision = accuracySelection
-    ? accuracyTreePromotionDecision(candidate, baseline, weightedDecision, metadata.config.languageGuards)
+    ? accuracyTreePromotionDecision(candidate, baseline, weightedDecision, metadata.config.languageGuards,
+      metadata.config.selectionGuard)
     : weightedDecision;
   if (!automaticDecision.accepted && !force) {
     throw new Error(`tree promotion rejected: ${automaticDecision.failures.join("; ")}`);
@@ -213,7 +217,8 @@ export async function evaluateTreePromotion(metadata, deployed, verificationShar
     automaticDecision, decision };
 }
 
-export function accuracyTreePromotionDecision(candidate, baseline, weightedDecision, languageGuards = "strict") {
+export function accuracyTreePromotionDecision(candidate, baseline, weightedDecision, languageGuards = "strict",
+  selectionGuard = null) {
   if (!["strict", "advisory"].includes(languageGuards)) throw new Error("invalid language-guards mode");
   const improvement = candidate.accuracy - baseline.accuracy;
   const strictFailures = [], advisoryWarnings = [];
@@ -224,8 +229,24 @@ export function accuracyTreePromotionDecision(candidate, baseline, weightedDecis
       .push(`${language} ${metric}: ${reason}`);
   }
   const failures = [...(improvement > 0 ? [] : ["verification accuracy did not improve"]), ...strictFailures];
+  // A guarded run must also hold the top-language agreement it selected by.
+  // Drops of the languages the guard could measure are reported, not enforced.
+  let topAgreement = null;
+  if (selectionGuard) {
+    const weights = selectionGuard.topFamilies ?? topLanguageWeights();
+    topAgreement = { candidate: topLanguageAgreement(candidate, weights), baseline: topLanguageAgreement(baseline, weights) };
+    if (topAgreement.candidate < topAgreement.baseline) failures.push("top-language weighted agreement regressed");
+    const languages = selectionGuard.baselineLanguageAccuracy && Object.keys(selectionGuard.baselineLanguageAccuracy);
+    for (const { language, drop } of languageDrops(candidate, baseline,
+      { minSupport: selectionGuard.minLanguageSupport, languages })) {
+      if (drop > selectionGuard.languageDropTolerance) {
+        advisoryWarnings.push(`${language} agreement dropped ${(drop * 100).toFixed(1)} points`);
+      }
+    }
+  }
   return {
     accepted: failures.length === 0,
+    ...(topAgreement ? { topAgreement } : {}),
     criterion: "fixed-baseline-untouched-verification-accuracy",
     languageGuards,
     improvement,

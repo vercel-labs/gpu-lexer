@@ -3,7 +3,7 @@ import test from "node:test";
 import {
   agreementLanguageMultipliers, countClasses, enrollMatureLanguageGuards, focusedReplayConfig,
   majorLanguageErrorRows,
-  shouldAutoPromoteTreeRun, shouldPolishTreeCheckpoint, treeTrainingSchedule,
+  shouldAutoPromoteTreeRun, shouldPolishTreeCheckpoint, treeSelectionGuard, treeTrainingSchedule,
   treeWarmStartMismatch, validateTreeTeacher, TREE_CONTINUATION,
 } from "../src/train-tree.js";
 import { createTreeModel, treeAuxiliaryNames, treeTensorNamesFor } from "../src/tree-model.js";
@@ -164,6 +164,9 @@ test("tree warm start accepts the promoted shape and explains architecture chang
   };
   assert.equal(treeWarmStartMismatch(metadata), null);
   assert.match(treeWarmStartMismatch(metadata, { hiddenSize: 64 }), /hidden 32 -> 64/);
+  // A larger classifier is widened from the checkpoint; a smaller one cannot be.
+  assert.equal(treeWarmStartMismatch(metadata, { classifierSize: 96 }), null);
+  assert.match(treeWarmStartMismatch(metadata, { classifierSize: 64 }), /classifier 72 -> 64/);
   assert.match(treeWarmStartMismatch(metadata, { treeContext: "tree", hashBuckets: 128 }),
     /context hybrid -> tree, hash 256 -> 128/);
 });
@@ -181,6 +184,28 @@ test("continuations are all agreement epochs while full training and targeted ru
   // Replay-polish epochs remain available by leaving room before agreement.
   assert.deepEqual(treeTrainingSchedule({ epochs: 10, agreementEpochs: 6, calibrationEpochs: 2 }, true),
     { epochs: 10, fineTuneEpochs: 2, agreementEpochs: 6, calibrationEpochs: 2 });
+});
+
+test("accuracy-selected runs guard top-language agreement and measurable languages", () => {
+  const baseline = { perLanguage: {
+    javascript: { support: 1000, errors: 50 }, yaml: { support: 400, errors: 100 }, awk: { support: 399, errors: 10 },
+    haskell: { support: 2000, errors: 400 }, zig: { support: 900, errors: 90 },
+  } };
+  // Haskell is one file and Zig has no file record: neither can show a real drop.
+  const effectiveFiles = { javascript: 15.2, yaml: 3, awk: 9, haskell: 1 };
+  const guard = treeSelectionGuard({ selectionMetric: "accuracy", fixedBaselineMetrics: baseline }, false,
+    { effectiveFiles });
+  assert.equal(Object.keys(guard.topFamilies).length, 25);
+  assert.ok(Math.abs(Object.values(guard.topFamilies).reduce((sum, weight) => sum + weight, 0) - 1) < 1e-12);
+  assert.ok(guard.topFamilies.javascript > guard.topFamilies.assembly);
+  assert.deepEqual(guard.baselineLanguageAccuracy, { javascript: 0.95, yaml: 0.75 });
+  assert.equal(guard.languageDropTolerance, 0.05);
+  assert.equal(guard.minEffectiveFiles, 3);
+  assert.deepEqual(treeSelectionGuard({ selectionMetric: "accuracy", fixedBaselineMetrics: baseline })
+    .baselineLanguageAccuracy, {});
+  assert.equal(treeSelectionGuard({ selectionMetric: "accuracy", fixedBaselineMetrics: null }), null);
+  assert.equal(treeSelectionGuard({ selectionMetric: "accuracy", fixedBaselineMetrics: baseline }, true), null);
+  assert.equal(treeSelectionGuard({ selectionMetric: "weightedError", fixedBaselineMetrics: baseline }), null);
 });
 
 test("changed or unrecorded taxonomies use full training instead of polish", () => {

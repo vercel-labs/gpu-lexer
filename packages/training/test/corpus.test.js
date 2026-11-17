@@ -15,7 +15,7 @@ test("mixed corpus pins disjoint Git commits and npm versions", async () => {
   const [manifest, popularity] = await Promise.all([readCorpusManifest(), readLanguagePopularity()]);
   assert.doesNotThrow(() => validateCorpusManifest(manifest, popularity));
   assert.deepEqual(manifest.policy.strata, { author: 0.70, tests: 0.15, documentation: 0.10, compiled: 0.05 });
-  assert.equal(manifest.policy.targetTokens.train, 3_000_000);
+  assert.equal(manifest.policy.targetTokens.train, 4_200_000);
   assert.equal(manifest.policy.targetTokens.verification, 240_000);
   assert.equal(manifest.policy.minimumTrainingFamilyTokens, 10_000);
   assert.equal(manifest.policy.minimumLanguageTokens.verification.tsx, 2_000);
@@ -130,6 +130,71 @@ test("Diff source and fixture paths use the Diff teacher", () => {
   assert.deepEqual(languageForPath("changes/fix.patch"), { language: "diff", family: "diff" });
   assert.deepEqual(languageForPath("tests/snippets/diff/unified.txt"), { language: "diff", family: "diff" });
   assert.deepEqual(languageForPath("test/markup/diff/comments.txt"), { language: "diff", family: "diff" });
+});
+
+test("conventional Makefile and Dockerfile names use their teachers", () => {
+  const make = { language: "make", family: "makefile" };
+  const docker = { language: "docker", family: "dockerfile" };
+  for (const path of ["Makefile", "src/GNUmakefile", "py/mkrules.mk", "Makefile.common", "makefile.win"]) {
+    assert.deepEqual(languageForPath(path), make, path);
+  }
+  for (const path of ["a/Dockerfile", "Dockerfile.alpine", "hack/base.Dockerfile", "Dockerfile_test_copy", "Containerfile"]) {
+    assert.deepEqual(languageForPath(path), docker, path);
+  }
+  // A suffix that names another format wins, and templates are not labeled at all.
+  for (const path of ["Makefile.am", "Makefile.in", "Dockerfile.template", "Dockerfile.dockerignore", "makefiles/x.txt"]) {
+    assert.equal(languageForPath(path), null, path);
+  }
+  assert.equal(languageForPath("Makefile.py").language, "python");
+  assert.equal(languageForPath("Makefile.toml").language, "toml");
+  assert.equal(languageForPath("dockerfile.md").language, "markdown");
+  assert.equal(languageForPath("dockerfiles.go").language, "go");
+});
+
+test("languages without a GitHub popularity row are labeled and sampled", async () => {
+  const [manifest, popularity] = await Promise.all([readCorpusManifest(), readLanguagePopularity()]);
+  const expected = {
+    ".github/workflows/ci.yml": ["yaml", "yaml"], "deploy/app.yaml": ["yaml", "yaml"],
+    "src/main.zig": ["zig", "zig"], "src/Main.hs": ["haskell", "haskell"], "src/model.jl": ["julia", "julia"],
+    "Form1.vb": ["vb", "vb"], "drivers/spi.adb": ["ada", "ada"], "drivers/spi.ads": ["ada", "ada"],
+    "src/tool.nim": ["nim", "nim"], "source/app.d": ["d", "d"], "core/Monad.scala": ["scala", "scala"],
+    "manifests/init.pp": ["puppet", "puppet"], "flixel/FlxG.hx": ["haxe", "haxe"],
+    "main.bicep": ["bicep", "bicep"], "rtl/core.sv": ["system-verilog", "systemverilog"],
+    "schema.prisma": ["prisma", "prisma"], "schema.graphql": ["graphql", "graphql"],
+    "samples/Visual Basic .NET/app.vb": ["vb", "vb"], "samples/Nginx/nginx.conf": ["nginx", "nginx"],
+    "api/v1/service.proto": ["proto", "protobuf"], "lib/map.c3": ["c3", "c3"], "raylib.c3i": ["c3", "c3"],
+    "scripts/ping.coffee": ["coffeescript", "coffeescript"],
+    "Cargo.toml": ["toml", "toml"], "Pages/Index.cshtml": ["razor", "razor"], "Shared/Nav.razor": ["razor", "razor"],
+    "player.gd": ["gdscript", "gdscript"], "blit.wgsl": ["wgsl", "wgsl"], "build.gradle": ["groovy", "groovy"],
+    "force-app/Recipes.cls": ["apex", "apex"], "src/Window.vala": ["vala", "vala"],
+    "tsconfig.json": ["json", "json"], "AndroidManifest.xml": ["xml", "xml"], "icon.svg": ["xml", "xml"],
+  };
+  const weights = popularityWeights(popularity, manifest.policy.trainingSamplingWeights);
+  for (const [path, [language, family]] of Object.entries(expected)) {
+    assert.deepEqual(languageForPath(path), { language, family }, path);
+    assert.ok(weights.get(family) > 0, `${family} needs a training sampling weight`);
+  }
+  assert.deepEqual(languageForPath("theme/button.less"), { language: "less", family: "css" });
+  // Extensions shared with other languages are not evidence inside their sample directories.
+  for (const path of ["samples/DTrace/counts.d", "samples/Pascal/unit.pp", "samples/Mathematica/init.m",
+    "samples/Prolog/queens.pl", "samples/Forth/core.f", "samples/GAP/group.gd", "samples/TeX/article.cls"]) {
+    assert.equal(languageForPath(path), null, path);
+  }
+  assert.deepEqual(languageForPath("samples/Objective-C/View.m"), { language: "objective-c", family: "objective-c" });
+  assert.deepEqual(languageForPath("samples/D/fib.d"), { language: "d", family: "d" });
+});
+
+test("a source may be limited to listed language families", async () => {
+  const [manifest, popularity] = await Promise.all([readCorpusManifest(), readLanguagePopularity()]);
+  const limited = manifest.train.git.filter((entry) => entry.families);
+  assert.ok(limited.length > 0);
+  assert.ok(manifest.verification.git.every((entry) => !entry.families));
+  const withFamilies = (families) => ({ ...manifest,
+    train: { ...manifest.train, git: [{ ...limited[0], families }, ...manifest.train.git.filter((entry) => entry !== limited[0])] } });
+  assert.doesNotThrow(() => validateCorpusManifest(withFamilies(["shell"]), popularity));
+  for (const families of [[], "shell", ["not-a-language"]]) {
+    assert.throws(() => validateCorpusManifest(withFamilies(families), popularity), /families must be a non-empty list/);
+  }
 });
 
 test("Git paths are assigned to author, test, and documentation strata", () => {
